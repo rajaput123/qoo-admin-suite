@@ -63,7 +63,7 @@ const activityTypeColors: Record<string, string> = {
   rejected: "text-destructive",
   submission: "text-info",
   edit: "text-warning",
-  duplicate: "text-accent",
+  duplicate: "text-primary",
   contributor: "text-primary",
 };
 
@@ -76,24 +76,29 @@ const riskColors: Record<string, string> = {
 const Overview = () => {
   return (
     <div className="p-6 lg:p-8 max-w-7xl">
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        transition={{ duration: 0.5 }}
+      >
         <h1 className="text-2xl font-bold text-foreground mb-1">Overview</h1>
-        <p className="text-sm text-muted-foreground mb-6">Information Management Control Center</p>
+        <p className="text-sm text-muted-foreground mb-8">Information Management Control Center</p>
       </motion.div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         {kpis.map((kpi, i) => (
           <motion.div
             key={kpi.label}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: i * 0.05 }}
-            className="bg-card rounded-lg border p-4 card-shadow"
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.4, delay: i * 0.05 }}
+            whileHover={{ y: -4, transition: { duration: 0.2 } }}
+            className="glass-card rounded-2xl p-4 glass-shadow hover:shadow-xl transition-all duration-300"
           >
             <div className="flex items-center justify-between mb-3">
-              <div className="p-1.5 rounded-md bg-gold-light">
-                <kpi.icon className="h-4 w-4 text-accent" />
+              <div className="p-2 rounded-xl bg-primary/10">
+                <kpi.icon className="h-4 w-4 text-primary" />
               </div>
               <div className={`flex items-center text-xs font-medium ${kpi.up ? "text-success" : "text-destructive"}`}>
                 {kpi.up ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
@@ -109,20 +114,31 @@ const Overview = () => {
       {/* Main Grid */}
       <div className="grid lg:grid-cols-3 gap-6 mb-6">
         {/* Recent Moderation Activity */}
-        <div className="lg:col-span-2 bg-card rounded-lg border card-shadow">
-          <div className="px-5 py-4 border-b flex items-center justify-between">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="lg:col-span-2 glass-card rounded-2xl glass-shadow overflow-hidden"
+        >
+          <div className="px-5 py-4 border-b border-border/50 flex items-center justify-between">
             <h2 className="font-semibold text-foreground flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
               Recent Moderation Activity
             </h2>
-            <button className="text-xs text-accent hover:underline">View All</button>
+            <button className="text-xs text-primary hover:underline font-medium">View All</button>
           </div>
-          <div className="divide-y max-h-[320px] overflow-auto">
+          <div className="divide-y divide-border/50 max-h-[320px] overflow-auto">
             {recentActivity.map((item, i) => {
               const IconComponent = item.icon;
               return (
-                <div key={i} className="px-5 py-3.5 flex items-start gap-3 hover:bg-muted/30 transition-colors">
-                  <div className={`mt-0.5 ${activityTypeColors[item.type]}`}>
+                <motion.div 
+                  key={i} 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + i * 0.05 }}
+                  className="px-5 py-3.5 flex items-start gap-3 hover:bg-muted/30 transition-colors"
+                >
+                  <div className={`mt-0.5 p-1.5 rounded-lg bg-muted/50 ${activityTypeColors[item.type]}`}>
                     <IconComponent className="h-4 w-4" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -130,15 +146,20 @@ const Overview = () => {
                     <p className="text-xs text-muted-foreground truncate">{item.detail}</p>
                   </div>
                   <span className="text-xs text-muted-foreground whitespace-nowrap">{item.time}</span>
-                </div>
+                </motion.div>
               );
             })}
           </div>
-        </div>
+        </motion.div>
 
         {/* High Risk Submissions */}
-        <div className="bg-card rounded-lg border card-shadow">
-          <div className="px-5 py-4 border-b flex items-center justify-between">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="glass-card rounded-2xl glass-shadow overflow-hidden"
+        >
+          <div className="px-5 py-4 border-b border-border/50 flex items-center justify-between">
             <h2 className="font-semibold text-foreground flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-warning" />
               High Risk Submissions
@@ -147,9 +168,15 @@ const Overview = () => {
               {highRiskSubmissions.filter(s => s.risk === "High").length} Critical
             </span>
           </div>
-          <div className="divide-y max-h-[320px] overflow-auto">
+          <div className="divide-y divide-border/50 max-h-[320px] overflow-auto">
             {highRiskSubmissions.map((item, i) => (
-              <div key={i} className="px-5 py-3.5 hover:bg-muted/30 transition-colors">
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 + i * 0.05 }}
+                className="px-5 py-3.5 hover:bg-muted/30 transition-colors"
+              >
                 <div className="flex items-center justify-between mb-1">
                   <p className="text-sm font-medium text-foreground truncate pr-2">{item.temple}</p>
                   <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 ${riskColors[item.risk]}`}>
@@ -157,27 +184,38 @@ const Overview = () => {
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">{item.reason}</p>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Bottom Grid */}
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Top Contributors */}
-        <div className="bg-card rounded-lg border card-shadow">
-          <div className="px-5 py-4 border-b flex items-center justify-between">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="glass-card rounded-2xl glass-shadow overflow-hidden"
+        >
+          <div className="px-5 py-4 border-b border-border/50 flex items-center justify-between">
             <h2 className="font-semibold text-foreground flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-accent" />
+              <Trophy className="h-4 w-4 text-primary" />
               Top Contributors
             </h2>
-            <button className="text-xs text-accent hover:underline">Leaderboard</button>
+            <button className="text-xs text-primary hover:underline font-medium">Leaderboard</button>
           </div>
-          <div className="divide-y">
+          <div className="divide-y divide-border/50">
             {topContributors.map((contributor, i) => (
-              <div key={i} className="px-5 py-3 flex items-center gap-4 hover:bg-muted/30 transition-colors">
-                <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gold-light text-accent text-xs font-bold">
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 + i * 0.05 }}
+                className="px-5 py-3 flex items-center gap-4 hover:bg-muted/30 transition-colors"
+              >
+                <div className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold">
                   {i + 1}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -187,26 +225,37 @@ const Overview = () => {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-accent">{contributor.points.toLocaleString()}</p>
+                  <p className="text-sm font-semibold text-primary">{contributor.points.toLocaleString()}</p>
                   <p className="text-[10px] text-muted-foreground">points</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
         {/* Region-wise Temple Growth */}
-        <div className="bg-card rounded-lg border card-shadow">
-          <div className="px-5 py-4 border-b flex items-center justify-between">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+          className="glass-card rounded-2xl glass-shadow overflow-hidden"
+        >
+          <div className="px-5 py-4 border-b border-border/50 flex items-center justify-between">
             <h2 className="font-semibold text-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-success" />
               Region-wise Temple Growth
             </h2>
-            <button className="text-xs text-accent hover:underline">Full Report</button>
+            <button className="text-xs text-primary hover:underline font-medium">Full Report</button>
           </div>
-          <div className="divide-y">
+          <div className="divide-y divide-border/50">
             {regionalGrowth.map((region, i) => (
-              <div key={i} className="px-5 py-3 flex items-center justify-between hover:bg-muted/30 transition-colors">
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6 + i * 0.05 }}
+                className="px-5 py-3 flex items-center justify-between hover:bg-muted/30 transition-colors"
+              >
                 <div>
                   <p className="text-sm font-medium text-foreground">{region.region}</p>
                   <p className="text-xs text-muted-foreground">{region.temples.toLocaleString()} temples</p>
@@ -215,10 +264,10 @@ const Overview = () => {
                   <ArrowUpRight className="h-3 w-3" />
                   {region.growth}
                 </span>
-              </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
