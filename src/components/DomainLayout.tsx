@@ -149,19 +149,6 @@ const DomainLayout = () => {
             "flex items-center gap-2",
             collapsed ? "flex-col" : "flex-row"
           )}>
-            {/* Notification Bell */}
-            <Tooltip delayDuration={0}>
-              <TooltipTrigger asChild>
-                <button className="relative p-2 rounded-lg hover:bg-muted transition-colors">
-                  <Bell className="h-4 w-4 text-muted-foreground" />
-                  <span className="absolute top-1 right-1 h-2 w-2 bg-destructive rounded-full" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side={collapsed ? "right" : "top"}>
-                <p>Notifications</p>
-              </TooltipContent>
-            </Tooltip>
-
             {/* Profile Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -197,6 +184,19 @@ const DomainLayout = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Notification Bell - Right side */}
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button className="relative p-2 rounded-lg hover:bg-muted transition-colors">
+                  <Bell className="h-4 w-4 text-muted-foreground" />
+                  <span className="absolute top-1 right-1 h-2 w-2 bg-destructive rounded-full" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side={collapsed ? "right" : "top"}>
+                <p>Notifications</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </motion.aside>
