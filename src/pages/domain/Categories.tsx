@@ -63,7 +63,7 @@ const Categories = () => {
   const parentCategories = mockData.filter(c => c.parentCategory === null).map(c => c.name);
 
   return (
-    <div className="p-6 lg:p-8 max-w-7xl">
+    <div className="p-6 lg:px-8 lg:pt-4 lg:pb-8 max-w-7xl">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <div className="flex items-center justify-between mb-6">
           <div>

@@ -75,7 +75,7 @@ const riskColors: Record<string, string> = {
 
 const Overview = () => {
   return (
-    <div className="p-6 lg:p-8 max-w-7xl">
+    <div className="p-6 lg:px-8 lg:pt-4 lg:pb-8 max-w-7xl">
       <motion.div 
         initial={{ opacity: 0, y: 20 }} 
         animate={{ opacity: 1, y: 0 }} 
