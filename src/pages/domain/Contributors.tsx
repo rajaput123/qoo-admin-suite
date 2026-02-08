@@ -120,7 +120,7 @@ const Contributors = () => {
     const approvalRate = getApprovalRate(selectedContributor.approvedCount, selectedContributor.totalSubmissions);
 
     return (
-      <div className="p-6 lg:p-8 max-w-7xl">
+      <div className="p-6 lg:px-8 lg:pt-4 lg:pb-8 max-w-7xl">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }}>
           {/* Header */}
           <div className="flex items-center gap-4 mb-6">
@@ -275,7 +275,7 @@ const Contributors = () => {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-7xl">
+    <div className="p-6 lg:px-8 lg:pt-4 lg:pb-8 max-w-7xl">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <div className="flex items-center justify-between mb-6">
           <div>

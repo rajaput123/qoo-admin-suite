@@ -59,8 +59,8 @@ const DomainLayout = () => {
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className="fixed left-0 top-0 h-screen bg-white border-r border-border z-30 flex flex-col"
       >
-        {/* Logo + Notification */}
-        <div className="h-14 flex items-center justify-between px-4 border-b border-border">
+        {/* Logo */}
+        <div className="h-14 flex items-center justify-center px-4 border-b border-border">
           <AnimatePresence mode="wait">
             {!collapsed ? (
               <motion.button
@@ -78,19 +78,12 @@ const DomainLayout = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => navigate("/hub")}
-                className="text-lg font-bold text-primary mx-auto"
+                className="text-lg font-bold text-primary"
               >
                 Q
               </motion.button>
             )}
           </AnimatePresence>
-          {/* Notification Bell - Always visible */}
-          {!collapsed && (
-            <button className="relative p-1.5 rounded-lg hover:bg-muted transition-colors">
-              <Bell className="h-4 w-4 text-muted-foreground" />
-              <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-destructive rounded-full border-2 border-white" />
-            </button>
-          )}
         </div>
 
         {/* Global Search */}
@@ -150,47 +143,61 @@ const DomainLayout = () => {
           })}
         </nav>
 
-        {/* Bottom - Profile Only */}
+        {/* Bottom - Profile + Notification */}
         <div className="p-2 border-t border-border">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className={cn(
-                "w-full flex items-center gap-3 px-2 py-2 rounded-lg transition-all hover:bg-muted",
-                collapsed && "justify-center"
-              )}>
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
-                    SA
-                  </AvatarFallback>
-                </Avatar>
-                {!collapsed && (
-                  <div className="flex-1 text-left">
-                    <p className="text-sm font-medium text-foreground truncate">Super Admin</p>
-                  </div>
-                )}
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align={collapsed ? "center" : "end"} side="top" className="w-52 bg-white border shadow-lg mb-1">
-              <DropdownMenuItem onClick={() => navigate("/profile")} className="gap-2">
-                <Settings className="h-4 w-4" />
-                My Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2">
-                <Bell className="h-4 w-4" />
-                Notifications
-                <span className="ml-auto h-2 w-2 bg-destructive rounded-full" />
-              </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2">
-                <HelpCircle className="h-4 w-4" />
-                Help & Support
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => navigate("/")} className="gap-2 text-destructive focus:text-destructive">
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className={cn(
+            "flex items-center gap-2",
+            collapsed ? "flex-col" : "flex-row"
+          )}>
+            {/* Notification Bell */}
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button className="relative p-2 rounded-lg hover:bg-muted transition-colors">
+                  <Bell className="h-4 w-4 text-muted-foreground" />
+                  <span className="absolute top-1 right-1 h-2 w-2 bg-destructive rounded-full" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side={collapsed ? "right" : "top"}>
+                <p>Notifications</p>
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Profile Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className={cn(
+                  "flex-1 flex items-center gap-3 px-2 py-2 rounded-lg transition-all hover:bg-muted",
+                  collapsed && "justify-center px-0"
+                )}>
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                      SA
+                    </AvatarFallback>
+                  </Avatar>
+                  {!collapsed && (
+                    <div className="flex-1 text-left">
+                      <p className="text-sm font-medium text-foreground truncate">Super Admin</p>
+                    </div>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align={collapsed ? "center" : "end"} side="top" className="w-52 bg-white border shadow-lg mb-1">
+                <DropdownMenuItem onClick={() => navigate("/profile")} className="gap-2">
+                  <Settings className="h-4 w-4" />
+                  My Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2">
+                  <HelpCircle className="h-4 w-4" />
+                  Help & Support
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate("/")} className="gap-2 text-destructive focus:text-destructive">
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </motion.aside>
 

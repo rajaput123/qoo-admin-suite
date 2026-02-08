@@ -143,7 +143,7 @@ const EditRequests = () => {
 
   if (selectedRequest) {
     return (
-      <div className="p-6 lg:p-8 max-w-7xl">
+      <div className="p-6 lg:px-8 lg:pt-4 lg:pb-8 max-w-7xl">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.3 }}>
           {/* Header */}
           <div className="flex items-center gap-4 mb-6">
@@ -330,7 +330,7 @@ const EditRequests = () => {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-7xl">
+    <div className="p-6 lg:px-8 lg:pt-4 lg:pb-8 max-w-7xl">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <h1 className="text-2xl font-bold text-foreground mb-1">Edit Requests</h1>
         <p className="text-sm text-muted-foreground mb-6">Review proposed changes to published temples</p>
