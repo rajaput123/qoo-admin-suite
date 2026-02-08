@@ -8,7 +8,11 @@ import Hub from "./pages/Hub";
 import DomainLayout from "./components/DomainLayout";
 import Overview from "./pages/domain/Overview";
 import Submissions from "./pages/domain/Submissions";
-import PlaceholderPage from "./pages/domain/PlaceholderPage";
+import EditRequests from "./pages/domain/EditRequests";
+import Temples from "./pages/domain/Temples";
+import Contributors from "./pages/domain/Contributors";
+import Categories from "./pages/domain/Categories";
+import AuditHistory from "./pages/domain/AuditHistory";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,11 +30,11 @@ const App = () => (
             <Route index element={<Navigate to="overview" replace />} />
             <Route path="overview" element={<Overview />} />
             <Route path="submissions" element={<Submissions />} />
-            <Route path="edit-requests" element={<PlaceholderPage />} />
-            <Route path="temples" element={<PlaceholderPage />} />
-            <Route path="contributors" element={<PlaceholderPage />} />
-            <Route path="categories" element={<PlaceholderPage />} />
-            <Route path="audit" element={<PlaceholderPage />} />
+            <Route path="edit-requests" element={<EditRequests />} />
+            <Route path="temples" element={<Temples />} />
+            <Route path="contributors" element={<Contributors />} />
+            <Route path="categories" element={<Categories />} />
+            <Route path="audit" element={<AuditHistory />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
