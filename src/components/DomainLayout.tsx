@@ -59,8 +59,8 @@ const DomainLayout = () => {
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className="fixed left-0 top-0 h-screen bg-white border-r border-border z-30 flex flex-col"
       >
-        {/* Logo */}
-        <div className="h-14 flex items-center px-4 border-b border-border">
+        {/* Logo + Notification */}
+        <div className="h-14 flex items-center justify-between px-4 border-b border-border">
           <AnimatePresence mode="wait">
             {!collapsed ? (
               <motion.button
@@ -84,20 +84,38 @@ const DomainLayout = () => {
               </motion.button>
             )}
           </AnimatePresence>
+          {/* Notification Bell - Always visible */}
+          {!collapsed && (
+            <button className="relative p-1.5 rounded-lg hover:bg-muted transition-colors">
+              <Bell className="h-4 w-4 text-muted-foreground" />
+              <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-destructive rounded-full border-2 border-white" />
+            </button>
+          )}
         </div>
 
-        {/* Search */}
-        {!collapsed && (
-          <div className="p-3 pb-2">
+        {/* Global Search */}
+        <div className={cn("p-3 pb-2", collapsed && "px-2")}>
+          {!collapsed ? (
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search..."
+                placeholder="Global search..."
                 className="h-9 pl-9 bg-muted/50 border-0 text-sm"
               />
             </div>
-          </div>
-        )}
+          ) : (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button className="w-full p-2 rounded-lg hover:bg-muted transition-colors flex items-center justify-center">
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="text-xs">
+                Global Search
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
 
         {/* Navigation */}
         <nav className="flex-1 px-2 py-2 space-y-0.5 overflow-auto">
