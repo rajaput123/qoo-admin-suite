@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Plus, Eye, Pencil, MapPin, MoreHorizontal, ExternalLink, GitMerge, Archive, Flag, Link2, Users } from "lucide-react";
+import { Search, Plus, Pencil, MapPin, MoreHorizontal, ExternalLink, GitMerge, Archive, Flag, Link2, Users, Download, Upload, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,6 +25,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 interface Temple {
@@ -64,6 +65,9 @@ const Temples = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [tenantFilter, setTenantFilter] = useState<string>("all");
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  const [customFields, setCustomFields] = useState<{ label: string; type: string }[]>([]);
 
   const filtered = mockData
     .filter((t) => statusFilter === "all" || t.status === statusFilter)
@@ -76,6 +80,10 @@ const Temples = () => {
 
   const categories = [...new Set(mockData.map((t) => t.category))];
 
+  const addCustomField = () => {
+    setCustomFields([...customFields, { label: "", type: "text" }]);
+  };
+
   return (
     <div className="p-6 lg:p-8 max-w-7xl">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
@@ -84,16 +92,42 @@ const Temples = () => {
             <h1 className="text-2xl font-bold text-foreground mb-1">Temples</h1>
             <p className="text-sm text-muted-foreground">Master directory of published temples</p>
           </div>
-          <Button size="sm" className="gap-1.5" onClick={() => setIsAddOpen(true)}>
-            <Plus className="h-3.5 w-3.5" />
-            Add Temple
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Bulk Actions Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1.5">
+                  Bulk Actions
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 bg-popover">
+                <DropdownMenuItem className="gap-2 text-sm" onClick={() => setIsImportOpen(true)}>
+                  <Upload className="h-4 w-4" />
+                  Bulk Import
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2 text-sm">
+                  <Download className="h-4 w-4" />
+                  Export All
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="gap-2 text-sm">
+                  <Download className="h-4 w-4" />
+                  Export Selected
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button size="sm" className="gap-1.5" onClick={() => setIsAddOpen(true)}>
+              <Plus className="h-3.5 w-3.5" />
+              Add Temple
+            </Button>
+          </div>
         </div>
       </motion.div>
 
       {/* Add Temple Dialog */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent className="sm:max-w-lg bg-card">
+        <DialogContent className="sm:max-w-lg bg-card max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add New Temple</DialogTitle>
           </DialogHeader>
@@ -122,17 +156,119 @@ const Temples = () => {
                   {categories.map((cat) => (
                     <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                   ))}
+                  <DropdownMenuSeparator />
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setIsAddCategoryOpen(true);
+                    }}
+                    className="w-full text-left px-2 py-1.5 text-sm text-primary hover:bg-muted rounded flex items-center gap-2"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Add New Category
+                  </button>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
-              <Input id="description" placeholder="Brief description of the temple" />
+              <Textarea id="description" placeholder="Brief description of the temple" rows={3} />
             </div>
+
+            {/* Custom Fields */}
+            {customFields.map((field, index) => (
+              <div key={index} className="grid grid-cols-3 gap-2">
+                <div className="col-span-2 space-y-1">
+                  <Input 
+                    placeholder="Field label"
+                    value={field.label}
+                    onChange={(e) => {
+                      const newFields = [...customFields];
+                      newFields[index].label = e.target.value;
+                      setCustomFields(newFields);
+                    }}
+                  />
+                </div>
+                <Select 
+                  value={field.type}
+                  onValueChange={(val) => {
+                    const newFields = [...customFields];
+                    newFields[index].type = val;
+                    setCustomFields(newFields);
+                  }}
+                >
+                  <SelectTrigger className="bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover">
+                    <SelectItem value="text">Text</SelectItem>
+                    <SelectItem value="number">Number</SelectItem>
+                    <SelectItem value="date">Date</SelectItem>
+                    <SelectItem value="toggle">Toggle</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ))}
+            <Button variant="outline" size="sm" onClick={addCustomField} className="w-full gap-1.5">
+              <Plus className="h-3.5 w-3.5" />
+              Add Custom Field
+            </Button>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
             <Button onClick={() => setIsAddOpen(false)}>Add Temple</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Category Dialog (Nested) */}
+      <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
+        <DialogContent className="sm:max-w-md bg-card">
+          <DialogHeader>
+            <DialogTitle>Add New Category</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Category Name</Label>
+              <Input placeholder="Enter category name" />
+            </div>
+            <div className="space-y-2">
+              <Label>Description</Label>
+              <Input placeholder="Brief description" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddCategoryOpen(false)}>Cancel</Button>
+            <Button onClick={() => setIsAddCategoryOpen(false)}>Add Category</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Import Dialog */}
+      <Dialog open={isImportOpen} onOpenChange={setIsImportOpen}>
+        <DialogContent className="sm:max-w-lg bg-card">
+          <DialogHeader>
+            <DialogTitle>Bulk Import Temples</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
+              <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground mb-2">Drag & drop your CSV or Excel file here</p>
+              <p className="text-xs text-muted-foreground mb-4">or</p>
+              <Button variant="outline" size="sm">Browse Files</Button>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+              <span className="text-sm text-muted-foreground">Need a template?</span>
+              <Button variant="link" size="sm" className="gap-1.5 h-auto p-0">
+                <Download className="h-3.5 w-3.5" />
+                Download Template
+              </Button>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsImportOpen(false)}>Cancel</Button>
+            <Button onClick={() => setIsImportOpen(false)}>Import</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
