@@ -1,4 +1,4 @@
-import { useState, forwardRef } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 
-const Login = forwardRef<HTMLDivElement>((_, ref) => {
+const Login = () => {
   const navigate = useNavigate();
   const [isRegister, setIsRegister] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -19,7 +19,7 @@ const Login = forwardRef<HTMLDivElement>((_, ref) => {
   };
 
   return (
-    <div ref={ref} className="flex min-h-screen">
+    <div className="flex min-h-screen">
       {/* Left Panel */}
       <div className="hidden lg:flex lg:w-1/2 gold-gradient relative items-center justify-center p-12">
         <div className="absolute inset-0 bg-gradient-to-br from-black/10 to-transparent" />
@@ -179,8 +179,6 @@ const Login = forwardRef<HTMLDivElement>((_, ref) => {
       </div>
     </div>
   );
-});
-
-Login.displayName = "Login";
+};
 
 export default Login;
