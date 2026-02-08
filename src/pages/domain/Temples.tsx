@@ -27,6 +27,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import CustomFieldsSection, { CustomField } from "@/components/CustomFieldsSection";
 
 interface Temple {
   id: string;
@@ -67,7 +68,7 @@ const Temples = () => {
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
-  const [customFields, setCustomFields] = useState<{ label: string; type: string }[]>([]);
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
 
   const filtered = mockData
     .filter((t) => statusFilter === "all" || t.status === statusFilter)
@@ -79,10 +80,6 @@ const Temples = () => {
     });
 
   const categories = [...new Set(mockData.map((t) => t.category))];
-
-  const addCustomField = () => {
-    setCustomFields([...customFields, { label: "", type: "text" }]);
-  };
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl">
@@ -176,44 +173,11 @@ const Temples = () => {
               <Textarea id="description" placeholder="Brief description of the temple" rows={3} />
             </div>
 
-            {/* Custom Fields */}
-            {customFields.map((field, index) => (
-              <div key={index} className="grid grid-cols-3 gap-2">
-                <div className="col-span-2 space-y-1">
-                  <Input 
-                    placeholder="Field label"
-                    value={field.label}
-                    onChange={(e) => {
-                      const newFields = [...customFields];
-                      newFields[index].label = e.target.value;
-                      setCustomFields(newFields);
-                    }}
-                  />
-                </div>
-                <Select 
-                  value={field.type}
-                  onValueChange={(val) => {
-                    const newFields = [...customFields];
-                    newFields[index].type = val;
-                    setCustomFields(newFields);
-                  }}
-                >
-                  <SelectTrigger className="bg-background">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover">
-                    <SelectItem value="text">Text</SelectItem>
-                    <SelectItem value="number">Number</SelectItem>
-                    <SelectItem value="date">Date</SelectItem>
-                    <SelectItem value="toggle">Toggle</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            ))}
-            <Button variant="outline" size="sm" onClick={addCustomField} className="w-full gap-1.5">
-              <Plus className="h-3.5 w-3.5" />
-              Add Custom Field
-            </Button>
+            {/* Custom Fields Section */}
+            <CustomFieldsSection 
+              fields={customFields} 
+              onFieldsChange={setCustomFields} 
+            />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
