@@ -11,6 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 interface Contributor {
@@ -78,6 +86,7 @@ const Contributors = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [selectedContributor, setSelectedContributor] = useState<Contributor | null>(null);
+  const [isInviteOpen, setIsInviteOpen] = useState(false);
 
   const filtered = mockData
     .filter((c) => statusFilter === "all" || c.status === statusFilter)
@@ -262,12 +271,48 @@ const Contributors = () => {
             <h1 className="text-2xl font-bold text-foreground mb-1">Contributors</h1>
             <p className="text-sm text-muted-foreground">Manage and reward community contributors</p>
           </div>
-          <Button size="sm" className="gap-1.5">
+          <Button size="sm" className="gap-1.5" onClick={() => setIsInviteOpen(true)}>
             <Plus className="h-3.5 w-3.5" />
             Invite Contributor
           </Button>
         </div>
       </motion.div>
+
+      {/* Invite Contributor Dialog */}
+      <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
+        <DialogContent className="sm:max-w-lg bg-card">
+          <DialogHeader>
+            <DialogTitle>Invite Contributor</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="contributor-name">Full Name</Label>
+              <Input id="contributor-name" placeholder="Enter contributor's name" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="contributor-email">Email Address</Label>
+              <Input id="contributor-email" type="email" placeholder="email@example.com" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="contributor-role">Role</Label>
+              <Select>
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover">
+                  <SelectItem value="Viewer">Viewer</SelectItem>
+                  <SelectItem value="Editor">Editor</SelectItem>
+                  <SelectItem value="Moderator">Moderator</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsInviteOpen(false)}>Cancel</Button>
+            <Button onClick={() => setIsInviteOpen(false)}>Send Invitation</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 mb-4">

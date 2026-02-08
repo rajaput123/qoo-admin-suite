@@ -3,6 +3,21 @@ import { motion } from "framer-motion";
 import { Search, Plus, Pencil, Trash2, FolderOpen } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 interface Category {
@@ -27,11 +42,14 @@ const mockData: Category[] = [
 
 const Categories = () => {
   const [search, setSearch] = useState("");
+  const [isAddOpen, setIsAddOpen] = useState(false);
 
   const filtered = mockData.filter((c) =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
     c.description.toLowerCase().includes(search.toLowerCase())
   );
+
+  const parentCategories = mockData.filter(c => c.parentCategory === null).map(c => c.name);
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl">
@@ -41,12 +59,49 @@ const Categories = () => {
             <h1 className="text-2xl font-bold text-foreground mb-1">Categories</h1>
             <p className="text-sm text-muted-foreground">Organize temples into categories</p>
           </div>
-          <Button size="sm" className="gap-1.5">
+          <Button size="sm" className="gap-1.5" onClick={() => setIsAddOpen(true)}>
             <Plus className="h-3.5 w-3.5" />
             Add Category
           </Button>
         </div>
       </motion.div>
+
+      {/* Add Category Dialog */}
+      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <DialogContent className="sm:max-w-lg bg-card">
+          <DialogHeader>
+            <DialogTitle>Add New Category</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="cat-name">Category Name</Label>
+              <Input id="cat-name" placeholder="Enter category name" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="cat-desc">Description</Label>
+              <Input id="cat-desc" placeholder="Brief description of the category" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="parent-cat">Parent Category (Optional)</Label>
+              <Select>
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Select parent category" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover">
+                  <SelectItem value="none">None (Top-level)</SelectItem>
+                  {parentCategories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+            <Button onClick={() => setIsAddOpen(false)}>Add Category</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Search */}
       <div className="mb-4">
