@@ -35,14 +35,14 @@ import {
 import { cn } from "@/lib/utils";
 
 const sidebarItems = [
-  { label: "Overview", icon: LayoutDashboard, path: "/domain/information/overview" },
-  { label: "Submissions", icon: FileInput, path: "/domain/information/submissions" },
-  { label: "Edit Requests", icon: FilePenLine, path: "/domain/information/edit-requests" },
-  { label: "Temples", icon: Building2, path: "/domain/information/temples" },
-  { label: "Duplicates", icon: Copy, path: "/domain/information/duplicates" },
-  { label: "Contributors", icon: UsersRound, path: "/domain/information/contributors" },
-  { label: "Categories", icon: Tags, path: "/domain/information/categories" },
-  { label: "Audit", icon: History, path: "/domain/information/audit" },
+  { label: "Overview", icon: LayoutDashboard, path: "/domain/information/overview", description: "Dashboard with key metrics and quick actions" },
+  { label: "Submissions", icon: FileInput, path: "/domain/information/submissions", description: "Review new temple submissions from contributors" },
+  { label: "Edit Requests", icon: FilePenLine, path: "/domain/information/edit-requests", description: "Approve or reject proposed content changes" },
+  { label: "Temples", icon: Building2, path: "/domain/information/temples", description: "Manage the master directory of temples" },
+  { label: "Duplicates", icon: Copy, path: "/domain/information/duplicates", description: "Identify and merge duplicate temple entries" },
+  { label: "Contributors", icon: UsersRound, path: "/domain/information/contributors", description: "Manage users who contribute content" },
+  { label: "Categories", icon: Tags, path: "/domain/information/categories", description: "Organize temples into categories and groups" },
+  { label: "Audit", icon: History, path: "/domain/information/audit", description: "View history of all changes and actions" },
 ];
 
 const DomainLayout = () => {
@@ -137,17 +137,16 @@ const DomainLayout = () => {
               </button>
             );
 
-            if (collapsed) {
-              return (
-                <Tooltip key={item.path} delayDuration={0}>
-                  <TooltipTrigger asChild>{button}</TooltipTrigger>
-                  <TooltipContent side="right" className="text-xs">
-                    {item.label}
-                  </TooltipContent>
-                </Tooltip>
-              );
-            }
-            return button;
+            // Show tooltip on hover for both collapsed and expanded states
+            return (
+              <Tooltip key={item.path} delayDuration={collapsed ? 0 : 500}>
+                <TooltipTrigger asChild>{button}</TooltipTrigger>
+                <TooltipContent side="right" className="max-w-[200px]">
+                  <p className="font-medium text-xs">{item.label}</p>
+                  <p className="text-xs text-muted-foreground">{item.description}</p>
+                </TooltipContent>
+              </Tooltip>
+            );
           })}
         </nav>
 
@@ -172,6 +171,10 @@ const DomainLayout = () => {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align={collapsed ? "center" : "end"} side="top" className="w-52 bg-white border shadow-lg mb-1">
+              <DropdownMenuItem onClick={() => navigate("/profile")} className="gap-2">
+                <Settings className="h-4 w-4" />
+                My Profile
+              </DropdownMenuItem>
               <DropdownMenuItem className="gap-2">
                 <Bell className="h-4 w-4" />
                 Notifications
@@ -180,10 +183,6 @@ const DomainLayout = () => {
               <DropdownMenuItem className="gap-2">
                 <HelpCircle className="h-4 w-4" />
                 Help & Support
-              </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2">
-                <Settings className="h-4 w-4" />
-                Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => navigate("/")} className="gap-2 text-destructive focus:text-destructive">

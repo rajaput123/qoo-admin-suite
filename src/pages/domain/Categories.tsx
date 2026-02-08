@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import CustomFieldsSection, { CustomField } from "@/components/CustomFieldsSection";
 
 interface Category {
   id: string;
@@ -52,7 +53,7 @@ const Categories = () => {
   const [search, setSearch] = useState("");
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
-  const [customFields, setCustomFields] = useState<{ label: string; type: string }[]>([]);
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
 
   const filtered = mockData.filter((c) =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -60,10 +61,6 @@ const Categories = () => {
   );
 
   const parentCategories = mockData.filter(c => c.parentCategory === null).map(c => c.name);
-
-  const addCustomField = () => {
-    setCustomFields([...customFields, { label: "", type: "text" }]);
-  };
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl">
@@ -141,44 +138,11 @@ const Categories = () => {
               </Select>
             </div>
 
-            {/* Custom Fields */}
-            {customFields.map((field, index) => (
-              <div key={index} className="grid grid-cols-3 gap-2">
-                <div className="col-span-2 space-y-1">
-                  <Input 
-                    placeholder="Field label"
-                    value={field.label}
-                    onChange={(e) => {
-                      const newFields = [...customFields];
-                      newFields[index].label = e.target.value;
-                      setCustomFields(newFields);
-                    }}
-                  />
-                </div>
-                <Select 
-                  value={field.type}
-                  onValueChange={(val) => {
-                    const newFields = [...customFields];
-                    newFields[index].type = val;
-                    setCustomFields(newFields);
-                  }}
-                >
-                  <SelectTrigger className="bg-background">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover">
-                    <SelectItem value="text">Text</SelectItem>
-                    <SelectItem value="number">Number</SelectItem>
-                    <SelectItem value="date">Date</SelectItem>
-                    <SelectItem value="toggle">Toggle</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            ))}
-            <Button variant="outline" size="sm" onClick={addCustomField} className="w-full gap-1.5">
-              <Plus className="h-3.5 w-3.5" />
-              Add Custom Field
-            </Button>
+            {/* Custom Fields Section */}
+            <CustomFieldsSection 
+              fields={customFields} 
+              onFieldsChange={setCustomFields} 
+            />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>

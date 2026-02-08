@@ -8,14 +8,24 @@ import {
   Wallet,
   BarChart3,
   LogOut,
+  Bell,
+  User,
+  Settings,
+  HelpCircle,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const domains = [
   {
@@ -24,6 +34,7 @@ const domains = [
     icon: Database,
     status: "Active",
     path: "/domain/information/overview",
+    description: "Manage temple data, categories, and contributor submissions",
   },
   {
     id: "onboarding",
@@ -31,6 +42,7 @@ const domains = [
     icon: Building2,
     status: "Active",
     path: "/domain/information/overview",
+    description: "Setup and configure new temples and tenant organizations",
   },
   {
     id: "tenants",
@@ -38,6 +50,7 @@ const domains = [
     icon: Users,
     status: "Active",
     path: "/domain/information/overview",
+    description: "Manage temple organizations and their access permissions",
   },
   {
     id: "governance",
@@ -45,6 +58,7 @@ const domains = [
     icon: Shield,
     status: "Coming Soon",
     path: "/domain/information/overview",
+    description: "Define policies, roles, and approval workflows",
   },
   {
     id: "finance",
@@ -52,6 +66,7 @@ const domains = [
     icon: Wallet,
     status: "Coming Soon",
     path: "/domain/information/overview",
+    description: "Track donations, expenses, and financial reports",
   },
   {
     id: "analytics",
@@ -59,6 +74,7 @@ const domains = [
     icon: BarChart3,
     status: "Coming Soon",
     path: "/domain/information/overview",
+    description: "View insights, trends, and platform statistics",
   },
 ];
 
@@ -105,7 +121,22 @@ const Hub = () => {
           <motion.div
             initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}
+            className="flex items-center gap-3"
           >
+            {/* Notification Bell */}
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button className="relative p-2 rounded-lg hover:bg-muted transition-colors">
+                  <Bell className="h-5 w-5 text-muted-foreground" />
+                  <span className="absolute top-1 right-1 h-2.5 w-2.5 bg-destructive rounded-full border-2 border-white" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>View notifications and alerts</p>
+              </TooltipContent>
+            </Tooltip>
+
+            {/* Profile Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2 hover:opacity-80 transition-opacity">
@@ -116,9 +147,22 @@ const Hub = () => {
                   </Avatar>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-44 bg-white border shadow-lg">
-                <DropdownMenuItem onClick={() => navigate("/")} className="text-destructive focus:text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
+              <DropdownMenuContent align="end" className="w-52 bg-white border shadow-lg">
+                <DropdownMenuItem onClick={() => navigate("/profile")} className="gap-2">
+                  <User className="h-4 w-4" />
+                  My Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2">
+                  <Settings className="h-4 w-4" />
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2">
+                  <HelpCircle className="h-4 w-4" />
+                  Help & Support
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate("/")} className="gap-2 text-destructive focus:text-destructive">
+                  <LogOut className="h-4 w-4" />
                   Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -146,44 +190,53 @@ const Hub = () => {
           className="grid grid-cols-4 sm:grid-cols-6 gap-5"
         >
           {domains.map((domain) => (
-            <motion.button
-              key={domain.id}
-              variants={itemVariants}
-              whileHover={{ 
-                y: -4, 
-                transition: { duration: 0.2 } 
-              }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => navigate(domain.path)}
-              disabled={domain.status === "Coming Soon"}
-              className="group flex flex-col items-center text-center focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {/* Icon Container - Uniform gray color */}
-              <div className={`
-                w-14 h-14 rounded-2xl flex items-center justify-center mb-2
-                ${domain.status === "Active" 
-                  ? "bg-muted group-hover:bg-primary group-hover:shadow-lg" 
-                  : "bg-muted"
-                }
-                transition-all duration-200
-              `}>
-                <domain.icon 
-                  className={`
-                    h-6 w-6 transition-colors duration-200
+            <Tooltip key={domain.id} delayDuration={300}>
+              <TooltipTrigger asChild>
+                <motion.button
+                  variants={itemVariants}
+                  whileHover={{ 
+                    y: -4, 
+                    transition: { duration: 0.2 } 
+                  }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => navigate(domain.path)}
+                  disabled={domain.status === "Coming Soon"}
+                  className="group flex flex-col items-center text-center focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {/* Icon Container - Uniform gray color */}
+                  <div className={`
+                    w-14 h-14 rounded-2xl flex items-center justify-center mb-2
                     ${domain.status === "Active" 
-                      ? "text-foreground group-hover:text-white" 
-                      : "text-muted-foreground"
+                      ? "bg-muted group-hover:bg-primary group-hover:shadow-lg" 
+                      : "bg-muted"
                     }
-                  `} 
-                  strokeWidth={1.5} 
-                />
-              </div>
+                    transition-all duration-200
+                  `}>
+                    <domain.icon 
+                      className={`
+                        h-6 w-6 transition-colors duration-200
+                        ${domain.status === "Active" 
+                          ? "text-foreground group-hover:text-white" 
+                          : "text-muted-foreground"
+                        }
+                      `} 
+                      strokeWidth={1.5} 
+                    />
+                  </div>
 
-              {/* Label */}
-              <span className="text-xs font-medium text-foreground">
-                {domain.title}
-              </span>
-            </motion.button>
+                  {/* Label */}
+                  <span className="text-xs font-medium text-foreground">
+                    {domain.title}
+                  </span>
+                </motion.button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[200px] text-center">
+                <p className="text-xs">{domain.description}</p>
+                {domain.status === "Coming Soon" && (
+                  <p className="text-xs text-muted-foreground mt-1">Coming Soon</p>
+                )}
+              </TooltipContent>
+            </Tooltip>
           ))}
         </motion.div>
       </main>
