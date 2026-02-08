@@ -17,6 +17,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 interface Temple {
@@ -55,6 +63,7 @@ const Temples = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [tenantFilter, setTenantFilter] = useState<string>("all");
+  const [isAddOpen, setIsAddOpen] = useState(false);
 
   const filtered = mockData
     .filter((t) => statusFilter === "all" || t.status === statusFilter)
@@ -75,12 +84,58 @@ const Temples = () => {
             <h1 className="text-2xl font-bold text-foreground mb-1">Temples</h1>
             <p className="text-sm text-muted-foreground">Master directory of published temples</p>
           </div>
-          <Button size="sm" className="gap-1.5">
+          <Button size="sm" className="gap-1.5" onClick={() => setIsAddOpen(true)}>
             <Plus className="h-3.5 w-3.5" />
             Add Temple
           </Button>
         </div>
       </motion.div>
+
+      {/* Add Temple Dialog */}
+      <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <DialogContent className="sm:max-w-lg bg-card">
+          <DialogHeader>
+            <DialogTitle>Add New Temple</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="temple-name">Temple Name</Label>
+              <Input id="temple-name" placeholder="Enter temple name" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="location">City</Label>
+                <Input id="location" placeholder="e.g., Madurai" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="state">State</Label>
+                <Input id="state" placeholder="e.g., TN" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Select>
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover">
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Input id="description" placeholder="Brief description of the temple" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+            <Button onClick={() => setIsAddOpen(false)}>Add Temple</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 mb-4">
