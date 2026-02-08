@@ -14,6 +14,7 @@ import {
   LogOut,
   Menu,
   ChevronLeft,
+  Copy,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,7 @@ const sidebarItems = [
   { label: "Submissions", icon: FileInput, path: "/domain/information/submissions" },
   { label: "Edit Requests", icon: FilePenLine, path: "/domain/information/edit-requests" },
   { label: "Temples", icon: Building2, path: "/domain/information/temples" },
+  { label: "Duplicates", icon: Copy, path: "/domain/information/duplicates" },
   { label: "Contributors", icon: UsersRound, path: "/domain/information/contributors" },
   { label: "Categories", icon: Tags, path: "/domain/information/categories" },
   { label: "Audit History", icon: History, path: "/domain/information/audit" },

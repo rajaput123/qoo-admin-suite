@@ -10,6 +10,7 @@ import Overview from "./pages/domain/Overview";
 import Submissions from "./pages/domain/Submissions";
 import EditRequests from "./pages/domain/EditRequests";
 import Temples from "./pages/domain/Temples";
+import Duplicates from "./pages/domain/Duplicates";
 import Contributors from "./pages/domain/Contributors";
 import Categories from "./pages/domain/Categories";
 import AuditHistory from "./pages/domain/AuditHistory";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="submissions" element={<Submissions />} />
             <Route path="edit-requests" element={<EditRequests />} />
             <Route path="temples" element={<Temples />} />
+            <Route path="duplicates" element={<Duplicates />} />
             <Route path="contributors" element={<Contributors />} />
             <Route path="categories" element={<Categories />} />
             <Route path="audit" element={<AuditHistory />} />
