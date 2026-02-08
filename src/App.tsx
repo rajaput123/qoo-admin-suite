@@ -15,6 +15,13 @@ import Duplicates from "./pages/domain/Duplicates";
 import Contributors from "./pages/domain/Contributors";
 import Categories from "./pages/domain/Categories";
 import AuditHistory from "./pages/domain/AuditHistory";
+import OnboardingLayout from "./components/OnboardingLayout";
+import OnboardingOverview from "./pages/onboarding/Overview";
+import RegistrationPipeline from "./pages/onboarding/RegistrationPipeline";
+import VerificationQueue from "./pages/onboarding/VerificationQueue";
+import DirectOnboarding from "./pages/onboarding/DirectOnboarding";
+import ComplianceRisk from "./pages/onboarding/ComplianceRisk";
+import ApprovalLogs from "./pages/onboarding/ApprovalLogs";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +46,15 @@ const App = () => (
             <Route path="contributors" element={<Contributors />} />
             <Route path="categories" element={<Categories />} />
             <Route path="audit" element={<AuditHistory />} />
+          </Route>
+          <Route path="/domain/onboarding" element={<OnboardingLayout />}>
+            <Route index element={<Navigate to="overview" replace />} />
+            <Route path="overview" element={<OnboardingOverview />} />
+            <Route path="registration-pipeline" element={<RegistrationPipeline />} />
+            <Route path="verification-queue" element={<VerificationQueue />} />
+            <Route path="direct-onboarding" element={<DirectOnboarding />} />
+            <Route path="compliance-risk" element={<ComplianceRisk />} />
+            <Route path="approval-logs" element={<ApprovalLogs />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

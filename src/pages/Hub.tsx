@@ -41,8 +41,8 @@ const domains = [
     title: "Onboarding",
     icon: Building2,
     status: "Active",
-    path: "/domain/information/overview",
-    description: "Setup and configure new temples and tenant organizations",
+    path: "/domain/onboarding/overview",
+    description: "Temple registration, verification, and tenant creation workflows",
   },
   {
     id: "tenants",
