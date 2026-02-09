@@ -94,6 +94,15 @@ const allModules = [
     category: "core",
   },
   {
+    id: "bookings",
+    title: "Booking Management",
+    icon: Calendar,
+    enabled: true,
+    path: "/temple/bookings",
+    description: "Online & counter bookings, attendance, reports",
+    category: "core",
+  },
+  {
     id: "projects",
     title: "Projects & Initiatives",
     icon: ClipboardList,
