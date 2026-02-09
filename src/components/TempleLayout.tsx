@@ -1,18 +1,18 @@
-import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
-import { motion } from "framer-motion";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  ChevronLeft,
-  Home,
-  Bell,
   Search,
-  User,
-  Settings,
-  HelpCircle,
+  Bell,
   LogOut,
   PanelLeftClose,
-  PanelLeft,
+  PanelLeftOpen,
+  Settings,
+  HelpCircle,
+  User,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,24 +25,20 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useState, ReactNode } from "react";
 
 interface NavItemType {
   label: string;
   path: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
+  description?: string;
 }
 
 interface TempleLayoutProps {
   title: string;
   icon: React.ComponentType<{ className?: string }>;
   navItems: NavItemType[];
-  children?: ReactNode;
 }
 
 const TempleLayout = ({ title, icon: Icon, navItems }: TempleLayoutProps) => {
@@ -50,113 +46,166 @@ const TempleLayout = ({ title, icon: Icon, navItems }: TempleLayoutProps) => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
 
-  // Get current page title from navItems
-  const currentItem = navItems.find(item => location.pathname === item.path);
-  const pageTitle = currentItem?.label || navItems[0]?.label || "";
-
-  // Breadcrumb
-  const breadcrumbs = [
-    { label: "Hub", path: "/temple-hub" },
-    { label: title, path: navItems[0]?.path || "" },
-    ...(currentItem && currentItem !== navItems[0] ? [{ label: currentItem.label, path: currentItem.path }] : []),
-  ];
-
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
-      <aside 
-        className={cn(
-          "border-r border-border bg-card flex flex-col transition-all duration-300 sticky top-0 h-screen",
-          collapsed ? "w-16" : "w-56"
-        )}
+      <motion.aside
+        initial={false}
+        animate={{ width: collapsed ? 64 : 240 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="fixed left-0 top-0 h-screen bg-white border-r border-border z-30 flex flex-col"
       >
-        {/* Sidebar Header */}
-        <div className="h-14 border-b border-border flex items-center px-4 gap-3">
-          {!collapsed && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex items-center gap-2 flex-1 min-w-0"
-            >
-              <Icon className="h-5 w-5 text-primary flex-shrink-0" />
-              <span className="font-semibold text-foreground truncate">{title}</span>
-            </motion.div>
-          )}
-          {collapsed && (
-            <Icon className="h-5 w-5 text-primary mx-auto" />
-          )}
+        {/* Logo / Module Title */}
+        <div className="h-14 flex items-center justify-center px-4 border-b border-border">
+          <AnimatePresence mode="wait">
+            {!collapsed ? (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => navigate("/temple-hub")}
+                className="flex items-center gap-2 text-lg font-bold text-primary"
+              >
+                <Icon className="h-5 w-5" />
+                <span className="truncate">{title}</span>
+              </motion.button>
+            ) : (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => navigate("/temple-hub")}
+                className="text-primary"
+              >
+                <Icon className="h-5 w-5" />
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Back to Hub */}
-        <div className="p-2 border-b border-border">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn("w-full gap-2", collapsed ? "justify-center px-2" : "justify-start")}
-            onClick={() => navigate("/temple-hub")}
-          >
-            <Home className="h-4 w-4" />
-            {!collapsed && <span>Back to Hub</span>}
-          </Button>
+        {/* Global Search */}
+        <div className={cn("p-3 pb-2", collapsed && "px-2")}>
+          {!collapsed ? (
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search..."
+                className="h-9 pl-9 bg-muted/50 border-0 text-sm"
+              />
+            </div>
+          ) : (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button className="w-full p-2 rounded-lg hover:bg-muted transition-colors flex items-center justify-center">
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="text-xs">
+                Search
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-2 space-y-1">
+        <nav className="flex-1 px-2 py-2 space-y-0.5 overflow-auto">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <Tooltip key={item.path} delayDuration={collapsed ? 0 : 1000}>
-                <TooltipTrigger asChild>
-                  <NavLink
-                    to={item.path}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                      isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                      collapsed && "justify-center px-2"
-                    )}
-                  >
-                    <item.icon className="h-4 w-4 flex-shrink-0" />
-                    {!collapsed && (
-                      <>
-                        <span className="flex-1 truncate">{item.label}</span>
-                        {item.badge && (
-                          <Badge variant={isActive ? "secondary" : "outline"} className="text-[10px] px-1.5 h-5">
-                            {item.badge}
-                          </Badge>
-                        )}
-                      </>
-                    )}
-                  </NavLink>
-                </TooltipTrigger>
-                {collapsed && (
-                  <TooltipContent side="right">
-                    <p>{item.label}</p>
-                    {item.badge && <p className="text-xs text-muted-foreground">{item.badge}</p>}
-                  </TooltipContent>
+            const active = location.pathname === item.path || 
+              (item.path === navItems[0]?.path && location.pathname === navItems[0]?.path.replace(/\/[^/]+$/, ''));
+            const button = (
+              <button
+                key={item.path}
+                onClick={() => navigate(item.path)}
+                className={cn(
+                  "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200",
+                  active
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
+              >
+                <item.icon className="h-4 w-4 shrink-0" />
+                {!collapsed && (
+                  <>
+                    <span className="flex-1 text-left truncate">{item.label}</span>
+                    {item.badge && (
+                      <span className={cn(
+                        "text-[10px] px-1.5 py-0.5 rounded-full font-medium",
+                        active 
+                          ? "bg-primary-foreground/20 text-primary-foreground" 
+                          : "bg-muted text-muted-foreground"
+                      )}>
+                        {item.badge}
+                      </span>
+                    )}
+                  </>
+                )}
+              </button>
+            );
+
+            return (
+              <Tooltip key={item.path} delayDuration={collapsed ? 0 : 500}>
+                <TooltipTrigger asChild>{button}</TooltipTrigger>
+                <TooltipContent side="right" className="max-w-[200px]">
+                  <p className="font-medium text-xs">{item.label}</p>
+                  {item.description && (
+                    <p className="text-xs text-muted-foreground">{item.description}</p>
+                  )}
+                  {item.badge && (
+                    <p className="text-xs text-muted-foreground mt-1">{item.badge} items</p>
+                  )}
+                </TooltipContent>
               </Tooltip>
             );
           })}
         </nav>
 
-        {/* Sidebar Footer */}
-        <div className="border-t border-border p-2">
-          {/* Search */}
-          {!collapsed && (
-            <div className="relative mb-2">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search..." 
-                className="pl-8 h-8 text-sm bg-muted border-0" 
-              />
-            </div>
-          )}
+        {/* Bottom - Profile + Notification */}
+        <div className="p-2 border-t border-border">
+          <div className={cn(
+            "flex items-center gap-2",
+            collapsed ? "flex-col" : "flex-row"
+          )}>
+            {/* Profile Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className={cn(
+                  "flex-1 flex items-center gap-3 px-2 py-2 rounded-lg transition-all hover:bg-muted",
+                  collapsed && "justify-center px-0"
+                )}>
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
+                      RK
+                    </AvatarFallback>
+                  </Avatar>
+                  {!collapsed && (
+                    <div className="flex-1 text-left">
+                      <p className="text-sm font-medium text-foreground truncate">Temple Admin</p>
+                    </div>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align={collapsed ? "center" : "end"} side="top" className="w-52 bg-white border shadow-lg mb-1">
+                <DropdownMenuItem onClick={() => navigate("/profile")} className="gap-2">
+                  <User className="h-4 w-4" />
+                  My Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/temple/settings")} className="gap-2">
+                  <Settings className="h-4 w-4" />
+                  Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2">
+                  <HelpCircle className="h-4 w-4" />
+                  Help & Support
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate("/")} className="gap-2 text-destructive focus:text-destructive">
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-          {/* Footer Actions */}
-          <div className={cn("flex items-center gap-1", collapsed ? "flex-col" : "")}>
-            {/* Notifications */}
+            {/* Notification Bell - Right side */}
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
                 <button className="relative p-2 rounded-lg hover:bg-muted transition-colors">
@@ -168,88 +217,33 @@ const TempleLayout = ({ title, icon: Icon, navItems }: TempleLayoutProps) => {
                 <p>Notifications</p>
               </TooltipContent>
             </Tooltip>
-
-            {/* Profile */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="p-1 rounded-lg hover:bg-muted transition-colors">
-                  <Avatar className="h-7 w-7">
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-                      RK
-                    </AvatarFallback>
-                  </Avatar>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align={collapsed ? "center" : "end"} side="top" className="w-48 bg-popover">
-                <DropdownMenuItem onClick={() => navigate("/profile")} className="gap-2">
-                  <User className="h-4 w-4" />
-                  My Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/temple/settings")} className="gap-2">
-                  <Settings className="h-4 w-4" />
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2">
-                  <HelpCircle className="h-4 w-4" />
-                  Help
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/")} className="gap-2 text-destructive">
-                  <LogOut className="h-4 w-4" />
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Collapse Toggle */}
-            <Tooltip delayDuration={0}>
-              <TooltipTrigger asChild>
-                <button 
-                  onClick={() => setCollapsed(!collapsed)}
-                  className="p-2 rounded-lg hover:bg-muted transition-colors ml-auto"
-                >
-                  {collapsed ? (
-                    <PanelLeft className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <PanelLeftClose className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side={collapsed ? "right" : "top"}>
-                <p>{collapsed ? "Expand" : "Collapse"}</p>
-              </TooltipContent>
-            </Tooltip>
           </div>
         </div>
-      </aside>
+      </motion.aside>
+
+      {/* Collapse Toggle on Divider */}
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className={cn(
+          "fixed top-1/2 -translate-y-1/2 z-40 p-1.5 bg-white border border-border rounded-full shadow-md hover:bg-muted transition-all duration-300",
+          collapsed ? "left-[52px]" : "left-[228px]"
+        )}
+      >
+        {collapsed ? (
+          <PanelLeftOpen className="h-4 w-4 text-muted-foreground" />
+        ) : (
+          <PanelLeftClose className="h-4 w-4 text-muted-foreground" />
+        )}
+      </button>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0">
-        {/* Header with Breadcrumb */}
-        <header className="h-14 border-b border-border bg-card flex items-center px-6 gap-4 sticky top-0 z-10">
-          <nav className="flex items-center gap-1.5 text-sm">
-            {breadcrumbs.map((crumb, index) => (
-              <div key={crumb.path} className="flex items-center gap-1.5">
-                {index > 0 && <ChevronLeft className="h-3.5 w-3.5 text-muted-foreground rotate-180" />}
-                {index === breadcrumbs.length - 1 ? (
-                  <span className="font-medium text-foreground">{crumb.label}</span>
-                ) : (
-                  <button 
-                    onClick={() => navigate(crumb.path)}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {crumb.label}
-                  </button>
-                )}
-              </div>
-            ))}
-          </nav>
-        </header>
-
-        {/* Page Content */}
-        <div className="flex-1 overflow-auto">
-          <Outlet />
-        </div>
+      <main 
+        className={cn(
+          "flex-1 transition-all duration-300",
+          collapsed ? "ml-16" : "ml-60"
+        )}
+      >
+        <Outlet />
       </main>
     </div>
   );
