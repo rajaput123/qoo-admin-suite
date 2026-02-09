@@ -1,20 +1,20 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { 
   Search, 
   Filter, 
   Eye, 
   MoreHorizontal,
   FileCheck,
-  FileX,
   AlertTriangle,
   Clock,
   User,
   CheckCircle2,
   XCircle,
-  Upload,
-  ExternalLink
+  ExternalLink,
+  Download,
+  Upload
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,13 +33,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -47,6 +40,9 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import SearchableSelect from "@/components/SearchableSelect";
 
 const verificationQueue = [
   { 
@@ -117,148 +113,191 @@ const documents = [
 ];
 
 const statusColors: Record<string, string> = {
-  "Pending": "bg-gray-100 text-gray-700",
-  "In Progress": "bg-amber-100 text-amber-700",
-  "Completed": "bg-green-100 text-green-700",
-  "Issues Found": "bg-red-100 text-red-700",
+  "Pending": "bg-muted text-muted-foreground",
+  "In Progress": "bg-warning/10 text-warning",
+  "Completed": "bg-success/10 text-success",
+  "Issues Found": "bg-destructive/10 text-destructive",
 };
 
 const docStatusColors: Record<string, string> = {
-  "Pending": "bg-gray-100 text-gray-700",
-  "Verified": "bg-green-100 text-green-700",
-  "Rejected": "bg-red-100 text-red-700",
+  "Pending": "bg-muted text-muted-foreground",
+  "Verified": "bg-success/10 text-success",
+  "Rejected": "bg-destructive/10 text-destructive",
 };
 
 const riskColors: Record<string, string> = {
-  "Low": "bg-green-100 text-green-700",
-  "Medium": "bg-amber-100 text-amber-700",
-  "High": "bg-red-100 text-red-700",
+  "Low": "bg-success/10 text-success",
+  "Medium": "bg-warning/10 text-warning",
+  "High": "bg-destructive/10 text-destructive",
 };
+
+const verifierOptions = [
+  { value: "verifier-a", label: "Verifier A" },
+  { value: "verifier-b", label: "Verifier B" },
+  { value: "verifier-c", label: "Verifier C" },
+];
 
 const VerificationQueue = () => {
   const [selectedItem, setSelectedItem] = useState<typeof verificationQueue[0] | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+
+  const handleRowClick = (item: typeof verificationQueue[0]) => {
+    setSelectedItem(item);
+    setDetailOpen(true);
+  };
+
+  const toggleSelectItem = (id: string) => {
+    setSelectedItems(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    setSelectedItems(prev => 
+      prev.length === verificationQueue.length ? [] : verificationQueue.map(v => v.id)
+    );
+  };
 
   return (
-    <div className="p-4 lg:px-8 lg:pt-4 lg:pb-8 space-y-6">
+    <div className="p-6 lg:px-8 lg:pt-4 lg:pb-8 max-w-7xl">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Verification Queue</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Document verification and compliance validation
-        </p>
-      </div>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        transition={{ duration: 0.5 }}
+        className="flex items-center justify-between mb-6"
+      >
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Verification Queue</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Document verification and compliance validation
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export Report
+          </Button>
+        </div>
+      </motion.div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="border shadow-sm">
-          <CardContent className="p-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        {[
+          { label: "Pending", count: 67, icon: Clock, color: "text-muted-foreground", bg: "bg-muted" },
+          { label: "In Progress", count: 23, icon: FileCheck, color: "text-warning", bg: "bg-warning/10" },
+          { label: "Completed", count: 156, icon: CheckCircle2, color: "text-success", bg: "bg-success/10" },
+          { label: "Issues Found", count: 8, icon: AlertTriangle, color: "text-destructive", bg: "bg-destructive/10" },
+        ].map((item, i) => (
+          <motion.div
+            key={item.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+            className="glass-card rounded-2xl p-4 glass-shadow"
+          >
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gray-100">
-                <Clock className="h-4 w-4 text-gray-600" />
+              <div className={`p-2 rounded-xl ${item.bg}`}>
+                <item.icon className={`h-4 w-4 ${item.color}`} />
               </div>
               <div>
-                <p className="text-2xl font-bold">67</p>
-                <p className="text-xs text-muted-foreground">Pending</p>
+                <p className="text-2xl font-bold">{item.count}</p>
+                <p className="text-xs text-muted-foreground">{item.label}</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="border shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-amber-100">
-                <FileCheck className="h-4 w-4 text-amber-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">23</p>
-                <p className="text-xs text-muted-foreground">In Progress</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-100">
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">156</p>
-                <p className="text-xs text-muted-foreground">Completed</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-red-100">
-                <AlertTriangle className="h-4 w-4 text-red-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">8</p>
-                <p className="text-xs text-muted-foreground">Issues Found</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          </motion.div>
+        ))}
       </div>
 
       {/* Filters */}
-      <Card className="border shadow-sm">
-        <CardContent className="p-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search by temple or ID..." className="pl-9" />
-            </div>
-            <Select>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="in-progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="issues">Issues Found</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Verifier" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Verifiers</SelectItem>
-                <SelectItem value="unassigned">Unassigned</SelectItem>
-                <SelectItem value="a">Verifier A</SelectItem>
-                <SelectItem value="b">Verifier B</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Region" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Regions</SelectItem>
-                <SelectItem value="tn">Tamil Nadu</SelectItem>
-                <SelectItem value="up">Uttar Pradesh</SelectItem>
-                <SelectItem value="ka">Karnataka</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline" size="icon">
-              <Filter className="h-4 w-4" />
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="glass-card rounded-2xl glass-shadow p-4 mb-6"
+      >
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Search by temple or ID..." className="pl-9" />
+          </div>
+          <SearchableSelect
+            options={[
+              { value: "all", label: "All Status" },
+              { value: "pending", label: "Pending" },
+              { value: "in-progress", label: "In Progress" },
+              { value: "completed", label: "Completed" },
+              { value: "issues", label: "Issues Found" },
+            ]}
+            placeholder="Status"
+            onValueChange={() => {}}
+            className="w-[150px]"
+          />
+          <SearchableSelect
+            options={[{ value: "all", label: "All Verifiers" }, { value: "unassigned", label: "Unassigned" }, ...verifierOptions]}
+            placeholder="Verifier"
+            onValueChange={() => {}}
+            onAddNew={() => alert("Add new verifier")}
+            addNewLabel="Add Verifier"
+            className="w-[150px]"
+          />
+          <SearchableSelect
+            options={[
+              { value: "all", label: "All Regions" },
+              { value: "tn", label: "Tamil Nadu" },
+              { value: "up", label: "Uttar Pradesh" },
+              { value: "ka", label: "Karnataka" },
+            ]}
+            placeholder="Region"
+            onValueChange={() => {}}
+            onAddNew={() => alert("Add new region")}
+            addNewLabel="Add Region"
+            className="w-[150px]"
+          />
+          <Button variant="outline" size="icon">
+            <Filter className="h-4 w-4" />
+          </Button>
+        </div>
+      </motion.div>
+
+      {/* Bulk Actions */}
+      {selectedItems.length > 0 && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-card rounded-xl p-3 mb-4 flex items-center justify-between"
+        >
+          <span className="text-sm font-medium">{selectedItems.length} item(s) selected</span>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm">
+              <User className="h-4 w-4 mr-2" />
+              Assign Verifier
+            </Button>
+            <Button variant="outline" size="sm">
+              <CheckCircle2 className="h-4 w-4 mr-2" />
+              Mark Completed
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </motion.div>
+      )}
 
       {/* Table */}
-      <Card className="border shadow-sm">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="glass-card rounded-2xl glass-shadow overflow-hidden"
+      >
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox 
+                  checked={selectedItems.length === verificationQueue.length}
+                  onCheckedChange={toggleSelectAll}
+                />
+              </TableHead>
               <TableHead className="w-[100px]">ID</TableHead>
               <TableHead>Temple</TableHead>
               <TableHead>Documents</TableHead>
@@ -271,7 +310,17 @@ const VerificationQueue = () => {
           </TableHeader>
           <TableBody>
             {verificationQueue.map((item) => (
-              <TableRow key={item.id} className="cursor-pointer hover:bg-muted/50">
+              <TableRow 
+                key={item.id} 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleRowClick(item)}
+              >
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <Checkbox 
+                    checked={selectedItems.includes(item.id)}
+                    onCheckedChange={() => toggleSelectItem(item.id)}
+                  />
+                </TableCell>
                 <TableCell className="font-mono text-xs">{item.id}</TableCell>
                 <TableCell>
                   <div>
@@ -305,21 +354,21 @@ const VerificationQueue = () => {
                   <span className={`text-xs font-medium ${
                     item.slaRemaining === "—" ? "text-muted-foreground" :
                     item.slaRemaining.includes("h") && !item.slaRemaining.includes("d") 
-                      ? "text-amber-600" 
+                      ? "text-warning" 
                       : "text-foreground"
                   }`}>
                     {item.slaRemaining}
                   </span>
                 </TableCell>
-                <TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-white">
-                      <DropdownMenuItem onClick={() => { setSelectedItem(item); setDetailOpen(true); }}>
+                    <DropdownMenuContent align="end" className="bg-popover">
+                      <DropdownMenuItem onClick={() => handleRowClick(item)}>
                         <Eye className="h-4 w-4 mr-2" />
                         Verify Documents
                       </DropdownMenuItem>
@@ -338,7 +387,7 @@ const VerificationQueue = () => {
             ))}
           </TableBody>
         </Table>
-      </Card>
+      </motion.div>
 
       {/* Verification Detail Dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
@@ -352,106 +401,106 @@ const VerificationQueue = () => {
 
           {selectedItem && (
             <div className="space-y-6 mt-4">
+              {/* Actions at Top */}
+              <div className="flex items-center gap-2 pb-4 border-b">
+                <Button size="sm" className="gap-2">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Complete Verification
+                </Button>
+                <Button size="sm" variant="outline" className="gap-2">
+                  <Upload className="h-4 w-4" />
+                  Request Resubmission
+                </Button>
+                <Button size="sm" variant="outline" className="gap-2 text-destructive hover:text-destructive">
+                  <AlertTriangle className="h-4 w-4" />
+                  Escalate Case
+                </Button>
+              </div>
+
               {/* Summary */}
               <div className="grid grid-cols-3 gap-4">
-                <Card className="border">
-                  <CardContent className="p-3 text-center">
-                    <p className="text-2xl font-bold text-green-600">{selectedItem.documentsVerified}</p>
-                    <p className="text-xs text-muted-foreground">Verified</p>
-                  </CardContent>
-                </Card>
-                <Card className="border">
-                  <CardContent className="p-3 text-center">
-                    <p className="text-2xl font-bold text-amber-600">{selectedItem.documentsPending}</p>
-                    <p className="text-xs text-muted-foreground">Pending</p>
-                  </CardContent>
-                </Card>
-                <Card className="border">
-                  <CardContent className="p-3 text-center">
-                    <p className="text-2xl font-bold">{selectedItem.documentsSubmitted}</p>
-                    <p className="text-xs text-muted-foreground">Total</p>
-                  </CardContent>
-                </Card>
+                <div className="glass-card rounded-xl p-4 text-center">
+                  <p className="text-2xl font-bold text-success">{selectedItem.documentsVerified}</p>
+                  <p className="text-xs text-muted-foreground">Verified</p>
+                </div>
+                <div className="glass-card rounded-xl p-4 text-center">
+                  <p className="text-2xl font-bold text-warning">{selectedItem.documentsPending}</p>
+                  <p className="text-xs text-muted-foreground">Pending</p>
+                </div>
+                <div className="glass-card rounded-xl p-4 text-center">
+                  <p className="text-2xl font-bold">{selectedItem.documentsSubmitted}</p>
+                  <p className="text-xs text-muted-foreground">Total</p>
+                </div>
               </div>
 
               {/* Documents List */}
-              <Card className="border">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Documents</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {documents.map((doc, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 rounded-lg border">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${
-                          doc.status === "Verified" ? "bg-green-100" :
-                          doc.status === "Rejected" ? "bg-red-100" : "bg-gray-100"
-                        }`}>
-                          {doc.status === "Verified" ? (
-                            <CheckCircle2 className="h-4 w-4 text-green-600" />
-                          ) : doc.status === "Rejected" ? (
-                            <XCircle className="h-4 w-4 text-red-600" />
-                          ) : (
-                            <Clock className="h-4 w-4 text-gray-600" />
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">{doc.name}</p>
-                          {doc.verifiedBy && (
-                            <p className="text-xs text-muted-foreground">
-                              {doc.verifiedBy} • {doc.verifiedAt}
-                            </p>
-                          )}
-                          {doc.remarks && (
-                            <p className="text-xs text-red-600 mt-1">{doc.remarks}</p>
-                          )}
-                        </div>
+              <div className="glass-card rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-semibold">Documents</h4>
+                  <SearchableSelect
+                    options={verifierOptions}
+                    placeholder="Assign Verifier"
+                    onValueChange={() => {}}
+                    onAddNew={() => alert("Add new verifier")}
+                    addNewLabel="Add Verifier"
+                    className="w-[180px]"
+                  />
+                </div>
+                {documents.map((doc, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 rounded-xl border hover:bg-muted/30 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${
+                        doc.status === "Verified" ? "bg-success/10" :
+                        doc.status === "Rejected" ? "bg-destructive/10" : "bg-muted"
+                      }`}>
+                        {doc.status === "Verified" ? (
+                          <CheckCircle2 className="h-4 w-4 text-success" />
+                        ) : doc.status === "Rejected" ? (
+                          <XCircle className="h-4 w-4 text-destructive" />
+                        ) : (
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                        )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className={docStatusColors[doc.status]} variant="secondary">
-                          {doc.status}
-                        </Badge>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
-                        {doc.status === "Pending" && (
-                          <>
-                            <Button variant="outline" size="sm" className="h-8">
-                              <CheckCircle2 className="h-3 w-3 mr-1" />
-                              Approve
-                            </Button>
-                            <Button variant="outline" size="sm" className="h-8 text-destructive">
-                              <XCircle className="h-3 w-3 mr-1" />
-                              Reject
-                            </Button>
-                          </>
+                      <div>
+                        <p className="text-sm font-medium">{doc.name}</p>
+                        {doc.verifiedBy && (
+                          <p className="text-xs text-muted-foreground">
+                            {doc.verifiedBy} • {doc.verifiedAt}
+                          </p>
+                        )}
+                        {doc.remarks && (
+                          <p className="text-xs text-destructive mt-1">{doc.remarks}</p>
                         )}
                       </div>
                     </div>
-                  ))}
-                </CardContent>
-              </Card>
+                    <div className="flex items-center gap-2">
+                      <Badge className={docStatusColors[doc.status]} variant="secondary">
+                        {doc.status}
+                      </Badge>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                      {doc.status === "Pending" && (
+                        <>
+                          <Button variant="outline" size="sm" className="h-8">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            Approve
+                          </Button>
+                          <Button variant="outline" size="sm" className="h-8 text-destructive hover:text-destructive">
+                            <XCircle className="h-3 w-3 mr-1" />
+                            Reject
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
 
               {/* Remarks */}
-              <Card className="border">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Verification Remarks</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Textarea placeholder="Add verification remarks..." className="min-h-[80px]" />
-                </CardContent>
-              </Card>
-
-              {/* Actions */}
-              <div className="flex items-center gap-3">
-                <Button className="flex-1">
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Complete Verification
-                </Button>
-                <Button variant="outline">
-                  <AlertTriangle className="h-4 w-4 mr-2" />
-                  Escalate
-                </Button>
+              <div className="glass-card rounded-xl p-4 space-y-3">
+                <Label className="text-sm font-semibold">Verification Remarks</Label>
+                <Textarea placeholder="Add verification remarks..." className="min-h-[80px]" />
               </div>
             </div>
           )}

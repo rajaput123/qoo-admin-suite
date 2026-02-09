@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { 
   FileInput, 
   Clock, 
@@ -8,19 +9,21 @@ import {
   AlertTriangle,
   Timer,
   MapPin,
-  Activity
+  Activity,
+  ArrowUpRight,
+  ArrowDownRight,
+  Percent
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 
 const metrics = [
-  { label: "Total Registrations", value: "2,847", change: "+12%", icon: FileInput, color: "text-blue-600", bgColor: "bg-blue-50" },
-  { label: "Under Review", value: "156", change: "+8", icon: Clock, color: "text-amber-600", bgColor: "bg-amber-50" },
-  { label: "Verification Pending", value: "89", change: "-5", icon: Timer, color: "text-orange-600", bgColor: "bg-orange-50" },
-  { label: "Approved", value: "2,341", change: "+23", icon: CheckCircle2, color: "text-green-600", bgColor: "bg-green-50" },
-  { label: "Rejected", value: "261", change: "+3", icon: XCircle, color: "text-red-600", bgColor: "bg-red-50" },
-  { label: "Tenants Created", value: "2,198", change: "+18", icon: Building2, color: "text-primary", bgColor: "bg-primary/10" },
+  { label: "Total Registrations", value: "2,847", change: "+12%", up: true, icon: FileInput },
+  { label: "Under Review", value: "156", change: "+8", up: true, icon: Clock },
+  { label: "Verification Pending", value: "89", change: "-5", up: false, icon: Timer },
+  { label: "Approved", value: "2,341", change: "+23", up: true, icon: CheckCircle2 },
+  { label: "Rejected", value: "261", change: "+3", up: true, icon: XCircle },
+  { label: "Activation Rate", value: "73.4%", change: "+2.1%", up: true, icon: Percent },
 ];
 
 const funnelStages = [
@@ -33,25 +36,26 @@ const funnelStages = [
 ];
 
 const highRiskCases = [
-  { id: "REG-4521", temple: "Sri Lakshmi Temple", risk: "High", reason: "Document mismatch", region: "Tamil Nadu" },
-  { id: "REG-4518", temple: "Kashi Vishwanath Trust", risk: "High", reason: "Duplicate detected", region: "Uttar Pradesh" },
-  { id: "REG-4515", temple: "Jagannath Mandir", risk: "Medium", reason: "Incomplete KYC", region: "Odisha" },
+  { id: "REG-4521", temple: "Sri Lakshmi Temple", risk: "High", reason: "Document mismatch", region: "Tamil Nadu", score: 85 },
+  { id: "REG-4518", temple: "Kashi Vishwanath Trust", risk: "High", reason: "Duplicate detected", region: "Uttar Pradesh", score: 78 },
+  { id: "REG-4515", temple: "Jagannath Mandir", risk: "Medium", reason: "Incomplete KYC", region: "Odisha", score: 55 },
 ];
 
 const regionSummary = [
-  { region: "Tamil Nadu", registrations: 487, approved: 412, pending: 45, rejected: 30 },
-  { region: "Uttar Pradesh", registrations: 423, approved: 356, pending: 42, rejected: 25 },
-  { region: "Maharashtra", registrations: 398, approved: 341, pending: 38, rejected: 19 },
-  { region: "Karnataka", registrations: 356, approved: 298, pending: 35, rejected: 23 },
-  { region: "Kerala", registrations: 312, approved: 278, pending: 22, rejected: 12 },
+  { region: "Tamil Nadu", registrations: 487, approved: 412, pending: 45, rejected: 30, growth: "+12%" },
+  { region: "Uttar Pradesh", registrations: 423, approved: 356, pending: 42, rejected: 25, growth: "+8%" },
+  { region: "Maharashtra", registrations: 398, approved: 341, pending: 38, rejected: 19, growth: "+15%" },
+  { region: "Karnataka", registrations: 356, approved: 298, pending: 35, rejected: 23, growth: "+6%" },
+  { region: "Kerala", registrations: 312, approved: 278, pending: 22, rejected: 12, growth: "+11%" },
 ];
 
 const recentActivity = [
-  { action: "Tenant Created", temple: "Sri Meenakshi Temple", user: "Admin A", time: "2 min ago" },
-  { action: "Approved", temple: "Tirupati Balaji Trust", user: "Approver B", time: "5 min ago" },
-  { action: "Verification Complete", temple: "ISKCON Mumbai", user: "Verifier C", time: "12 min ago" },
-  { action: "Submitted", temple: "Shirdi Sai Sansthan", user: "Self-Registration", time: "18 min ago" },
-  { action: "Rejected", temple: "Unknown Temple", user: "Reviewer D", time: "25 min ago" },
+  { action: "Tenant Created", temple: "Sri Meenakshi Temple", user: "Admin A", time: "2 min ago", type: "approved" },
+  { action: "Approved", temple: "Tirupati Balaji Trust", user: "Approver B", time: "5 min ago", type: "approved" },
+  { action: "Verification Complete", temple: "ISKCON Mumbai", user: "Verifier C", time: "12 min ago", type: "verified" },
+  { action: "Submitted", temple: "Shirdi Sai Sansthan", user: "Self-Registration", time: "18 min ago", type: "submission" },
+  { action: "Rejected", temple: "Unknown Temple", user: "Reviewer D", time: "25 min ago", type: "rejected" },
+  { action: "Under Review", temple: "Golden Temple Trust", user: "Reviewer A", time: "32 min ago", type: "review" },
 ];
 
 const slaMetrics = [
@@ -61,82 +65,115 @@ const slaMetrics = [
   { metric: "Overdue Cases", value: "12", target: "0", status: "warning" },
 ];
 
+const riskColors: Record<string, string> = {
+  High: "bg-destructive/10 text-destructive",
+  Medium: "bg-warning/10 text-warning",
+  Low: "bg-success/10 text-success",
+};
+
+const activityTypeColors: Record<string, string> = {
+  approved: "text-success",
+  rejected: "text-destructive",
+  submission: "text-info",
+  verified: "text-primary",
+  review: "text-warning",
+};
+
 const Overview = () => {
   return (
-    <div className="p-4 lg:px-8 lg:pt-4 lg:pb-8 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Onboarding Overview</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          Monitor registration pipeline, verification status, and activation metrics
-        </p>
-      </div>
+    <div className="p-6 lg:px-8 lg:pt-4 lg:pb-8 max-w-7xl">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        transition={{ duration: 0.5 }}
+      >
+        <h1 className="text-2xl font-bold text-foreground mb-1">Onboarding Overview</h1>
+        <p className="text-sm text-muted-foreground mb-8">Monitor registration pipeline, verification status, and activation metrics</p>
+      </motion.div>
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        {metrics.map((metric) => (
-          <Card key={metric.label} className="border shadow-sm">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <div className={`p-2 rounded-lg ${metric.bgColor}`}>
-                  <metric.icon className={`h-4 w-4 ${metric.color}`} />
-                </div>
-                <span className={`text-xs font-medium ${
-                  metric.change.startsWith('+') ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {metric.change}
-                </span>
+      {/* KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+        {metrics.map((metric, i) => (
+          <motion.div
+            key={metric.label}
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.4, delay: i * 0.05 }}
+            whileHover={{ y: -4, transition: { duration: 0.2 } }}
+            className="glass-card rounded-2xl p-4 glass-shadow hover:shadow-xl transition-all duration-300"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="p-2 rounded-xl bg-primary/10">
+                <metric.icon className="h-4 w-4 text-primary" />
               </div>
-              <p className="text-2xl font-bold text-foreground">{metric.value}</p>
-              <p className="text-xs text-muted-foreground mt-1">{metric.label}</p>
-            </CardContent>
-          </Card>
+              <div className={`flex items-center text-xs font-medium ${metric.up ? "text-success" : "text-destructive"}`}>
+                {metric.up ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                {metric.change}
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-foreground">{metric.value}</div>
+            <div className="text-xs text-muted-foreground mt-0.5">{metric.label}</div>
+          </motion.div>
         ))}
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      {/* Main Grid */}
+      <div className="grid lg:grid-cols-3 gap-6 mb-6">
         {/* Registration Funnel */}
-        <Card className="lg:col-span-2 border shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="lg:col-span-2 glass-card rounded-2xl glass-shadow overflow-hidden"
+        >
+          <div className="px-5 py-4 border-b border-border/50 flex items-center justify-between">
+            <h2 className="font-semibold text-foreground flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
               Registration Funnel
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </h2>
+            <span className="text-lg font-bold text-primary">73.4% Activation Rate</span>
+          </div>
+          <div className="p-5 space-y-4">
             {funnelStages.map((stage, index) => (
-              <div key={stage.stage} className="space-y-1">
+              <motion.div 
+                key={stage.stage} 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 + index * 0.05 }}
+                className="space-y-1.5"
+              >
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">{stage.stage}</span>
                   <span className="font-medium">{stage.count.toLocaleString()} ({stage.percentage}%)</span>
                 </div>
-                <Progress 
-                  value={stage.percentage} 
-                  className="h-2"
-                />
-              </div>
+                <Progress value={stage.percentage} className="h-2" />
+              </motion.div>
             ))}
-            <div className="pt-2 border-t">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Overall Activation Rate</span>
-                <span className="text-lg font-bold text-primary">73.4%</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </motion.div>
 
         {/* SLA Monitoring */}
-        <Card className="border shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="glass-card rounded-2xl glass-shadow overflow-hidden"
+        >
+          <div className="px-5 py-4 border-b border-border/50 flex items-center justify-between">
+            <h2 className="font-semibold text-foreground flex items-center gap-2">
               <Timer className="h-4 w-4 text-primary" />
               SLA Monitoring
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {slaMetrics.map((sla) => (
-              <div key={sla.metric} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+            </h2>
+          </div>
+          <div className="p-4 space-y-3">
+            {slaMetrics.map((sla, i) => (
+              <motion.div 
+                key={sla.metric} 
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 + i * 0.05 }}
+                className="flex items-center justify-between p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
+              >
                 <div>
                   <p className="text-sm font-medium">{sla.metric}</p>
                   <p className="text-xs text-muted-foreground">Target: {sla.target}</p>
@@ -144,96 +181,131 @@ const Overview = () => {
                 <Badge variant={sla.status === "good" ? "default" : "destructive"}>
                   {sla.value}
                 </Badge>
-              </div>
+              </motion.div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </motion.div>
       </div>
 
       {/* Second Row */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-6 mb-6">
         {/* High Risk Cases */}
-        <Card className="border shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-destructive" />
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="glass-card rounded-2xl glass-shadow overflow-hidden"
+        >
+          <div className="px-5 py-4 border-b border-border/50 flex items-center justify-between">
+            <h2 className="font-semibold text-foreground flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-warning" />
               High Risk Cases
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {highRiskCases.map((item) => (
-              <div key={item.id} className="p-3 rounded-lg border bg-destructive/5 border-destructive/20">
+            </h2>
+            <span className="text-xs bg-destructive/10 text-destructive px-2 py-0.5 rounded-full font-medium">
+              {highRiskCases.filter(s => s.risk === "High").length} Critical
+            </span>
+          </div>
+          <div className="divide-y divide-border/50 max-h-[280px] overflow-auto">
+            {highRiskCases.map((item, i) => (
+              <motion.div 
+                key={item.id} 
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 + i * 0.05 }}
+                className="px-5 py-3.5 hover:bg-muted/30 transition-colors cursor-pointer"
+              >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-mono text-muted-foreground">{item.id}</span>
-                  <Badge variant="destructive" className="text-xs">
-                    {item.risk}
-                  </Badge>
+                  <p className="text-sm font-medium text-foreground truncate pr-2">{item.temple}</p>
+                  <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 ${riskColors[item.risk]}`}>
+                    {item.score}
+                  </span>
                 </div>
-                <p className="text-sm font-medium">{item.temple}</p>
-                <div className="flex items-center justify-between mt-1">
-                  <span className="text-xs text-muted-foreground">{item.reason}</span>
-                  <span className="text-xs text-muted-foreground">{item.region}</span>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">{item.reason}</p>
+                  <p className="text-xs text-muted-foreground">{item.region}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </motion.div>
 
         {/* Region Summary */}
-        <Card className="border shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+          className="glass-card rounded-2xl glass-shadow overflow-hidden"
+        >
+          <div className="px-5 py-4 border-b border-border/50 flex items-center justify-between">
+            <h2 className="font-semibold text-foreground flex items-center gap-2">
               <MapPin className="h-4 w-4 text-primary" />
               Region Summary
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {regionSummary.map((region) => (
-                <div key={region.region} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                  <span className="text-sm font-medium">{region.region}</span>
-                  <div className="flex items-center gap-3 text-xs">
-                    <span className="text-green-600">{region.approved}</span>
-                    <span className="text-amber-600">{region.pending}</span>
-                    <span className="text-red-600">{region.rejected}</span>
-                  </div>
+            </h2>
+            <button className="text-xs text-primary hover:underline font-medium">View All</button>
+          </div>
+          <div className="divide-y divide-border/50">
+            {regionSummary.map((region, i) => (
+              <motion.div 
+                key={region.region} 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6 + i * 0.05 }}
+                className="px-5 py-3 flex items-center justify-between hover:bg-muted/30 transition-colors"
+              >
+                <div>
+                  <p className="text-sm font-medium text-foreground">{region.region}</p>
+                  <p className="text-xs text-muted-foreground">{region.registrations} registrations</p>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <span className="text-sm font-medium text-success flex items-center gap-1">
+                  <ArrowUpRight className="h-3 w-3" />
+                  {region.growth}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
 
         {/* Recent Activity */}
-        <Card className="border shadow-sm">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="glass-card rounded-2xl glass-shadow overflow-hidden"
+        >
+          <div className="px-5 py-4 border-b border-border/50 flex items-center justify-between">
+            <h2 className="font-semibold text-foreground flex items-center gap-2">
               <Activity className="h-4 w-4 text-primary" />
               Recent Activity
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <div className={`w-2 h-2 rounded-full mt-1.5 ${
-                    activity.action === "Approved" || activity.action === "Tenant Created" 
-                      ? "bg-green-500" 
-                      : activity.action === "Rejected" 
-                        ? "bg-red-500" 
-                        : "bg-amber-500"
-                  }`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{activity.temple}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">{activity.action}</span>
-                      <span className="text-xs text-muted-foreground">{activity.time}</span>
-                    </div>
+            </h2>
+            <button className="text-xs text-primary hover:underline font-medium">View All</button>
+          </div>
+          <div className="divide-y divide-border/50 max-h-[280px] overflow-auto">
+            {recentActivity.map((activity, i) => (
+              <motion.div 
+                key={i} 
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.7 + i * 0.05 }}
+                className="px-5 py-3.5 flex items-start gap-3 hover:bg-muted/30 transition-colors"
+              >
+                <div className={`mt-0.5 w-2 h-2 rounded-full shrink-0 ${
+                  activity.type === "approved" || activity.type === "verified" 
+                    ? "bg-success" 
+                    : activity.type === "rejected" 
+                      ? "bg-destructive" 
+                      : "bg-warning"
+                }`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{activity.temple}</p>
+                  <div className="flex items-center justify-between">
+                    <span className={`text-xs ${activityTypeColors[activity.type] || "text-muted-foreground"}`}>{activity.action}</span>
+                    <span className="text-xs text-muted-foreground">{activity.time}</span>
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
       </div>
     </div>
   );

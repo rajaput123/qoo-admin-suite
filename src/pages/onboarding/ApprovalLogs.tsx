@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { 
   Search, 
   Filter, 
@@ -12,7 +13,6 @@ import {
   ArrowRight,
   Eye
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,18 +25,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import SearchableSelect from "@/components/SearchableSelect";
 
 const auditLogs = [
   { 
@@ -133,31 +128,54 @@ const auditLogs = [
 ];
 
 const actionColors: Record<string, string> = {
-  "Status Changed": "bg-gray-100 text-gray-700",
-  "Moved to Verification": "bg-blue-100 text-blue-700",
-  "Approved": "bg-green-100 text-green-700",
-  "Rejected": "bg-red-100 text-red-700",
+  "Status Changed": "bg-muted text-muted-foreground",
+  "Moved to Verification": "bg-info/10 text-info",
+  "Approved": "bg-success/10 text-success",
+  "Rejected": "bg-destructive/10 text-destructive",
   "Tenant Created": "bg-primary/10 text-primary",
   "Activated": "bg-emerald-100 text-emerald-700",
   "Document Verified": "bg-cyan-100 text-cyan-700",
 };
 
 const roleColors: Record<string, string> = {
-  "Reviewer": "bg-blue-100 text-blue-700",
+  "Reviewer": "bg-info/10 text-info",
   "Verifier": "bg-purple-100 text-purple-700",
-  "Approver": "bg-green-100 text-green-700",
+  "Approver": "bg-success/10 text-success",
   "Super Admin": "bg-primary/10 text-primary",
-  "System": "bg-gray-100 text-gray-700",
+  "System": "bg-muted text-muted-foreground",
 };
 
 const ApprovalLogs = () => {
   const [selectedLog, setSelectedLog] = useState<typeof auditLogs[0] | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+
+  const handleRowClick = (log: typeof auditLogs[0]) => {
+    setSelectedLog(log);
+    setDetailOpen(true);
+  };
+
+  const toggleSelectItem = (id: string) => {
+    setSelectedItems(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    setSelectedItems(prev => 
+      prev.length === auditLogs.length ? [] : auditLogs.map(l => l.id)
+    );
+  };
 
   return (
-    <div className="p-4 lg:px-8 lg:pt-4 lg:pb-8 space-y-6">
+    <div className="p-6 lg:px-8 lg:pt-4 lg:pb-8 max-w-7xl">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        transition={{ duration: 0.5 }}
+        className="flex items-center justify-between mb-6"
+      >
         <div>
           <h1 className="text-2xl font-bold text-foreground">Approval Logs</h1>
           <p className="text-muted-foreground text-sm mt-1">
@@ -168,136 +186,129 @@ const ApprovalLogs = () => {
           <Download className="h-4 w-4 mr-2" />
           Export Logs
         </Button>
-      </div>
+      </motion.div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card className="border shadow-sm">
-          <CardContent className="p-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        {[
+          { label: "Total Logs", count: "12,847", icon: FileText, color: "text-muted-foreground", bg: "bg-muted" },
+          { label: "Approvals", count: "3,421", icon: CheckCircle2, color: "text-success", bg: "bg-success/10" },
+          { label: "Rejections", count: "456", icon: XCircle, color: "text-destructive", bg: "bg-destructive/10" },
+          { label: "Active Users", count: "28", icon: User, color: "text-info", bg: "bg-info/10" },
+          { label: "Today's Actions", count: "847", icon: Clock, color: "text-warning", bg: "bg-warning/10" },
+        ].map((item, i) => (
+          <motion.div
+            key={item.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.05 }}
+            className="glass-card rounded-2xl p-4 glass-shadow"
+          >
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gray-100">
-                <FileText className="h-4 w-4 text-gray-600" />
+              <div className={`p-2 rounded-xl ${item.bg}`}>
+                <item.icon className={`h-4 w-4 ${item.color}`} />
               </div>
               <div>
-                <p className="text-2xl font-bold">12,847</p>
-                <p className="text-xs text-muted-foreground">Total Logs</p>
+                <p className="text-2xl font-bold">{item.count}</p>
+                <p className="text-xs text-muted-foreground">{item.label}</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="border shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-100">
-                <CheckCircle2 className="h-4 w-4 text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">3,421</p>
-                <p className="text-xs text-muted-foreground">Approvals</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-red-100">
-                <XCircle className="h-4 w-4 text-red-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">456</p>
-                <p className="text-xs text-muted-foreground">Rejections</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-100">
-                <User className="h-4 w-4 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">28</p>
-                <p className="text-xs text-muted-foreground">Active Users</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border shadow-sm">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-amber-100">
-                <Clock className="h-4 w-4 text-amber-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">847</p>
-                <p className="text-xs text-muted-foreground">Today's Actions</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          </motion.div>
+        ))}
       </div>
 
       {/* Filters */}
-      <Card className="border shadow-sm">
-        <CardContent className="p-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search by case ID, temple, or user..." className="pl-9" />
-            </div>
-            <Select>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Action Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Actions</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
-                <SelectItem value="verification">Verification</SelectItem>
-                <SelectItem value="tenant">Tenant Created</SelectItem>
-                <SelectItem value="activated">Activated</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="User Role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="reviewer">Reviewer</SelectItem>
-                <SelectItem value="verifier">Verifier</SelectItem>
-                <SelectItem value="approver">Approver</SelectItem>
-                <SelectItem value="admin">Super Admin</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select>
-              <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="Region" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Regions</SelectItem>
-                <SelectItem value="tn">Tamil Nadu</SelectItem>
-                <SelectItem value="up">Uttar Pradesh</SelectItem>
-                <SelectItem value="mh">Maharashtra</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline" size="icon">
-              <Calendar className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" size="icon">
-              <Filter className="h-4 w-4" />
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="glass-card rounded-2xl glass-shadow p-4 mb-6"
+      >
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Search by case ID, temple, or user..." className="pl-9" />
+          </div>
+          <SearchableSelect
+            options={[
+              { value: "all", label: "All Actions" },
+              { value: "approved", label: "Approved" },
+              { value: "rejected", label: "Rejected" },
+              { value: "verification", label: "Verification" },
+              { value: "tenant", label: "Tenant Created" },
+              { value: "activated", label: "Activated" },
+            ]}
+            placeholder="Action Type"
+            onValueChange={() => {}}
+            className="w-[150px]"
+          />
+          <SearchableSelect
+            options={[
+              { value: "all", label: "All Roles" },
+              { value: "reviewer", label: "Reviewer" },
+              { value: "verifier", label: "Verifier" },
+              { value: "approver", label: "Approver" },
+              { value: "admin", label: "Super Admin" },
+            ]}
+            placeholder="User Role"
+            onValueChange={() => {}}
+            className="w-[150px]"
+          />
+          <SearchableSelect
+            options={[
+              { value: "all", label: "All Regions" },
+              { value: "tn", label: "Tamil Nadu" },
+              { value: "up", label: "Uttar Pradesh" },
+              { value: "mh", label: "Maharashtra" },
+            ]}
+            placeholder="Region"
+            onValueChange={() => {}}
+            onAddNew={() => alert("Add new region")}
+            addNewLabel="Add Region"
+            className="w-[150px]"
+          />
+          <Button variant="outline" size="icon">
+            <Calendar className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="icon">
+            <Filter className="h-4 w-4" />
+          </Button>
+        </div>
+      </motion.div>
+
+      {/* Bulk Actions */}
+      {selectedItems.length > 0 && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-card rounded-xl p-3 mb-4 flex items-center justify-between"
+        >
+          <span className="text-sm font-medium">{selectedItems.length} item(s) selected</span>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm">
+              <Download className="h-4 w-4 mr-2" />
+              Export Selected
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </motion.div>
+      )}
 
       {/* Logs Table */}
-      <Card className="border shadow-sm">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="glass-card rounded-2xl glass-shadow overflow-hidden"
+      >
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-[50px]">
+                <Checkbox 
+                  checked={selectedItems.length === auditLogs.length}
+                  onCheckedChange={toggleSelectAll}
+                />
+              </TableHead>
               <TableHead className="w-[100px]">Log ID</TableHead>
               <TableHead className="w-[100px]">Case ID</TableHead>
               <TableHead>Temple</TableHead>
@@ -310,7 +321,17 @@ const ApprovalLogs = () => {
           </TableHeader>
           <TableBody>
             {auditLogs.map((log) => (
-              <TableRow key={log.id} className="cursor-pointer hover:bg-muted/50">
+              <TableRow 
+                key={log.id} 
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => handleRowClick(log)}
+              >
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <Checkbox 
+                    checked={selectedItems.includes(log.id)}
+                    onCheckedChange={() => toggleSelectItem(log.id)}
+                  />
+                </TableCell>
                 <TableCell className="font-mono text-xs">{log.id}</TableCell>
                 <TableCell className="font-mono text-xs">{log.caseId}</TableCell>
                 <TableCell>
@@ -340,12 +361,12 @@ const ApprovalLogs = () => {
                   </div>
                 </TableCell>
                 <TableCell className="text-xs text-muted-foreground">{log.timestamp}</TableCell>
-                <TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
                   <Button 
                     variant="ghost" 
                     size="icon" 
                     className="h-8 w-8"
-                    onClick={() => { setSelectedLog(log); setDetailOpen(true); }}
+                    onClick={() => handleRowClick(log)}
                   >
                     <Eye className="h-4 w-4" />
                   </Button>
@@ -354,10 +375,10 @@ const ApprovalLogs = () => {
             ))}
           </TableBody>
         </Table>
-      </Card>
+      </motion.div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mt-4">
         <p className="text-sm text-muted-foreground">
           Showing 1-10 of 12,847 logs
         </p>
@@ -377,23 +398,23 @@ const ApprovalLogs = () => {
           {selectedLog && (
             <div className="space-y-4 mt-4">
               <div className="grid grid-cols-2 gap-4">
-                <div>
+                <div className="glass-card rounded-xl p-3">
                   <p className="text-xs text-muted-foreground">Log ID</p>
                   <p className="font-mono text-sm">{selectedLog.id}</p>
                 </div>
-                <div>
+                <div className="glass-card rounded-xl p-3">
                   <p className="text-xs text-muted-foreground">Case ID</p>
                   <p className="font-mono text-sm">{selectedLog.caseId}</p>
                 </div>
               </div>
 
-              <div>
+              <div className="glass-card rounded-xl p-3">
                 <p className="text-xs text-muted-foreground">Temple</p>
                 <p className="font-medium">{selectedLog.templeName}</p>
                 <p className="text-sm text-muted-foreground">{selectedLog.region}</p>
               </div>
 
-              <div className="p-4 rounded-lg bg-muted/50">
+              <div className="p-4 rounded-xl bg-muted/50">
                 <p className="text-xs text-muted-foreground mb-2">Status Transition</p>
                 <div className="flex items-center gap-3">
                   <Badge variant="outline">{selectedLog.previousStatus}</Badge>
@@ -403,15 +424,15 @@ const ApprovalLogs = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
+                <div className="glass-card rounded-xl p-3">
                   <p className="text-xs text-muted-foreground">Action</p>
                   <Badge className={actionColors[selectedLog.action]} variant="secondary">
                     {selectedLog.action}
                   </Badge>
                 </div>
-                <div>
+                <div className="glass-card rounded-xl p-3">
                   <p className="text-xs text-muted-foreground">Performed By</p>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 mt-1">
                     <span className="text-sm font-medium">{selectedLog.user}</span>
                     <Badge className={`${roleColors[selectedLog.role]} text-xs`} variant="secondary">
                       {selectedLog.role}
@@ -420,14 +441,14 @@ const ApprovalLogs = () => {
                 </div>
               </div>
 
-              <div>
+              <div className="glass-card rounded-xl p-3">
                 <p className="text-xs text-muted-foreground">Timestamp</p>
                 <p className="text-sm">{selectedLog.timestamp}</p>
               </div>
 
-              <div>
+              <div className="glass-card rounded-xl p-3">
                 <p className="text-xs text-muted-foreground">Notes</p>
-                <p className="text-sm p-3 rounded-lg bg-muted/50">{selectedLog.notes}</p>
+                <p className="text-sm">{selectedLog.notes}</p>
               </div>
             </div>
           )}
