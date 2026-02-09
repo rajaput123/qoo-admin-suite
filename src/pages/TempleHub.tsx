@@ -71,8 +71,8 @@ const allModules = [
     title: "Temple Structure",
     icon: Landmark,
     enabled: true,
-    path: "/temple/info",
-    description: "Temple structure, layout and facilities",
+    path: "/temple/structure",
+    description: "Temple hierarchy, shrines, halls and counters",
     category: "core",
   },
   {
