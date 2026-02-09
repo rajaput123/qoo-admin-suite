@@ -1,27 +1,20 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, Upload, Building2, User, FileText, Shield } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Building2, MapPin, FileText, User, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
-import SearchableSelect from "@/components/SearchableSelect";
+import TempleDetailsStep from "@/components/registration/TempleDetailsStep";
+import LocationStep from "@/components/registration/LocationStep";
+import TrustLegalStep from "@/components/registration/TrustLegalStep";
+import AuthorizedPersonStep from "@/components/registration/AuthorizedPersonStep";
+import DeclarationStep from "@/components/registration/DeclarationStep";
 
 const steps = [
-  { id: 1, title: "Temple Info", icon: Building2 },
-  { id: 2, title: "Authorized Person", icon: User },
-  { id: 3, title: "Legal Details", icon: FileText },
-  { id: 4, title: "Declaration", icon: Shield },
-];
-
-const stateOptions = [
-  { value: "karnataka", label: "Karnataka" },
-  { value: "tamil-nadu", label: "Tamil Nadu" },
-  { value: "andhra-pradesh", label: "Andhra Pradesh" },
-  { value: "kerala", label: "Kerala" },
-  { value: "maharashtra", label: "Maharashtra" },
+  { id: 1, title: "Temple Details", icon: Building2 },
+  { id: 2, title: "Location", icon: MapPin },
+  { id: 3, title: "Trust & Legal", icon: FileText },
+  { id: 4, title: "Authorized Person", icon: User },
+  { id: 5, title: "Declaration", icon: Shield },
 ];
 
 const TempleRegister = () => {
@@ -31,8 +24,52 @@ const TempleRegister = () => {
   const [otpVerified, setOtpVerified] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  // Form state
+  const [templeDetails, setTempleDetails] = useState({
+    templeLegalName: "",
+    displayName: "",
+    deityName: "",
+    templeType: "",
+    yearEstablished: "",
+    shortDescription: "",
+  });
+
+  const [location, setLocation] = useState({
+    country: "",
+    state: "",
+    district: "",
+    city: "",
+    fullAddress: "",
+    postalCode: "",
+    googleMapPin: "",
+  });
+
+  const [trustLegal, setTrustLegal] = useState({
+    trustName: "",
+    trustRegNumber: "",
+    legalEntityType: "",
+    registrationDate: "",
+    trustCertificate: null as string | null,
+  });
+
+  const [authorizedPerson, setAuthorizedPerson] = useState({
+    personName: "",
+    personRole: "",
+    mobile: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const [declaration, setDeclaration] = useState({
+    termsAccepted: false,
+    privacyAccepted: false,
+    authorizedConfirmed: false,
+    accuracyConfirmed: false,
+  });
+
   const handleNext = () => {
-    if (currentStep < 4) {
+    if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -56,6 +93,15 @@ const TempleRegister = () => {
     setOtpVerified(true);
   };
 
+  const canSubmit = declaration.termsAccepted && 
+                    declaration.privacyAccepted && 
+                    declaration.authorizedConfirmed && 
+                    declaration.accuracyConfirmed &&
+                    otpVerified;
+
+  // Generate reference number
+  const referenceNumber = `REG-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 999999)).padStart(6, '0')}`;
+
   if (submitted) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
@@ -69,11 +115,50 @@ const TempleRegister = () => {
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-2">Registration Submitted!</h1>
           <p className="text-muted-foreground mb-6">
-            Your temple registration is under review. We'll notify you once your account is approved.
+            Your temple registration is under review. We'll notify you via SMS and email once your account is approved.
           </p>
-          <div className="glass-card rounded-2xl p-6 mb-6">
-            <p className="text-sm text-muted-foreground mb-2">Application Reference</p>
-            <p className="text-lg font-mono font-semibold text-foreground">REG-2024-001234</p>
+          <div className="glass-card rounded-2xl p-6 mb-6 text-left">
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs text-muted-foreground">Application Reference</p>
+                <p className="text-lg font-mono font-semibold text-foreground">{referenceNumber}</p>
+              </div>
+              <div className="border-t border-border pt-3">
+                <p className="text-xs text-muted-foreground">Temple Name</p>
+                <p className="text-sm font-medium text-foreground">{templeDetails.templeLegalName || "Sri Temple Trust"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Mobile Number</p>
+                <p className="text-sm font-medium text-foreground">+91 {authorizedPerson.mobile || "98765 43210"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Status</p>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                  Submitted for Review
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="bg-muted/50 rounded-lg p-4 mb-6 text-left">
+            <h3 className="font-medium text-foreground mb-2">What happens next?</h3>
+            <ul className="text-sm text-muted-foreground space-y-1.5">
+              <li className="flex items-start gap-2">
+                <span className="text-primary">1.</span>
+                Our team will review your registration
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary">2.</span>
+                We may contact you for additional verification
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary">3.</span>
+                Upon approval, you'll receive login credentials
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-primary">4.</span>
+                Average review time: 2-3 business days
+              </li>
+            </ul>
           </div>
           <Button onClick={() => navigate("/")} variant="outline" className="gap-2">
             <ArrowLeft className="h-4 w-4" />
@@ -87,7 +172,7 @@ const TempleRegister = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card">
+      <header className="border-b border-border bg-card sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
           <button onClick={() => navigate("/")} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
@@ -97,268 +182,113 @@ const TempleRegister = () => {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-6 py-10">
+      <main className="max-w-3xl mx-auto px-6 py-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-2xl font-bold text-foreground mb-2">Temple Registration</h1>
-          <p className="text-muted-foreground">Complete the form below to register your temple on Keehoo</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Register Your Temple</h1>
+          <p className="text-muted-foreground">Complete the form below to register your temple on Keehoo. Registration is free.</p>
         </motion.div>
 
         {/* Progress Steps */}
-        <div className="flex items-center justify-between mb-10">
-          {steps.map((step, index) => (
-            <div key={step.id} className="flex items-center">
-              <div className="flex flex-col items-center">
-                <div className={`
-                  w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm
-                  ${currentStep > step.id 
-                    ? "bg-primary text-primary-foreground" 
-                    : currentStep === step.id 
+        <div className="mb-10 overflow-x-auto pb-2">
+          <div className="flex items-center justify-between min-w-[600px]">
+            {steps.map((step, index) => (
+              <div key={step.id} className="flex items-center">
+                <div className="flex flex-col items-center">
+                  <div className={`
+                    w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm transition-colors
+                    ${currentStep > step.id 
                       ? "bg-primary text-primary-foreground" 
-                      : "bg-muted text-muted-foreground"
-                  }
-                `}>
-                  {currentStep > step.id ? <Check className="h-5 w-5" /> : <step.icon className="h-5 w-5" />}
+                      : currentStep === step.id 
+                        ? "bg-primary text-primary-foreground" 
+                        : "bg-muted text-muted-foreground"
+                    }
+                  `}>
+                    {currentStep > step.id ? <Check className="h-5 w-5" /> : <step.icon className="h-5 w-5" />}
+                  </div>
+                  <span className={`text-xs mt-2 whitespace-nowrap ${currentStep >= step.id ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                    {step.title}
+                  </span>
                 </div>
-                <span className={`text-xs mt-2 ${currentStep >= step.id ? "text-foreground font-medium" : "text-muted-foreground"}`}>
-                  {step.title}
-                </span>
+                {index < steps.length - 1 && (
+                  <div className={`w-12 sm:w-16 h-0.5 mx-2 transition-colors ${currentStep > step.id ? "bg-primary" : "bg-border"}`} />
+                )}
               </div>
-              {index < steps.length - 1 && (
-                <div className={`w-16 sm:w-24 h-0.5 mx-2 ${currentStep > step.id ? "bg-primary" : "bg-border"}`} />
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className="glass-card rounded-2xl p-8">
-            {/* Step 1: Temple Information */}
+            {/* Step 1: Temple Details */}
             {currentStep === 1 && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="space-y-6"
               >
-                <h2 className="text-lg font-semibold text-foreground mb-4">Temple Information</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="templeName">Temple Legal Name *</Label>
-                    <Input id="templeName" placeholder="e.g., Sri Venkateswara Temple Trust" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="deityName">Primary Deity Name *</Label>
-                    <Input id="deityName" placeholder="e.g., Lord Venkateswara" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="trustName">Trust/Society Name</Label>
-                    <Input id="trustName" placeholder="e.g., Temple Trust Board" />
-                  </div>
-                  
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="address">Full Address *</Label>
-                    <Textarea id="address" placeholder="Enter complete temple address" rows={2} />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>State *</Label>
-                    <SearchableSelect
-                      options={stateOptions}
-                      value=""
-                      onValueChange={() => {}}
-                      placeholder="Select State"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="pincode">Pincode *</Label>
-                    <Input id="pincode" placeholder="e.g., 560001" />
-                  </div>
-                </div>
+                <TempleDetailsStep
+                  formData={templeDetails}
+                  onFormChange={(field, value) => setTempleDetails(prev => ({ ...prev, [field]: value }))}
+                />
               </motion.div>
             )}
 
-            {/* Step 2: Authorized Person */}
+            {/* Step 2: Location */}
             {currentStep === 2 && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="space-y-6"
               >
-                <h2 className="text-lg font-semibold text-foreground mb-4">Authorized Person Details</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="personName">Full Name *</Label>
-                    <Input id="personName" placeholder="Enter your full name" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="role">Role/Designation *</Label>
-                    <Input id="role" placeholder="e.g., Chief Administrator" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="mobile">Mobile Number *</Label>
-                    <div className="flex gap-2">
-                      <Input id="mobile" placeholder="+91 98765 43210" className="flex-1" />
-                      {!otpVerified && (
-                        <Button 
-                          type="button" 
-                          variant={otpSent ? "outline" : "default"}
-                          onClick={handleSendOtp}
-                          disabled={otpVerified}
-                        >
-                          {otpSent ? "Resend" : "Send OTP"}
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {otpSent && !otpVerified && (
-                    <div className="space-y-2">
-                      <Label htmlFor="otp">Enter OTP *</Label>
-                      <div className="flex gap-2">
-                        <Input id="otp" placeholder="Enter 6-digit OTP" className="flex-1" maxLength={6} />
-                        <Button type="button" onClick={handleVerifyOtp}>Verify</Button>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {otpVerified && (
-                    <div className="space-y-2">
-                      <Label>Verification Status</Label>
-                      <div className="flex items-center gap-2 h-10 px-3 bg-green-50 border border-green-200 rounded-lg">
-                        <Check className="h-4 w-4 text-green-600" />
-                        <span className="text-sm text-green-700 font-medium">Mobile Verified</span>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="email">Email Address *</Label>
-                    <Input id="email" type="email" placeholder="admin@temple.org" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Create Password *</Label>
-                    <Input id="password" type="password" placeholder="Minimum 8 characters" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirm Password *</Label>
-                    <Input id="confirmPassword" type="password" placeholder="Re-enter password" />
-                  </div>
-                </div>
+                <LocationStep
+                  formData={location}
+                  onFormChange={(field, value) => setLocation(prev => ({ ...prev, [field]: value }))}
+                />
               </motion.div>
             )}
 
-            {/* Step 3: Legal Details */}
+            {/* Step 3: Trust & Legal */}
             {currentStep === 3 && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="space-y-6"
               >
-                <h2 className="text-lg font-semibold text-foreground mb-4">Legal & Verification Details</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="regNumber">Trust Registration Number *</Label>
-                    <Input id="regNumber" placeholder="e.g., TRN/2020/12345" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="pan">PAN Number (Optional)</Label>
-                    <Input id="pan" placeholder="e.g., ABCDE1234F" />
-                  </div>
-                  
-                  <div className="space-y-2 md:col-span-2">
-                    <Label>Trust Registration Certificate *</Label>
-                    <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
-                      <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                      <p className="text-sm text-muted-foreground">
-                        Click to upload or drag and drop
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        PDF, JPG, or PNG (max. 5MB)
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="bankName">Bank Name (Optional)</Label>
-                    <Input id="bankName" placeholder="e.g., State Bank of India" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="accountNumber">Account Number (Optional)</Label>
-                    <Input id="accountNumber" placeholder="Enter bank account number" />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="ifsc">IFSC Code (Optional)</Label>
-                    <Input id="ifsc" placeholder="e.g., SBIN0001234" />
-                  </div>
-                </div>
+                <TrustLegalStep
+                  formData={trustLegal}
+                  onFormChange={(field, value) => setTrustLegal(prev => ({ ...prev, [field]: value }))}
+                />
               </motion.div>
             )}
 
-            {/* Step 4: Declaration */}
+            {/* Step 4: Authorized Person */}
             {currentStep === 4 && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="space-y-6"
               >
-                <h2 className="text-lg font-semibold text-foreground mb-4">Declaration & Consent</h2>
-                
-                <div className="space-y-4">
-                  <div className="bg-muted/50 rounded-lg p-4">
-                    <h3 className="font-medium text-foreground mb-2">Terms of Service</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      By registering on Keehoo, you agree to our Terms of Service, which govern your use of the platform. 
-                      You confirm that all information provided is accurate and that you are authorized to register this temple.
-                    </p>
-                  </div>
-                  
-                  <div className="bg-muted/50 rounded-lg p-4">
-                    <h3 className="font-medium text-foreground mb-2">Privacy Policy</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      We collect and process your data in accordance with our Privacy Policy. 
-                      Your temple and personal information will be used to provide our services and will not be shared without consent.
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-3 pt-4">
-                    <div className="flex items-start gap-3">
-                      <Checkbox id="terms" className="mt-1" />
-                      <Label htmlFor="terms" className="text-sm font-normal cursor-pointer leading-relaxed">
-                        I accept the <span className="text-primary underline">Terms of Service</span> and confirm that all information provided is accurate.
-                      </Label>
-                    </div>
-                    
-                    <div className="flex items-start gap-3">
-                      <Checkbox id="privacy" className="mt-1" />
-                      <Label htmlFor="privacy" className="text-sm font-normal cursor-pointer leading-relaxed">
-                        I have read and agree to the <span className="text-primary underline">Privacy Policy</span>.
-                      </Label>
-                    </div>
-                    
-                    <div className="flex items-start gap-3">
-                      <Checkbox id="authorized" className="mt-1" />
-                      <Label htmlFor="authorized" className="text-sm font-normal cursor-pointer leading-relaxed">
-                        I confirm that I am authorized to register this temple and act on behalf of the trust/organization.
-                      </Label>
-                    </div>
-                  </div>
-                </div>
+                <AuthorizedPersonStep
+                  formData={authorizedPerson}
+                  onFormChange={(field, value) => setAuthorizedPerson(prev => ({ ...prev, [field]: value }))}
+                  otpSent={otpSent}
+                  otpVerified={otpVerified}
+                  onSendOtp={handleSendOtp}
+                  onVerifyOtp={handleVerifyOtp}
+                />
+              </motion.div>
+            )}
+
+            {/* Step 5: Declaration */}
+            {currentStep === 5 && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+              >
+                <DeclarationStep
+                  formData={declaration}
+                  onFormChange={(field, value) => setDeclaration(prev => ({ ...prev, [field]: value }))}
+                />
               </motion.div>
             )}
           </div>
@@ -376,19 +306,24 @@ const TempleRegister = () => {
               Previous
             </Button>
             
-            {currentStep < 4 ? (
+            {currentStep < 5 ? (
               <Button type="button" onClick={handleNext} className="gap-2">
                 Next
                 <ArrowRight className="h-4 w-4" />
               </Button>
             ) : (
-              <Button type="submit" className="gap-2">
+              <Button type="submit" className="gap-2" disabled={!canSubmit}>
                 Submit Registration
                 <Check className="h-4 w-4" />
               </Button>
             )}
           </div>
         </form>
+
+        {/* Step indicator for mobile */}
+        <p className="text-center text-sm text-muted-foreground mt-6">
+          Step {currentStep} of {steps.length}
+        </p>
       </main>
     </div>
   );
