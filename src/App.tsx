@@ -54,6 +54,17 @@ import SettingsLayout from "./pages/temple/SettingsLayout";
 import TempleProfile from "./pages/temple/settings/TempleProfile";
 // Temple Structure Module
 import TempleStructureLayout from "./pages/temple/structure/TempleStructureLayout";
+// Supplier Management Module
+import SupplierLayout from "./pages/temple/SupplierLayout";
+import SupplierDashboard from "./pages/temple/suppliers/Dashboard";
+import SupplierRegistry from "./pages/temple/suppliers/Registry";
+import SupplierOnboarding from "./pages/temple/suppliers/Onboarding";
+import SupplierCategories from "./pages/temple/suppliers/Categories";
+import SupplierPurchaseOrders from "./pages/temple/suppliers/PurchaseOrders";
+import SupplierDeliveries from "./pages/temple/suppliers/Deliveries";
+import SupplierPayments from "./pages/temple/suppliers/Payments";
+import SupplierPerformance from "./pages/temple/suppliers/Performance";
+import SupplierReports from "./pages/temple/suppliers/Reports";
 // Devotee & Volunteer Module
 import DevoteesLayout from "./pages/temple/DevoteesLayout";
 import DevoteeDashboard from "./pages/temple/devotees/Dashboard";
@@ -103,6 +114,19 @@ const App = () => (
             <Route path="halls" element={<Halls />} />
             <Route path="counters" element={<Counters />} />
             <Route path="hierarchy" element={<HierarchyView />} />
+          </Route>
+          
+          {/* Supplier Management Module */}
+          <Route path="/temple/suppliers" element={<SupplierLayout />}>
+            <Route index element={<SupplierDashboard />} />
+            <Route path="registry" element={<SupplierRegistry />} />
+            <Route path="onboarding" element={<SupplierOnboarding />} />
+            <Route path="categories" element={<SupplierCategories />} />
+            <Route path="purchase-orders" element={<SupplierPurchaseOrders />} />
+            <Route path="deliveries" element={<SupplierDeliveries />} />
+            <Route path="payments" element={<SupplierPayments />} />
+            <Route path="performance" element={<SupplierPerformance />} />
+            <Route path="reports" element={<SupplierReports />} />
           </Route>
           
           {/* Offerings Module */}
