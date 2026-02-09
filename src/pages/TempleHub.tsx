@@ -30,6 +30,7 @@ import {
   Boxes,
   UserCheck,
   Landmark,
+  Truck,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -101,6 +102,14 @@ const allModules = [
     path: "/temple/bookings",
     description: "Online & counter bookings, attendance, reports",
     category: "core",
+  },
+  {
+    id: "suppliers",
+    title: "Supplier Management",
+    icon: Truck,
+    enabled: true,
+    path: "/temple/suppliers",
+    description: "Vendors, purchase orders, deliveries, payments",
   },
   {
     id: "projects",
