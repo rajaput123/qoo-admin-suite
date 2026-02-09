@@ -54,6 +54,14 @@ import SettingsLayout from "./pages/temple/SettingsLayout";
 import TempleProfile from "./pages/temple/settings/TempleProfile";
 // Temple Structure Module
 import TempleStructureLayout from "./pages/temple/structure/TempleStructureLayout";
+// Devotee & Volunteer Module
+import DevoteesLayout from "./pages/temple/DevoteesLayout";
+import DevoteeDashboard from "./pages/temple/devotees/Dashboard";
+import DevoteesList from "./pages/temple/devotees/DevoteesList";
+import DevoteeVolunteers from "./pages/temple/devotees/Volunteers";
+import DevoteeGroups from "./pages/temple/devotees/Groups";
+import DevoteeEngagement from "./pages/temple/devotees/Engagement";
+import DevoteeReports from "./pages/temple/devotees/Reports";
 import MainTemple from "./pages/temple/structure/MainTemple";
 import Shrines from "./pages/temple/structure/Shrines";
 import Sacred from "./pages/temple/structure/Sacred";
@@ -130,6 +138,16 @@ const App = () => (
           
           {/* Placeholder routes for other Temple modules */}
           <Route path="/temple/donations" element={<TempleHub />} />
+          
+          {/* Devotee & Volunteer Module */}
+          <Route path="/temple/devotees" element={<DevoteesLayout />}>
+            <Route index element={<DevoteeDashboard />} />
+            <Route path="list" element={<DevoteesList />} />
+            <Route path="volunteers" element={<DevoteeVolunteers />} />
+            <Route path="groups" element={<DevoteeGroups />} />
+            <Route path="engagement" element={<DevoteeEngagement />} />
+            <Route path="reports" element={<DevoteeReports />} />
+          </Route>
           <Route path="/temple/devotees" element={<TempleHub />} />
           <Route path="/temple/events" element={<TempleHub />} />
           <Route path="/temple/communication" element={<TempleHub />} />
