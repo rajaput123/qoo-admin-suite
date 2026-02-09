@@ -107,6 +107,16 @@ import TaskTemplates from "./pages/temple/tasks/TaskTemplates";
 import TaskAssignment from "./pages/temple/tasks/TaskAssignment";
 import TaskExecution from "./pages/temple/tasks/TaskExecution";
 import TaskReports from "./pages/temple/tasks/TaskReports";
+// Crowd & Capacity Management Module
+import CrowdLayout from "./pages/temple/CrowdLayout";
+import ZoneConfiguration from "./pages/temple/crowd/ZoneConfiguration";
+import SlotFlowControl from "./pages/temple/crowd/SlotFlowControl";
+import RealTimeMonitoring from "./pages/temple/crowd/RealTimeMonitoring";
+import CrowdAnalytics from "./pages/temple/crowd/CrowdAnalytics";
+import PredictionRisk from "./pages/temple/crowd/PredictionRisk";
+import CompliancePreparedness from "./pages/temple/crowd/CompliancePreparedness";
+import DroneMonitoring from "./pages/temple/crowd/DroneMonitoring";
+import AlertsEmergency from "./pages/temple/crowd/AlertsEmergency";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -227,7 +237,17 @@ const App = () => (
           <Route path="/temple/events" element={<TempleHub />} />
           <Route path="/temple/communication" element={<TempleHub />} />
           <Route path="/temple/live" element={<TempleHub />} />
-          <Route path="/temple/crowd" element={<TempleHub />} />
+          {/* Crowd & Capacity Management Module */}
+          <Route path="/temple/crowd" element={<CrowdLayout />}>
+            <Route index element={<ZoneConfiguration />} />
+            <Route path="flow" element={<SlotFlowControl />} />
+            <Route path="live" element={<RealTimeMonitoring />} />
+            <Route path="analytics" element={<CrowdAnalytics />} />
+            <Route path="prediction" element={<PredictionRisk />} />
+            <Route path="compliance" element={<CompliancePreparedness />} />
+            <Route path="drone" element={<DroneMonitoring />} />
+            <Route path="alerts" element={<AlertsEmergency />} />
+          </Route>
           <Route path="/temple/people" element={<TempleHub />} />
           <Route path="/temple/assets" element={<TempleHub />} />
           
