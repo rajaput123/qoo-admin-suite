@@ -31,6 +31,7 @@ import {
   UserCheck,
   Landmark,
   Truck,
+  UtensilsCrossed,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -119,6 +120,15 @@ const allModules = [
     enabled: true,
     path: "/temple/prasadam",
     description: "Production, batches, counters, distribution",
+    category: "core",
+  },
+  {
+    id: "kitchen",
+    title: "Kitchen Management",
+    icon: UtensilsCrossed,
+    enabled: true,
+    path: "/temple/kitchen",
+    description: "Annadanam, meal planning, kitchen operations",
     category: "core",
   },
   {
