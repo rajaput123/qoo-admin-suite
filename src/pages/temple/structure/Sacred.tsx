@@ -4,13 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, Heart, Clock, MapPin, Image, History, FileText, Users } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Plus, Pencil, Trash2, Heart, Clock, MapPin, Image, History, Users } from "lucide-react";
 import { toast } from "sonner";
+import SearchableSelect from "@/components/SearchableSelect";
+import CustomFieldsSection, { CustomField } from "@/components/CustomFieldsSection";
 
 interface SacredArea {
   id: string;
@@ -69,7 +71,22 @@ const mockSacredAreas: SacredArea[] = [
   },
 ];
 
-const parentOptions = ["Main Temple", "Padmavathi Shrine", "Varadaraja Shrine"];
+const parentOptions = [
+  { value: "Main Temple", label: "Main Temple" },
+  { value: "Padmavathi Shrine", label: "Padmavathi Shrine" },
+  { value: "Varadaraja Shrine", label: "Varadaraja Shrine" },
+];
+
+const statusOptions = [
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Inactive" },
+];
+
+const guruOptions = [
+  { value: "Sri Ramanujacharya", label: "Sri Ramanujacharya" },
+  { value: "Sri Vedanta Desika", label: "Sri Vedanta Desika" },
+  { value: "Sri Manavala Mamunigal", label: "Sri Manavala Mamunigal" },
+];
 
 const Sacred = () => {
   const [sacredAreas, setSacredAreas] = useState<SacredArea[]>(mockSacredAreas);
@@ -77,6 +94,9 @@ const Sacred = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [editingArea, setEditingArea] = useState<SacredArea | null>(null);
   const [viewingArea, setViewingArea] = useState<SacredArea | null>(null);
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
+  const [isAddGuruOpen, setIsAddGuruOpen] = useState(false);
+  const [isAddParentOpen, setIsAddParentOpen] = useState(false);
   const [formData, setFormData] = useState({
     sacredName: "",
     guruName: "",
@@ -104,6 +124,7 @@ const Sacred = () => {
       rituals: "",
     });
     setEditingArea(null);
+    setCustomFields([]);
   };
 
   const handleOpenModal = (area?: SacredArea) => {
@@ -173,7 +194,7 @@ const Sacred = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Sacred (Samadhi)</h1>
@@ -262,7 +283,7 @@ const Sacred = () => {
 
       {/* View Details Modal */}
       <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
-        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto bg-background">
           <DialogHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -282,46 +303,25 @@ const Sacred = () => {
 
           <Tabs defaultValue="overview" className="mt-4">
             <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
-              <TabsTrigger 
-                value="overview" 
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="overview" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Overview
               </TabsTrigger>
-              <TabsTrigger 
-                value="details"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="details" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Details
               </TabsTrigger>
-              <TabsTrigger 
-                value="timings"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="timings" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Timings
               </TabsTrigger>
-              <TabsTrigger 
-                value="rituals"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="rituals" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Rituals
               </TabsTrigger>
-              <TabsTrigger 
-                value="gallery"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="gallery" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Gallery
               </TabsTrigger>
-              <TabsTrigger 
-                value="history"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="history" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 History
               </TabsTrigger>
-              <TabsTrigger 
-                value="location"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="location" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Location
               </TabsTrigger>
             </TabsList>
@@ -443,7 +443,7 @@ const Sacred = () => {
 
       {/* Add/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto bg-background">
           <DialogHeader>
             <DialogTitle>{editingArea ? "Edit Sacred Area" : "Add New Sacred Area"}</DialogTitle>
             <DialogDescription>
@@ -458,16 +458,19 @@ const Sacred = () => {
                   id="sacredName"
                   value={formData.sacredName}
                   onChange={(e) => setFormData({ ...formData, sacredName: e.target.value })}
-                  placeholder="Enter sacred area name"
+                  placeholder="Enter name"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="guruName">Guru Name</Label>
-                <Input
-                  id="guruName"
+                <Label>Guru Name</Label>
+                <SearchableSelect
+                  options={guruOptions}
                   value={formData.guruName}
-                  onChange={(e) => setFormData({ ...formData, guruName: e.target.value })}
-                  placeholder="Enter guru name"
+                  onValueChange={(value) => setFormData({ ...formData, guruName: value })}
+                  placeholder="Select guru"
+                  searchPlaceholder="Search gurus..."
+                  onAddNew={() => setIsAddGuruOpen(true)}
+                  addNewLabel="Add New Guru"
                 />
               </div>
             </div>
@@ -482,20 +485,16 @@ const Sacred = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="parentStructure">Parent Structure</Label>
-                <Select
+                <Label>Parent Structure</Label>
+                <SearchableSelect
+                  options={parentOptions}
                   value={formData.parentStructure}
                   onValueChange={(value) => setFormData({ ...formData, parentStructure: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select parent structure" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {parentOptions.map((option) => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder="Select parent"
+                  searchPlaceholder="Search structures..."
+                  onAddNew={() => setIsAddParentOpen(true)}
+                  addNewLabel="Add New Structure"
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -505,23 +504,18 @@ const Sacred = () => {
                   id="timings"
                   value={formData.timings}
                   onChange={(e) => setFormData({ ...formData, timings: e.target.value })}
-                  placeholder="e.g., 5:00 AM - 9:00 PM"
+                  placeholder="e.g., 6:00 AM - 8:00 PM"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select
+                <Label>Status</Label>
+                <SearchableSelect
+                  options={statusOptions}
                   value={formData.status}
-                  onValueChange={(value: "active" | "inactive") => setFormData({ ...formData, status: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
+                  onValueChange={(value) => setFormData({ ...formData, status: value as "active" | "inactive" })}
+                  placeholder="Select status"
+                  searchPlaceholder="Search..."
+                />
               </div>
             </div>
             <div className="space-y-2">
@@ -539,7 +533,7 @@ const Sacred = () => {
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder="Enter notes"
+                placeholder="Enter notes about this sacred area"
                 rows={2}
               />
             </div>
@@ -549,7 +543,7 @@ const Sacred = () => {
                 id="rituals"
                 value={formData.rituals}
                 onChange={(e) => setFormData({ ...formData, rituals: e.target.value })}
-                placeholder="Enter rituals and ceremonies information"
+                placeholder="Enter rituals performed here"
                 rows={2}
               />
             </div>
@@ -563,10 +557,55 @@ const Sacred = () => {
                 rows={3}
               />
             </div>
+
+            <Separator />
+
+            {/* Custom Fields */}
+            <CustomFieldsSection fields={customFields} onFieldsChange={setCustomFields} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCloseModal}>Cancel</Button>
             <Button onClick={handleSave}>{editingArea ? "Update" : "Add"} Sacred Area</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add New Guru Dialog */}
+      <Dialog open={isAddGuruOpen} onOpenChange={setIsAddGuruOpen}>
+        <DialogContent className="sm:max-w-[400px] bg-background">
+          <DialogHeader>
+            <DialogTitle>Add New Guru</DialogTitle>
+            <DialogDescription>Create a new guru entry</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Guru Name</Label>
+              <Input placeholder="Enter guru name" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddGuruOpen(false)}>Cancel</Button>
+            <Button onClick={() => { setIsAddGuruOpen(false); toast.success("Guru added"); }}>Add Guru</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add New Parent Structure Dialog */}
+      <Dialog open={isAddParentOpen} onOpenChange={setIsAddParentOpen}>
+        <DialogContent className="sm:max-w-[400px] bg-background">
+          <DialogHeader>
+            <DialogTitle>Add New Structure</DialogTitle>
+            <DialogDescription>Create a new parent structure</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Structure Name</Label>
+              <Input placeholder="Enter structure name" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddParentOpen(false)}>Cancel</Button>
+            <Button onClick={() => { setIsAddParentOpen(false); toast.success("Structure added"); }}>Add Structure</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -4,14 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, DoorOpen, Check, X, Clock, MapPin, Image, History, Users, CalendarDays, FileText } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Plus, Pencil, Trash2, DoorOpen, Check, X, Clock, MapPin, Image, Users, CalendarDays, FileText } from "lucide-react";
 import { toast } from "sonner";
+import SearchableSelect from "@/components/SearchableSelect";
+import CustomFieldsSection, { CustomField } from "@/components/CustomFieldsSection";
 
 interface Hall {
   id: string;
@@ -86,7 +88,16 @@ const mockHalls: Hall[] = [
   },
 ];
 
-const parentOptions = ["Main Temple", "Padmavathi Shrine", "Varadaraja Shrine"];
+const parentOptions = [
+  { value: "Main Temple", label: "Main Temple" },
+  { value: "Padmavathi Shrine", label: "Padmavathi Shrine" },
+  { value: "Varadaraja Shrine", label: "Varadaraja Shrine" },
+];
+
+const statusOptions = [
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Inactive" },
+];
 
 const Halls = () => {
   const [halls, setHalls] = useState<Hall[]>(mockHalls);
@@ -94,6 +105,8 @@ const Halls = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [editingHall, setEditingHall] = useState<Hall | null>(null);
   const [viewingHall, setViewingHall] = useState<Hall | null>(null);
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
+  const [isAddParentOpen, setIsAddParentOpen] = useState(false);
   const [formData, setFormData] = useState({
     hallName: "",
     capacity: 0,
@@ -121,6 +134,7 @@ const Halls = () => {
       bookingRules: "",
     });
     setEditingHall(null);
+    setCustomFields([]);
   };
 
   const handleOpenModal = (hall?: Hall) => {
@@ -190,7 +204,7 @@ const Halls = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Halls</h1>
@@ -237,7 +251,7 @@ const Halls = () => {
                   <TableCell>{hall.capacity.toLocaleString()}</TableCell>
                   <TableCell>
                     {hall.bookingAllowed ? (
-                      <div className="flex items-center gap-1 text-green-600">
+                      <div className="flex items-center gap-1 text-primary">
                         <Check className="h-4 w-4" />
                         <span>Yes</span>
                       </div>
@@ -291,7 +305,7 @@ const Halls = () => {
 
       {/* View Details Modal */}
       <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
-        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto bg-background">
           <DialogHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -305,7 +319,7 @@ const Halls = () => {
               </div>
               <div className="flex items-center gap-2">
                 {viewingHall?.bookingAllowed && (
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
                     <CalendarDays className="h-3 w-3 mr-1" />
                     Bookable
                   </Badge>
@@ -319,46 +333,25 @@ const Halls = () => {
 
           <Tabs defaultValue="overview" className="mt-4">
             <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
-              <TabsTrigger 
-                value="overview" 
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="overview" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Overview
               </TabsTrigger>
-              <TabsTrigger 
-                value="details"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="details" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Details
               </TabsTrigger>
-              <TabsTrigger 
-                value="timings"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="timings" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Timings
               </TabsTrigger>
-              <TabsTrigger 
-                value="amenities"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="amenities" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Amenities
               </TabsTrigger>
-              <TabsTrigger 
-                value="booking"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="booking" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Booking Rules
               </TabsTrigger>
-              <TabsTrigger 
-                value="gallery"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="gallery" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Gallery
               </TabsTrigger>
-              <TabsTrigger 
-                value="location"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="location" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Location
               </TabsTrigger>
             </TabsList>
@@ -484,7 +477,7 @@ const Halls = () => {
 
       {/* Add/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto bg-background">
           <DialogHeader>
             <DialogTitle>{editingHall ? "Edit Hall" : "Add New Hall"}</DialogTitle>
             <DialogDescription>
@@ -507,54 +500,44 @@ const Halls = () => {
                 <Input
                   id="capacity"
                   type="number"
-                  value={formData.capacity || ""}
+                  value={formData.capacity}
                   onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) || 0 })}
                   placeholder="Enter capacity"
                 />
               </div>
             </div>
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="space-y-0.5">
-                <Label htmlFor="bookingAllowed">Booking Allowed</Label>
-                <p className="text-sm text-muted-foreground">Enable online booking for this hall</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Parent Structure</Label>
+                <SearchableSelect
+                  options={parentOptions}
+                  value={formData.parentStructure}
+                  onValueChange={(value) => setFormData({ ...formData, parentStructure: value })}
+                  placeholder="Select parent"
+                  searchPlaceholder="Search structures..."
+                  onAddNew={() => setIsAddParentOpen(true)}
+                  addNewLabel="Add New Structure"
+                />
               </div>
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <SearchableSelect
+                  options={statusOptions}
+                  value={formData.status}
+                  onValueChange={(value) => setFormData({ ...formData, status: value as "active" | "inactive" })}
+                  placeholder="Select status"
+                  searchPlaceholder="Search..."
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 border rounded-lg">
               <Switch
-                id="bookingAllowed"
                 checked={formData.bookingAllowed}
                 onCheckedChange={(checked) => setFormData({ ...formData, bookingAllowed: checked })}
               />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="parentStructure">Parent Structure</Label>
-                <Select
-                  value={formData.parentStructure}
-                  onValueChange={(value) => setFormData({ ...formData, parentStructure: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select parent structure" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {parentOptions.map((option) => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value: "active" | "inactive") => setFormData({ ...formData, status: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div>
+                <Label>Booking Allowed</Label>
+                <p className="text-xs text-muted-foreground">Enable if this hall can be booked for events</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -583,7 +566,7 @@ const Halls = () => {
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Enter description"
+                placeholder="Enter hall description"
                 rows={3}
               />
             </div>
@@ -607,10 +590,35 @@ const Halls = () => {
                 rows={3}
               />
             </div>
+
+            <Separator />
+
+            {/* Custom Fields */}
+            <CustomFieldsSection fields={customFields} onFieldsChange={setCustomFields} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCloseModal}>Cancel</Button>
             <Button onClick={handleSave}>{editingHall ? "Update" : "Add"} Hall</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add New Parent Structure Dialog */}
+      <Dialog open={isAddParentOpen} onOpenChange={setIsAddParentOpen}>
+        <DialogContent className="sm:max-w-[400px] bg-background">
+          <DialogHeader>
+            <DialogTitle>Add New Structure</DialogTitle>
+            <DialogDescription>Create a new parent structure</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Structure Name</Label>
+              <Input placeholder="Enter structure name" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddParentOpen(false)}>Cancel</Button>
+            <Button onClick={() => { setIsAddParentOpen(false); toast.success("Structure added"); }}>Add Structure</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
