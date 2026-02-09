@@ -169,11 +169,10 @@ const allModules = [
     id: "crowd",
     title: "Crowd & Capacity Management",
     icon: MapPin,
-    enabled: false,
+    enabled: true,
     path: "/temple/crowd",
     description: "Real-time crowd monitoring",
     category: "operations",
-    planRequired: "Enterprise",
   },
   {
     id: "devotees",
@@ -188,11 +187,10 @@ const allModules = [
     id: "freelancer",
     title: "Freelancer",
     icon: Briefcase,
-    enabled: false,
+    enabled: true,
     path: "/temple/freelancer",
     description: "Manage freelance workers",
     category: "engagement",
-    planRequired: "Enterprise",
   },
   {
     id: "vip-devotee",
@@ -333,8 +331,7 @@ const TempleHub = () => {
   const isSuspended = tenantData.status === "suspended";
   const isExpired = tenantData.status === "expired";
 
-  const enabledModules = allModules.filter((m) => m.enabled && !isSuspended);
-  const disabledModules = allModules.filter((m) => !m.enabled);
+  const enabledModules = allModules.filter((m) => !isSuspended);
 
   const getModuleState = (module: typeof allModules[0]) => {
     if (isSuspended) return "suspended";
@@ -526,31 +523,6 @@ const TempleHub = () => {
           </div>
         )}
 
-        {/* Locked Modules - Require Upgrade */}
-        {!isSuspended && disabledModules.length > 0 && (
-          <div className="mt-8">
-            <h2 className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wide">Available on Upgrade</h2>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-4">
-              {disabledModules.map((module) => (
-                <Tooltip key={module.id} delayDuration={300}>
-                  <TooltipTrigger asChild>
-                    <div className="flex flex-col items-center text-center opacity-50 cursor-not-allowed">
-                      <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-2 bg-muted/50 relative">
-                        <module.icon className="h-6 w-6 text-muted-foreground" strokeWidth={1.5} />
-                        <Crown className="h-3.5 w-3.5 text-amber-500 absolute -top-1 -right-1" />
-                      </div>
-                      <span className="text-xs font-medium text-muted-foreground">{module.title}</span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="max-w-[200px] text-center">
-                    <p className="text-xs">{module.description}</p>
-                    <p className="text-xs text-primary mt-1">Requires {module.planRequired} plan</p>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Quick Actions */}
         {!isSuspended && (
