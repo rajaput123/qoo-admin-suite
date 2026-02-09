@@ -44,7 +44,12 @@ import PricingRules from "./pages/temple/offerings/PricingRules";
 import PriestAssignment from "./pages/temple/offerings/PriestAssignment";
 import OfferingsReports from "./pages/temple/offerings/Reports";
 import BookingsLayout from "./pages/temple/BookingsLayout";
+import BookingsToday from "./pages/temple/bookings/BookingsToday";
 import AllBookings from "./pages/temple/bookings/AllBookings";
+import CounterBooking from "./pages/temple/bookings/CounterBooking";
+import CancellationsRefunds from "./pages/temple/bookings/CancellationsRefunds";
+import Attendance from "./pages/temple/bookings/Attendance";
+import BookingReports from "./pages/temple/bookings/BookingReports";
 import SettingsLayout from "./pages/temple/SettingsLayout";
 import TempleProfile from "./pages/temple/settings/TempleProfile";
 // Temple Structure Module
@@ -105,11 +110,12 @@ const App = () => (
           
           {/* Bookings Module */}
           <Route path="/temple/bookings" element={<BookingsLayout />}>
-            <Route index element={<AllBookings />} />
-            <Route path="today" element={<AllBookings />} />
-            <Route path="upcoming" element={<AllBookings />} />
-            <Route path="completed" element={<AllBookings />} />
-            <Route path="cancelled" element={<AllBookings />} />
+            <Route index element={<BookingsToday />} />
+            <Route path="all" element={<AllBookings />} />
+            <Route path="counter" element={<CounterBooking />} />
+            <Route path="cancellations" element={<CancellationsRefunds />} />
+            <Route path="attendance" element={<Attendance />} />
+            <Route path="reports" element={<BookingReports />} />
           </Route>
           
           {/* Settings Module */}
