@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -19,6 +20,11 @@ import {
   Sparkles,
   Video,
   MapPin,
+  Briefcase,
+  X,
+  Crown,
+  ShieldAlert,
+  Clock,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -34,26 +40,35 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
-// Mock tenant data
+// Account status types
+type AccountStatus = "active" | "trial" | "expired" | "suspended" | "compliance_pending";
+
+// Mock tenant data - simulates different states
 const tenantData = {
   templeName: "Sri Venkateswara Temple",
   tenantId: "TNT-2024-001234",
   plan: "Premium",
-  status: "Active",
-  trialDaysLeft: null, // null means not in trial
+  tier: "Standard",
+  status: "trial" as AccountStatus,
+  trialDaysLeft: 14,
   region: "Karnataka",
+  healthScore: "Healthy",
+  subscriptionExpiry: "2024-03-15",
+  complianceIssues: [],
 };
 
-// Modules with feature flags
-const modules = [
+// All Temple Management Modules with feature flags and plan requirements
+const allModules = [
   {
     id: "temple-info",
     title: "Temple Info",
     icon: Building2,
     enabled: true,
     path: "/temple/info",
-    description: "Manage temple profile, timings, and gallery",
+    description: "Temple profile, structure, facilities, and media",
+    category: "core",
   },
   {
     id: "sevas",
@@ -61,7 +76,9 @@ const modules = [
     icon: Sparkles,
     enabled: true,
     path: "/temple/sevas",
-    description: "Configure seva offerings and darshan slots",
+    description: "Seva categories, darshan slots, pricing",
+    category: "core",
+    badge: "8 Active",
   },
   {
     id: "bookings",
@@ -69,7 +86,8 @@ const modules = [
     icon: Calendar,
     enabled: true,
     path: "/temple/bookings",
-    description: "View and manage all bookings",
+    description: "Manage all seva and darshan bookings",
+    category: "core",
     badge: "12 Today",
   },
   {
@@ -78,24 +96,18 @@ const modules = [
     icon: Heart,
     enabled: true,
     path: "/temple/donations",
-    description: "Track donations and generate receipts",
+    description: "Online, offline donations and receipts",
+    category: "core",
     badge: "₹24,500",
   },
   {
     id: "devotees",
-    title: "Devotees",
+    title: "Devotees & Volunteers",
     icon: Users,
     enabled: true,
     path: "/temple/devotees",
-    description: "Manage devotee database and VIPs",
-  },
-  {
-    id: "volunteers",
-    title: "Volunteers",
-    icon: UsersRound,
-    enabled: true,
-    path: "/temple/volunteers",
-    description: "Volunteer roster and scheduling",
+    description: "Devotee database, VIPs, and volunteer management",
+    category: "engagement",
   },
   {
     id: "events",
@@ -103,8 +115,18 @@ const modules = [
     icon: Calendar,
     enabled: true,
     path: "/temple/events",
-    description: "Create and manage temple events",
+    description: "Event creation, registration, capacity",
+    category: "engagement",
     badge: "3 Upcoming",
+  },
+  {
+    id: "communication",
+    title: "PR & Communication",
+    icon: Megaphone,
+    enabled: true,
+    path: "/temple/communication",
+    description: "Announcements, notifications, media",
+    category: "engagement",
   },
   {
     id: "live",
@@ -112,25 +134,28 @@ const modules = [
     icon: Video,
     enabled: false,
     path: "/temple/live",
-    description: "Stream live darshan and events",
+    description: "Live darshan and event streaming",
+    category: "engagement",
     planRequired: "Enterprise",
   },
   {
-    id: "communication",
-    title: "PR & Comms",
-    icon: Megaphone,
-    enabled: true,
-    path: "/temple/communication",
-    description: "Announcements and notifications",
-  },
-  {
     id: "crowd",
-    title: "Crowd Control",
+    title: "Crowd & Capacity",
     icon: MapPin,
     enabled: false,
     path: "/temple/crowd",
     description: "Real-time crowd monitoring",
+    category: "operations",
     planRequired: "Enterprise",
+  },
+  {
+    id: "people",
+    title: "People & HR",
+    icon: Briefcase,
+    enabled: true,
+    path: "/temple/people",
+    description: "Employees, shifts, attendance, leaves",
+    category: "operations",
   },
   {
     id: "assets",
@@ -139,14 +164,16 @@ const modules = [
     enabled: true,
     path: "/temple/assets",
     description: "Inventory and asset management",
+    category: "operations",
   },
   {
     id: "tasks",
-    title: "Tasks",
+    title: "Projects & Tasks",
     icon: ClipboardList,
     enabled: true,
     path: "/temple/tasks",
-    description: "Task and project management",
+    description: "Project and task management",
+    category: "operations",
     badge: "5 Pending",
   },
   {
@@ -155,7 +182,8 @@ const modules = [
     icon: BarChart3,
     enabled: true,
     path: "/temple/reports",
-    description: "Analytics and reports",
+    description: "Analytics and business reports",
+    category: "analytics",
   },
   {
     id: "settings",
@@ -163,16 +191,18 @@ const modules = [
     icon: Settings,
     enabled: true,
     path: "/temple/settings",
-    description: "Temple account settings",
+    description: "Temple profile, subscription, users",
+    category: "system",
   },
 ];
 
 // Operational snapshot data
 const snapshotData = [
-  { label: "Today's Bookings", value: "12", trend: "+3" },
-  { label: "Today's Donations", value: "₹24,500", trend: "+₹5,200" },
-  { label: "Upcoming Events", value: "3", trend: null },
-  { label: "Pending Tasks", value: "5", trend: "-2" },
+  { label: "Today's Bookings", value: "12", trend: "+3", icon: Calendar },
+  { label: "Today's Donations", value: "₹24,500", trend: "+₹5.2K", icon: Heart },
+  { label: "Upcoming Events", value: "3", trend: null, icon: Calendar },
+  { label: "Pending Tasks", value: "5", trend: "-2", icon: ClipboardList },
+  { label: "Staff on Duty", value: "8", trend: null, icon: Users },
 ];
 
 const containerVariants = {
@@ -199,16 +229,100 @@ const itemVariants = {
   },
 };
 
+// Account Status Banner Component
+const AccountStatusBanner = ({ 
+  status, 
+  trialDaysLeft, 
+  onDismiss 
+}: { 
+  status: AccountStatus; 
+  trialDaysLeft?: number;
+  onDismiss?: () => void;
+}) => {
+  const bannerConfig = {
+    trial: {
+      bg: "bg-amber-50 border-amber-200",
+      text: "text-amber-800",
+      icon: Clock,
+      message: `Trial Period: ${trialDaysLeft} days remaining`,
+      action: "Upgrade Now",
+    },
+    expired: {
+      bg: "bg-red-50 border-red-200",
+      text: "text-red-800",
+      icon: AlertCircle,
+      message: "Your subscription has expired. Some features are restricted.",
+      action: "Renew Subscription",
+    },
+    suspended: {
+      bg: "bg-red-50 border-red-200",
+      text: "text-red-800",
+      icon: ShieldAlert,
+      message: "Your account has been suspended. Please contact support.",
+      action: "Contact Support",
+    },
+    compliance_pending: {
+      bg: "bg-orange-50 border-orange-200",
+      text: "text-orange-800",
+      icon: AlertCircle,
+      message: "Compliance verification pending. Some features may be restricted.",
+      action: "View Details",
+    },
+    active: null,
+  };
+
+  const config = bannerConfig[status];
+  if (!config) return null;
+
+  const IconComponent = config.icon;
+
+  return (
+    <div className={`${config.bg} border-b`}>
+      <div className="max-w-5xl mx-auto px-6 py-2.5 flex items-center justify-between">
+        <div className={`flex items-center gap-2 ${config.text}`}>
+          <IconComponent className="h-4 w-4" />
+          <span className="text-sm font-medium">{config.message}</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <button className="text-sm font-medium text-primary hover:underline">
+            {config.action}
+          </button>
+          {onDismiss && status === "trial" && (
+            <button onClick={onDismiss} className="p-1 hover:bg-amber-100 rounded transition-colors">
+              <X className="h-3.5 w-3.5 text-amber-600" />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const TempleHub = () => {
   const navigate = useNavigate();
+  const [showBanner, setShowBanner] = useState(true);
 
-  const enabledModules = modules.filter((m) => m.enabled);
-  const disabledModules = modules.filter((m) => !m.enabled);
+  // Filter modules based on status
+  const isSuspended = tenantData.status === "suspended";
+  const isExpired = tenantData.status === "expired";
+
+  const enabledModules = allModules.filter((m) => m.enabled && !isSuspended);
+  const disabledModules = allModules.filter((m) => !m.enabled);
+  const restrictedModules = isExpired 
+    ? allModules.filter(m => m.enabled && m.category !== "system") 
+    : [];
+
+  const getModuleState = (module: typeof allModules[0]) => {
+    if (isSuspended) return "suspended";
+    if (isExpired && module.category !== "system") return "expired";
+    if (!module.enabled) return "locked";
+    return "enabled";
+  };
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card">
+      <header className="border-b border-border bg-card sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
           <motion.div 
             initial={{ opacity: 0, x: -10 }}
@@ -216,7 +330,8 @@ const TempleHub = () => {
             className="flex items-center gap-3"
           >
             <h1 className="text-xl font-bold text-primary">Keehoo</h1>
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" className="text-xs gap-1">
+              <Crown className="h-3 w-3" />
               {tenantData.plan}
             </Badge>
           </motion.div>
@@ -249,14 +364,18 @@ const TempleHub = () => {
                   </Avatar>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52 bg-card border shadow-lg">
-                <DropdownMenuItem className="gap-2">
+              <DropdownMenuContent align="end" className="w-52 bg-popover border shadow-lg">
+                <div className="px-2 py-1.5 border-b border-border mb-1">
+                  <p className="text-sm font-medium">Ramesh Kumar</p>
+                  <p className="text-xs text-muted-foreground">Temple Administrator</p>
+                </div>
+                <DropdownMenuItem onClick={() => navigate("/profile")} className="gap-2">
                   <User className="h-4 w-4" />
                   My Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem className="gap-2">
+                <DropdownMenuItem onClick={() => navigate("/temple/settings")} className="gap-2">
                   <Settings className="h-4 w-4" />
-                  Account Settings
+                  Temple Settings
                 </DropdownMenuItem>
                 <DropdownMenuItem className="gap-2">
                   <HelpCircle className="h-4 w-4" />
@@ -273,18 +392,22 @@ const TempleHub = () => {
         </div>
       </header>
 
-      {/* Trial Banner */}
-      {tenantData.trialDaysLeft && (
-        <div className="bg-amber-50 border-b border-amber-200">
-          <div className="max-w-5xl mx-auto px-6 py-2 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-amber-800">
-              <AlertCircle className="h-4 w-4" />
-              <span className="text-sm">Trial Period: {tenantData.trialDaysLeft} days remaining</span>
-            </div>
-            <button className="text-sm font-medium text-primary hover:underline">
-              Upgrade Now
-            </button>
-          </div>
+      {/* Account Status Banner */}
+      {showBanner && (
+        <AccountStatusBanner 
+          status={tenantData.status} 
+          trialDaysLeft={tenantData.trialDaysLeft}
+          onDismiss={() => setShowBanner(false)}
+        />
+      )}
+
+      {/* Suspended Overlay */}
+      {isSuspended && (
+        <div className="bg-red-50 border-b border-red-200 py-8 text-center">
+          <ShieldAlert className="h-12 w-12 text-red-500 mx-auto mb-3" />
+          <h2 className="text-lg font-semibold text-red-800 mb-1">Account Suspended</h2>
+          <p className="text-sm text-red-700 mb-4">Your temple account has been suspended. All modules are disabled.</p>
+          <Button variant="destructive" size="sm">Contact Support</Button>
         </div>
       )}
 
@@ -297,86 +420,134 @@ const TempleHub = () => {
           className="mb-8"
         >
           <h1 className="text-2xl font-bold text-foreground mb-1">{tenantData.templeName}</h1>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span>ID: {tenantData.tenantId}</span>
+          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+            <span className="font-mono text-xs bg-muted px-2 py-0.5 rounded">{tenantData.tenantId}</span>
             <span>•</span>
             <span>{tenantData.region}</span>
             <span>•</span>
+            <Badge 
+              variant="outline" 
+              className={`text-xs ${
+                tenantData.status === "active" 
+                  ? "text-green-700 border-green-300 bg-green-50"
+                  : tenantData.status === "trial"
+                    ? "text-amber-700 border-amber-300 bg-amber-50"
+                    : "text-red-700 border-red-300 bg-red-50"
+              }`}
+            >
+              {tenantData.status === "trial" ? "Trial" : tenantData.status.charAt(0).toUpperCase() + tenantData.status.slice(1)}
+            </Badge>
             <Badge variant="outline" className="text-xs text-green-700 border-green-300 bg-green-50">
-              {tenantData.status}
+              {tenantData.healthScore}
             </Badge>
           </div>
         </motion.div>
 
         {/* Operational Snapshot */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10"
-        >
-          {snapshotData.map((item) => (
-            <div key={item.label} className="glass-card rounded-2xl p-4">
-              <p className="text-xs text-muted-foreground mb-1">{item.label}</p>
-              <div className="flex items-end gap-2">
-                <span className="text-xl font-bold text-foreground">{item.value}</span>
-                {item.trend && (
-                  <span className="text-xs text-green-600 font-medium mb-0.5">{item.trend}</span>
-                )}
-              </div>
-            </div>
-          ))}
-        </motion.div>
-
-        {/* Module Grid */}
-        <div className="mb-6">
-          <h2 className="text-sm font-medium text-muted-foreground mb-4">MODULES</h2>
-          <motion.div 
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-4"
+        {!isSuspended && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10"
           >
-            {enabledModules.map((module) => (
-              <Tooltip key={module.id} delayDuration={300}>
-                <TooltipTrigger asChild>
-                  <motion.button
-                    variants={itemVariants}
-                    whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => navigate(module.path)}
-                    className="group flex flex-col items-center text-center focus:outline-none relative"
-                  >
-                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-2 bg-muted group-hover:bg-primary group-hover:shadow-lg transition-all duration-200">
-                      <module.icon className="h-6 w-6 text-foreground group-hover:text-primary-foreground transition-colors duration-200" strokeWidth={1.5} />
-                    </div>
-                    <span className="text-xs font-medium text-foreground">{module.title}</span>
-                    {module.badge && (
-                      <Badge className="absolute -top-1 -right-1 text-[10px] px-1.5 py-0 h-5">
-                        {module.badge}
-                      </Badge>
-                    )}
-                  </motion.button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-[200px] text-center">
-                  <p className="text-xs">{module.description}</p>
-                </TooltipContent>
-              </Tooltip>
+            {snapshotData.map((item) => (
+              <div key={item.label} className="glass-card rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <item.icon className="h-4 w-4 text-muted-foreground" />
+                  <p className="text-xs text-muted-foreground">{item.label}</p>
+                </div>
+                <div className="flex items-end gap-2">
+                  <span className="text-xl font-bold text-foreground">{item.value}</span>
+                  {item.trend && (
+                    <span className={`text-xs font-medium mb-0.5 ${
+                      item.trend.startsWith("+") ? "text-green-600" : "text-muted-foreground"
+                    }`}>
+                      {item.trend}
+                    </span>
+                  )}
+                </div>
+              </div>
             ))}
           </motion.div>
-        </div>
+        )}
 
-        {/* Locked Modules */}
-        {disabledModules.length > 0 && (
+        {/* Module Grid - Enabled */}
+        {!isSuspended && (
+          <div className="mb-8">
+            <h2 className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wide">Modules</h2>
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-4"
+            >
+              {enabledModules.map((module) => {
+                const state = getModuleState(module);
+                const isRestricted = state === "expired";
+                
+                return (
+                  <Tooltip key={module.id} delayDuration={300}>
+                    <TooltipTrigger asChild>
+                      <motion.button
+                        variants={itemVariants}
+                        whileHover={!isRestricted ? { y: -4, transition: { duration: 0.2 } } : {}}
+                        whileTap={!isRestricted ? { scale: 0.97 } : {}}
+                        onClick={() => !isRestricted && navigate(module.path)}
+                        className={`group flex flex-col items-center text-center focus:outline-none relative ${
+                          isRestricted ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
+                        disabled={isRestricted}
+                      >
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-2 transition-all duration-200 ${
+                          isRestricted 
+                            ? "bg-muted/50" 
+                            : "bg-muted group-hover:bg-primary group-hover:shadow-lg"
+                        }`}>
+                          <module.icon 
+                            className={`h-6 w-6 transition-colors duration-200 ${
+                              isRestricted 
+                                ? "text-muted-foreground" 
+                                : "text-foreground group-hover:text-primary-foreground"
+                            }`} 
+                            strokeWidth={1.5} 
+                          />
+                        </div>
+                        <span className={`text-xs font-medium ${isRestricted ? "text-muted-foreground" : "text-foreground"}`}>
+                          {module.title}
+                        </span>
+                        {module.badge && !isRestricted && (
+                          <Badge className="absolute -top-1 -right-1 text-[10px] px-1.5 py-0 h-5">
+                            {module.badge}
+                          </Badge>
+                        )}
+                      </motion.button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-[200px] text-center">
+                      <p className="text-xs">{module.description}</p>
+                      {isRestricted && (
+                        <p className="text-xs text-destructive mt-1">Subscription expired</p>
+                      )}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
+            </motion.div>
+          </div>
+        )}
+
+        {/* Locked Modules - Require Upgrade */}
+        {!isSuspended && disabledModules.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-sm font-medium text-muted-foreground mb-4">AVAILABLE ON UPGRADE</h2>
+            <h2 className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wide">Available on Upgrade</h2>
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-4">
               {disabledModules.map((module) => (
                 <Tooltip key={module.id} delayDuration={300}>
                   <TooltipTrigger asChild>
                     <div className="flex flex-col items-center text-center opacity-50 cursor-not-allowed">
-                      <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-2 bg-muted/50">
+                      <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-2 bg-muted/50 relative">
                         <module.icon className="h-6 w-6 text-muted-foreground" strokeWidth={1.5} />
+                        <Crown className="h-3.5 w-3.5 text-amber-500 absolute -top-1 -right-1" />
                       </div>
                       <span className="text-xs font-medium text-muted-foreground">{module.title}</span>
                     </div>
@@ -389,6 +560,32 @@ const TempleHub = () => {
               ))}
             </div>
           </div>
+        )}
+
+        {/* Quick Actions */}
+        {!isSuspended && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="mt-12 p-6 glass-card rounded-2xl"
+          >
+            <h3 className="font-medium text-foreground mb-4">Quick Actions</h3>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={() => navigate("/temple/bookings")}>
+                View Today's Bookings
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate("/temple/donations")}>
+                Record Donation
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate("/temple/events")}>
+                Create Event
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate("/temple/communication")}>
+                Send Announcement
+              </Button>
+            </div>
+          </motion.div>
         )}
       </main>
     </div>

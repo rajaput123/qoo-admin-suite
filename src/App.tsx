@@ -32,6 +32,15 @@ import UsageMonitoring from "./pages/tenant/UsageMonitoring";
 import SuspensionCompliance from "./pages/tenant/SuspensionCompliance";
 import RegionManagement from "./pages/tenant/RegionManagement";
 import TenantLogs from "./pages/tenant/TenantLogs";
+// Temple Admin Module Layouts
+import TempleInfoLayout from "./pages/temple/TempleInfoLayout";
+import BasicInfo from "./pages/temple/info/BasicInfo";
+import SevasLayout from "./pages/temple/SevasLayout";
+import SevaCategories from "./pages/temple/sevas/SevaCategories";
+import BookingsLayout from "./pages/temple/BookingsLayout";
+import AllBookings from "./pages/temple/bookings/AllBookings";
+import SettingsLayout from "./pages/temple/SettingsLayout";
+import TempleProfile from "./pages/temple/settings/TempleProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,6 +58,56 @@ const App = () => (
           
           {/* Temple Admin Routes */}
           <Route path="/temple-hub" element={<TempleHub />} />
+          
+          {/* Temple Info Module */}
+          <Route path="/temple/info" element={<TempleInfoLayout />}>
+            <Route index element={<BasicInfo />} />
+            <Route path="structure" element={<BasicInfo />} />
+            <Route path="layout" element={<BasicInfo />} />
+            <Route path="facilities" element={<BasicInfo />} />
+            <Route path="branches" element={<BasicInfo />} />
+            <Route path="media" element={<BasicInfo />} />
+          </Route>
+          
+          {/* Sevas & Darshan Module */}
+          <Route path="/temple/sevas" element={<SevasLayout />}>
+            <Route index element={<SevaCategories />} />
+            <Route path="list" element={<SevaCategories />} />
+            <Route path="darshan" element={<SevaCategories />} />
+            <Route path="pricing" element={<SevaCategories />} />
+            <Route path="capacity" element={<SevaCategories />} />
+          </Route>
+          
+          {/* Bookings Module */}
+          <Route path="/temple/bookings" element={<BookingsLayout />}>
+            <Route index element={<AllBookings />} />
+            <Route path="today" element={<AllBookings />} />
+            <Route path="upcoming" element={<AllBookings />} />
+            <Route path="completed" element={<AllBookings />} />
+            <Route path="cancelled" element={<AllBookings />} />
+          </Route>
+          
+          {/* Settings Module */}
+          <Route path="/temple/settings" element={<SettingsLayout />}>
+            <Route index element={<TempleProfile />} />
+            <Route path="subscription" element={<TempleProfile />} />
+            <Route path="payments" element={<TempleProfile />} />
+            <Route path="users" element={<TempleProfile />} />
+            <Route path="notifications" element={<TempleProfile />} />
+            <Route path="security" element={<TempleProfile />} />
+          </Route>
+          
+          {/* Placeholder routes for other Temple modules */}
+          <Route path="/temple/donations" element={<TempleHub />} />
+          <Route path="/temple/devotees" element={<TempleHub />} />
+          <Route path="/temple/events" element={<TempleHub />} />
+          <Route path="/temple/communication" element={<TempleHub />} />
+          <Route path="/temple/live" element={<TempleHub />} />
+          <Route path="/temple/crowd" element={<TempleHub />} />
+          <Route path="/temple/people" element={<TempleHub />} />
+          <Route path="/temple/assets" element={<TempleHub />} />
+          <Route path="/temple/tasks" element={<TempleHub />} />
+          <Route path="/temple/reports" element={<TempleHub />} />
           
           {/* Super Admin Routes */}
           <Route path="/hub" element={<Hub />} />
