@@ -92,6 +92,13 @@ import Sacred from "./pages/temple/structure/Sacred";
 import Halls from "./pages/temple/structure/Halls";
 import Counters from "./pages/temple/structure/Counters";
 import HierarchyView from "./pages/temple/structure/HierarchyView";
+// Event Management Module
+import EventsLayout from "./pages/temple/EventsLayout";
+import EventSetup from "./pages/temple/events/EventSetup";
+import RitualAttachment from "./pages/temple/events/RitualAttachment";
+import ResourcePlanning from "./pages/temple/events/ResourcePlanning";
+import ExecutionMode from "./pages/temple/events/ExecutionMode";
+import ClosureSummary from "./pages/temple/events/ClosureSummary";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -201,6 +208,14 @@ const App = () => (
             <Route path="reports" element={<DevoteeReports />} />
           </Route>
           <Route path="/temple/devotees" element={<TempleHub />} />
+          {/* Event Management Module */}
+          <Route path="/temple/events" element={<EventsLayout />}>
+            <Route index element={<EventSetup />} />
+            <Route path="rituals" element={<RitualAttachment />} />
+            <Route path="resources" element={<ResourcePlanning />} />
+            <Route path="execution" element={<ExecutionMode />} />
+            <Route path="closure" element={<ClosureSummary />} />
+          </Route>
           <Route path="/temple/events" element={<TempleHub />} />
           <Route path="/temple/communication" element={<TempleHub />} />
           <Route path="/temple/live" element={<TempleHub />} />
