@@ -7,8 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, MonitorSmartphone } from "lucide-react";
+import { Plus, Pencil, Trash2, MonitorSmartphone, Clock, MapPin, Image, FileText, Settings } from "lucide-react";
 import { toast } from "sonner";
 
 type CounterType = "donation" | "ticket" | "prasadam" | "info";
@@ -20,6 +21,13 @@ interface Counter {
   parentStructure: string;
   description: string;
   status: "active" | "inactive";
+  timings: string;
+  location: string;
+  services: string;
+  guidelines: string;
+  images: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 const mockCounters: Counter[] = [
@@ -28,32 +36,64 @@ const mockCounters: Counter[] = [
     counterName: "Hundi Counter 1",
     counterType: "donation",
     parentStructure: "Main Temple",
-    description: "Main donation collection counter",
+    description: "Main donation collection counter for general donations and special contribution schemes.",
     status: "active",
+    timings: "6:00 AM - 9:00 PM",
+    location: "Main Entrance, Right Side",
+    services: "General donations, Corpus fund contributions, Annadanam contributions, Special scheme donations",
+    guidelines: "All donations above ₹500 are eligible for 80G tax exemption. Receipts are provided immediately. Online transfer details available.",
+    images: [
+      "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=400",
+    ],
+    createdAt: "2024-01-15",
+    updatedAt: "2024-02-01",
   },
   {
     id: "2",
     counterName: "Darshan Ticket Counter",
     counterType: "ticket",
     parentStructure: "Main Temple",
-    description: "Special darshan ticket booking",
+    description: "Special darshan ticket booking counter for VIP and express darshan slots.",
     status: "active",
+    timings: "5:00 AM - 8:00 PM",
+    location: "Queue Complex, Counter 1-3",
+    services: "VIP Darshan (₹300), Express Darshan (₹100), Special Seva Darshan, Senior Citizen Darshan",
+    guidelines: "Valid ID proof required. One ticket per person. Children below 10 years free. Online booking recommended.",
+    images: [
+      "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400",
+    ],
+    createdAt: "2024-01-10",
+    updatedAt: "2024-01-28",
   },
   {
     id: "3",
     counterName: "Prasadam Counter A",
     counterType: "prasadam",
     parentStructure: "Main Temple",
-    description: "Laddu prasadam distribution",
+    description: "Laddu prasadam distribution counter for all devotees.",
     status: "active",
+    timings: "7:00 AM - 8:00 PM",
+    location: "Exit Gate, Left Side",
+    services: "Laddu Prasadam (2 per person), Special Prasadam packets, Festival special items",
+    guidelines: "One free laddu per darshan ticket. Additional laddus can be purchased. Fresh prasadam prepared daily.",
+    images: [],
+    createdAt: "2024-01-20",
+    updatedAt: "2024-01-25",
   },
   {
     id: "4",
     counterName: "Information Desk",
     counterType: "info",
     parentStructure: "Main Temple",
-    description: "Visitor information and assistance",
+    description: "Visitor information and assistance counter.",
     status: "active",
+    timings: "6:00 AM - 10:00 PM",
+    location: "Main Entrance Hall",
+    services: "Temple information, Lost and found, Wheelchair assistance, Emergency contact, Tour guidance",
+    guidelines: "Available in multiple languages. Assistance for specially-abled devotees. Free temple maps available.",
+    images: [],
+    createdAt: "2024-01-12",
+    updatedAt: "2024-01-22",
   },
 ];
 
@@ -79,13 +119,19 @@ const getCounterTypeColor = (type: CounterType) => {
 const Counters = () => {
   const [counters, setCounters] = useState<Counter[]>(mockCounters);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [editingCounter, setEditingCounter] = useState<Counter | null>(null);
+  const [viewingCounter, setViewingCounter] = useState<Counter | null>(null);
   const [formData, setFormData] = useState({
     counterName: "",
     counterType: "donation" as CounterType,
     parentStructure: "",
     description: "",
     status: "active" as "active" | "inactive",
+    timings: "",
+    location: "",
+    services: "",
+    guidelines: "",
   });
 
   const resetForm = () => {
@@ -95,6 +141,10 @@ const Counters = () => {
       parentStructure: "",
       description: "",
       status: "active",
+      timings: "",
+      location: "",
+      services: "",
+      guidelines: "",
     });
     setEditingCounter(null);
   };
@@ -108,6 +158,10 @@ const Counters = () => {
         parentStructure: counter.parentStructure,
         description: counter.description,
         status: counter.status,
+        timings: counter.timings,
+        location: counter.location,
+        services: counter.services,
+        guidelines: counter.guidelines,
       });
     } else {
       resetForm();
@@ -120,11 +174,16 @@ const Counters = () => {
     resetForm();
   };
 
+  const handleRowClick = (counter: Counter) => {
+    setViewingCounter(counter);
+    setIsViewModalOpen(true);
+  };
+
   const handleSave = () => {
     if (editingCounter) {
       setCounters(counters.map(c => 
         c.id === editingCounter.id 
-          ? { ...c, ...formData }
+          ? { ...c, ...formData, updatedAt: new Date().toISOString().split('T')[0] }
           : c
       ));
       toast.success("Counter updated successfully");
@@ -132,6 +191,9 @@ const Counters = () => {
       const newCounter: Counter = {
         id: Date.now().toString(),
         ...formData,
+        images: [],
+        createdAt: new Date().toISOString().split('T')[0],
+        updatedAt: new Date().toISOString().split('T')[0],
       };
       setCounters([...counters, newCounter]);
       toast.success("Counter added successfully");
@@ -139,9 +201,17 @@ const Counters = () => {
     handleCloseModal();
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     setCounters(counters.filter(c => c.id !== id));
     toast.success("Counter deleted successfully");
+  };
+
+  const handleEditFromView = () => {
+    if (viewingCounter) {
+      setIsViewModalOpen(false);
+      handleOpenModal(viewingCounter);
+    }
   };
 
   return (
@@ -175,6 +245,7 @@ const Counters = () => {
               <TableRow>
                 <TableHead>Counter Name</TableHead>
                 <TableHead>Counter Type</TableHead>
+                <TableHead>Timings</TableHead>
                 <TableHead>Parent Structure</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -182,13 +253,18 @@ const Counters = () => {
             </TableHeader>
             <TableBody>
               {counters.map((counter) => (
-                <TableRow key={counter.id} className="cursor-pointer hover:bg-muted/50">
+                <TableRow 
+                  key={counter.id} 
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleRowClick(counter)}
+                >
                   <TableCell className="font-medium">{counter.counterName}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className={getCounterTypeColor(counter.counterType)}>
                       {counter.counterType.charAt(0).toUpperCase() + counter.counterType.slice(1)}
                     </Badge>
                   </TableCell>
+                  <TableCell>{counter.timings}</TableCell>
                   <TableCell>{counter.parentStructure}</TableCell>
                   <TableCell>
                     <Badge variant={counter.status === "active" ? "default" : "secondary"}>
@@ -197,10 +273,21 @@ const Counters = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon" onClick={() => handleOpenModal(counter)}>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenModal(counter);
+                        }}
+                      >
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(counter.id)}>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={(e) => handleDelete(counter.id, e)}
+                      >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
@@ -209,7 +296,7 @@ const Counters = () => {
               ))}
               {counters.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                     No counters configured. Click "Add Counter" to create one.
                   </TableCell>
                 </TableRow>
@@ -219,8 +306,195 @@ const Counters = () => {
         </CardContent>
       </Card>
 
+      {/* View Details Modal */}
+      <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <MonitorSmartphone className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <DialogTitle>{viewingCounter?.counterName}</DialogTitle>
+                  <DialogDescription>{viewingCounter?.parentStructure}</DialogDescription>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className={getCounterTypeColor(viewingCounter?.counterType || "info")}>
+                  {viewingCounter?.counterType.charAt(0).toUpperCase() + (viewingCounter?.counterType.slice(1) || "")}
+                </Badge>
+                <Badge variant={viewingCounter?.status === "active" ? "default" : "secondary"}>
+                  {viewingCounter?.status}
+                </Badge>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <Tabs defaultValue="overview" className="mt-4">
+            <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
+              <TabsTrigger 
+                value="overview" 
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                Overview
+              </TabsTrigger>
+              <TabsTrigger 
+                value="details"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                Details
+              </TabsTrigger>
+              <TabsTrigger 
+                value="timings"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                Timings
+              </TabsTrigger>
+              <TabsTrigger 
+                value="services"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                Services
+              </TabsTrigger>
+              <TabsTrigger 
+                value="guidelines"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                Guidelines
+              </TabsTrigger>
+              <TabsTrigger 
+                value="gallery"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                Gallery
+              </TabsTrigger>
+              <TabsTrigger 
+                value="location"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                Location
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="mt-4 space-y-4">
+              {viewingCounter?.images && viewingCounter.images.length > 0 && (
+                <div className="rounded-lg overflow-hidden">
+                  <img 
+                    src={viewingCounter.images[0]} 
+                    alt={viewingCounter.counterName}
+                    className="w-full h-48 object-cover"
+                  />
+                </div>
+              )}
+              <div>
+                <h4 className="font-medium mb-2">Description</h4>
+                <p className="text-sm text-muted-foreground">{viewingCounter?.description}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="text-xs text-muted-foreground">Counter Type</p>
+                  <p className="font-medium capitalize">{viewingCounter?.counterType}</p>
+                </div>
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="text-xs text-muted-foreground">Operating Hours</p>
+                  <p className="font-medium">{viewingCounter?.timings}</p>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="details" className="mt-4 space-y-4">
+              <div className="grid gap-4">
+                <div className="p-4 border rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-1">Counter Name</p>
+                  <p className="font-medium">{viewingCounter?.counterName}</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-1">Counter Type</p>
+                  <p className="font-medium capitalize">{viewingCounter?.counterType}</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-1">Description</p>
+                  <p className="font-medium">{viewingCounter?.description}</p>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="timings" className="mt-4">
+              <div className="flex items-start gap-3 p-4 border rounded-lg">
+                <Clock className="h-5 w-5 text-primary mt-0.5" />
+                <div>
+                  <p className="font-medium">Operating Hours</p>
+                  <p className="text-sm text-muted-foreground mt-1">{viewingCounter?.timings}</p>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="services" className="mt-4">
+              <div className="flex items-start gap-3 p-4 border rounded-lg">
+                <Settings className="h-5 w-5 text-primary mt-0.5" />
+                <div>
+                  <p className="font-medium">Available Services</p>
+                  <p className="text-sm text-muted-foreground mt-1">{viewingCounter?.services}</p>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="guidelines" className="mt-4">
+              <div className="flex items-start gap-3 p-4 border rounded-lg">
+                <FileText className="h-5 w-5 text-primary mt-0.5" />
+                <div>
+                  <p className="font-medium">Usage Guidelines</p>
+                  <p className="text-sm text-muted-foreground mt-1">{viewingCounter?.guidelines}</p>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="gallery" className="mt-4">
+              {viewingCounter?.images && viewingCounter.images.length > 0 ? (
+                <div className="grid grid-cols-2 gap-4">
+                  {viewingCounter.images.map((img, idx) => (
+                    <div key={idx} className="rounded-lg overflow-hidden border">
+                      <img 
+                        src={img} 
+                        alt={`${viewingCounter.counterName} ${idx + 1}`}
+                        className="w-full h-32 object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                  <Image className="h-12 w-12 mb-2 opacity-50" />
+                  <p>No images available</p>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="location" className="mt-4">
+              <div className="flex items-start gap-3 p-4 border rounded-lg">
+                <MapPin className="h-5 w-5 text-primary mt-0.5" />
+                <div>
+                  <p className="font-medium">Location within Temple</p>
+                  <p className="text-sm text-muted-foreground mt-1">{viewingCounter?.location}</p>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <DialogFooter className="mt-6">
+            <Button variant="outline" onClick={() => setIsViewModalOpen(false)}>Close</Button>
+            <Button onClick={handleEditFromView}>
+              <Pencil className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingCounter ? "Edit Counter" : "Add New Counter"}</DialogTitle>
             <DialogDescription>
@@ -228,46 +502,85 @@ const Counters = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="counterName">Counter Name</Label>
-              <Input
-                id="counterName"
-                value={formData.counterName}
-                onChange={(e) => setFormData({ ...formData, counterName: e.target.value })}
-                placeholder="Enter counter name"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="counterName">Counter Name</Label>
+                <Input
+                  id="counterName"
+                  value={formData.counterName}
+                  onChange={(e) => setFormData({ ...formData, counterName: e.target.value })}
+                  placeholder="Enter counter name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="counterType">Counter Type</Label>
+                <Select
+                  value={formData.counterType}
+                  onValueChange={(value: CounterType) => setFormData({ ...formData, counterType: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {counterTypes.map((type) => (
+                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="counterType">Counter Type</Label>
-              <Select
-                value={formData.counterType}
-                onValueChange={(value: CounterType) => setFormData({ ...formData, counterType: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {counterTypes.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="parentStructure">Parent Structure</Label>
+                <Select
+                  value={formData.parentStructure}
+                  onValueChange={(value) => setFormData({ ...formData, parentStructure: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select parent structure" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {parentOptions.map((option) => (
+                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value: "active" | "inactive") => setFormData({ ...formData, status: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="parentStructure">Parent Structure</Label>
-              <Select
-                value={formData.parentStructure}
-                onValueChange={(value) => setFormData({ ...formData, parentStructure: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select parent structure" />
-                </SelectTrigger>
-                <SelectContent>
-                  {parentOptions.map((option) => (
-                    <SelectItem key={option} value={option}>{option}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="timings">Timings</Label>
+                <Input
+                  id="timings"
+                  value={formData.timings}
+                  onChange={(e) => setFormData({ ...formData, timings: e.target.value })}
+                  placeholder="e.g., 6:00 AM - 9:00 PM"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="location">Location</Label>
+                <Input
+                  id="location"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  placeholder="e.g., Main Entrance, Right Side"
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
@@ -276,23 +589,28 @@ const Counters = () => {
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Enter description"
-                rows={3}
+                rows={2}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value: "active" | "inactive") => setFormData({ ...formData, status: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="services">Services Offered</Label>
+              <Textarea
+                id="services"
+                value={formData.services}
+                onChange={(e) => setFormData({ ...formData, services: e.target.value })}
+                placeholder="List the services available at this counter"
+                rows={2}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="guidelines">Usage Guidelines</Label>
+              <Textarea
+                id="guidelines"
+                value={formData.guidelines}
+                onChange={(e) => setFormData({ ...formData, guidelines: e.target.value })}
+                placeholder="Enter guidelines for devotees"
+                rows={2}
+              />
             </div>
           </div>
           <DialogFooter>
