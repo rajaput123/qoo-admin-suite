@@ -243,7 +243,9 @@ const TempleLayout = ({ title, icon: Icon, navItems }: TempleLayoutProps) => {
           collapsed ? "ml-16" : "ml-60"
         )}
       >
-        <Outlet />
+        <div className="p-6">
+          <Outlet />
+        </div>
       </main>
     </div>
   );
