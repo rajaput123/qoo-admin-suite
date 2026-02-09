@@ -49,8 +49,8 @@ const domains = [
     title: "Tenants",
     icon: Users,
     status: "Active",
-    path: "/domain/information/overview",
-    description: "Manage temple organizations and their access permissions",
+    path: "/domain/tenants/overview",
+    description: "Manage active temple SaaS accounts, subscriptions, and usage",
   },
   {
     id: "governance",
