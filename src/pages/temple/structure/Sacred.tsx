@@ -7,8 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, Heart } from "lucide-react";
+import { Plus, Pencil, Trash2, Heart, Clock, MapPin, Image, History, FileText, Users } from "lucide-react";
 import { toast } from "sonner";
 
 interface SacredArea {
@@ -19,6 +20,13 @@ interface SacredArea {
   parentStructure: string;
   notes: string;
   status: "active" | "inactive";
+  timings: string;
+  location: string;
+  history: string;
+  rituals: string;
+  images: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 const mockSacredAreas: SacredArea[] = [
@@ -30,6 +38,16 @@ const mockSacredAreas: SacredArea[] = [
     parentStructure: "Main Temple",
     notes: "Sacred resting place of the great Vaishnava saint",
     status: "active",
+    timings: "5:00 AM - 9:00 PM",
+    location: "Inner Sanctum, East Wing",
+    history: "Sri Ramanujacharya (1017-1137 CE) was a philosopher and theologian who consolidated the Vishishtadvaita Vedanta school of Hindu philosophy. His samadhi is considered one of the most sacred sites in the temple.",
+    rituals: "Daily abhishekam at 6:00 AM. Special pujas on Tirunakshatra days. Annual Brahmotsavam celebration.",
+    images: [
+      "https://images.unsplash.com/photo-1609766857041-ed402ea8069a?w=400",
+      "https://images.unsplash.com/photo-1600693577615-9f3a0f7a16ba?w=400",
+    ],
+    createdAt: "2024-01-15",
+    updatedAt: "2024-02-01",
   },
   {
     id: "2",
@@ -39,6 +57,15 @@ const mockSacredAreas: SacredArea[] = [
     parentStructure: "Main Temple",
     notes: "Memorial for the renowned philosopher and poet",
     status: "active",
+    timings: "6:00 AM - 8:00 PM",
+    location: "South Wing, First Floor",
+    history: "Sri Vedanta Desika (1268-1369 CE) was one of the most brilliant philosophers in Hindu tradition. This mandapam was built to honor his contributions to Vaishnavism.",
+    rituals: "Weekly discourse on Thursdays. Special celebrations on his Tirunakshatra.",
+    images: [
+      "https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=400",
+    ],
+    createdAt: "2024-01-10",
+    updatedAt: "2024-01-28",
   },
 ];
 
@@ -47,7 +74,9 @@ const parentOptions = ["Main Temple", "Padmavathi Shrine", "Varadaraja Shrine"];
 const Sacred = () => {
   const [sacredAreas, setSacredAreas] = useState<SacredArea[]>(mockSacredAreas);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [editingArea, setEditingArea] = useState<SacredArea | null>(null);
+  const [viewingArea, setViewingArea] = useState<SacredArea | null>(null);
   const [formData, setFormData] = useState({
     sacredName: "",
     guruName: "",
@@ -55,6 +84,10 @@ const Sacred = () => {
     parentStructure: "",
     notes: "",
     status: "active" as "active" | "inactive",
+    timings: "",
+    location: "",
+    history: "",
+    rituals: "",
   });
 
   const resetForm = () => {
@@ -65,6 +98,10 @@ const Sacred = () => {
       parentStructure: "",
       notes: "",
       status: "active",
+      timings: "",
+      location: "",
+      history: "",
+      rituals: "",
     });
     setEditingArea(null);
   };
@@ -79,6 +116,10 @@ const Sacred = () => {
         parentStructure: area.parentStructure,
         notes: area.notes,
         status: area.status,
+        timings: area.timings,
+        location: area.location,
+        history: area.history,
+        rituals: area.rituals,
       });
     } else {
       resetForm();
@@ -91,11 +132,16 @@ const Sacred = () => {
     resetForm();
   };
 
+  const handleRowClick = (area: SacredArea) => {
+    setViewingArea(area);
+    setIsViewModalOpen(true);
+  };
+
   const handleSave = () => {
     if (editingArea) {
       setSacredAreas(sacredAreas.map(a => 
         a.id === editingArea.id 
-          ? { ...a, ...formData }
+          ? { ...a, ...formData, updatedAt: new Date().toISOString().split('T')[0] }
           : a
       ));
       toast.success("Sacred area updated successfully");
@@ -103,6 +149,9 @@ const Sacred = () => {
       const newArea: SacredArea = {
         id: Date.now().toString(),
         ...formData,
+        images: [],
+        createdAt: new Date().toISOString().split('T')[0],
+        updatedAt: new Date().toISOString().split('T')[0],
       };
       setSacredAreas([...sacredAreas, newArea]);
       toast.success("Sacred area added successfully");
@@ -110,9 +159,17 @@ const Sacred = () => {
     handleCloseModal();
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     setSacredAreas(sacredAreas.filter(a => a.id !== id));
     toast.success("Sacred area deleted successfully");
+  };
+
+  const handleEditFromView = () => {
+    if (viewingArea) {
+      setIsViewModalOpen(false);
+      handleOpenModal(viewingArea);
+    }
   };
 
   return (
@@ -154,7 +211,11 @@ const Sacred = () => {
             </TableHeader>
             <TableBody>
               {sacredAreas.map((area) => (
-                <TableRow key={area.id} className="cursor-pointer hover:bg-muted/50">
+                <TableRow 
+                  key={area.id} 
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => handleRowClick(area)}
+                >
                   <TableCell className="font-medium">{area.sacredName}</TableCell>
                   <TableCell>{area.guruName}</TableCell>
                   <TableCell>{area.year}</TableCell>
@@ -166,10 +227,21 @@ const Sacred = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon" onClick={() => handleOpenModal(area)}>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenModal(area);
+                        }}
+                      >
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(area.id)}>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={(e) => handleDelete(area.id, e)}
+                      >
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
@@ -188,8 +260,190 @@ const Sacred = () => {
         </CardContent>
       </Card>
 
+      {/* View Details Modal */}
+      <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Heart className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <DialogTitle>{viewingArea?.sacredName}</DialogTitle>
+                  <DialogDescription>{viewingArea?.guruName} • Est. {viewingArea?.year}</DialogDescription>
+                </div>
+              </div>
+              <Badge variant={viewingArea?.status === "active" ? "default" : "secondary"}>
+                {viewingArea?.status}
+              </Badge>
+            </div>
+          </DialogHeader>
+
+          <Tabs defaultValue="overview" className="mt-4">
+            <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
+              <TabsTrigger 
+                value="overview" 
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                Overview
+              </TabsTrigger>
+              <TabsTrigger 
+                value="details"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                Details
+              </TabsTrigger>
+              <TabsTrigger 
+                value="timings"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                Timings
+              </TabsTrigger>
+              <TabsTrigger 
+                value="rituals"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                Rituals
+              </TabsTrigger>
+              <TabsTrigger 
+                value="gallery"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                Gallery
+              </TabsTrigger>
+              <TabsTrigger 
+                value="history"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                History
+              </TabsTrigger>
+              <TabsTrigger 
+                value="location"
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+              >
+                Location
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="mt-4 space-y-4">
+              {viewingArea?.images && viewingArea.images.length > 0 && (
+                <div className="rounded-lg overflow-hidden">
+                  <img 
+                    src={viewingArea.images[0]} 
+                    alt={viewingArea.sacredName}
+                    className="w-full h-48 object-cover"
+                  />
+                </div>
+              )}
+              <div>
+                <h4 className="font-medium mb-2">About</h4>
+                <p className="text-sm text-muted-foreground">{viewingArea?.notes}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="text-xs text-muted-foreground">Year Established</p>
+                  <p className="font-medium">{viewingArea?.year}</p>
+                </div>
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="text-xs text-muted-foreground">Parent Structure</p>
+                  <p className="font-medium">{viewingArea?.parentStructure}</p>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="details" className="mt-4 space-y-4">
+              <div className="grid gap-4">
+                <div className="p-4 border rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-1">Sacred Name</p>
+                  <p className="font-medium">{viewingArea?.sacredName}</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-1">Guru Name</p>
+                  <p className="font-medium">{viewingArea?.guruName}</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-1">Notes</p>
+                  <p className="font-medium">{viewingArea?.notes}</p>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="timings" className="mt-4">
+              <div className="flex items-start gap-3 p-4 border rounded-lg">
+                <Clock className="h-5 w-5 text-primary mt-0.5" />
+                <div>
+                  <p className="font-medium">Visiting Hours</p>
+                  <p className="text-sm text-muted-foreground mt-1">{viewingArea?.timings}</p>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="rituals" className="mt-4">
+              <div className="flex items-start gap-3 p-4 border rounded-lg">
+                <Users className="h-5 w-5 text-primary mt-0.5" />
+                <div>
+                  <p className="font-medium">Rituals & Ceremonies</p>
+                  <p className="text-sm text-muted-foreground mt-1">{viewingArea?.rituals}</p>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="gallery" className="mt-4">
+              {viewingArea?.images && viewingArea.images.length > 0 ? (
+                <div className="grid grid-cols-2 gap-4">
+                  {viewingArea.images.map((img, idx) => (
+                    <div key={idx} className="rounded-lg overflow-hidden border">
+                      <img 
+                        src={img} 
+                        alt={`${viewingArea.sacredName} ${idx + 1}`}
+                        className="w-full h-32 object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+                  <Image className="h-12 w-12 mb-2 opacity-50" />
+                  <p>No images available</p>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="history" className="mt-4">
+              <div className="flex items-start gap-3 p-4 border rounded-lg">
+                <History className="h-5 w-5 text-primary mt-0.5" />
+                <div>
+                  <p className="font-medium">Historical Background</p>
+                  <p className="text-sm text-muted-foreground mt-1">{viewingArea?.history}</p>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="location" className="mt-4">
+              <div className="flex items-start gap-3 p-4 border rounded-lg">
+                <MapPin className="h-5 w-5 text-primary mt-0.5" />
+                <div>
+                  <p className="font-medium">Location within Temple</p>
+                  <p className="text-sm text-muted-foreground mt-1">{viewingArea?.location}</p>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <DialogFooter className="mt-6">
+            <Button variant="outline" onClick={() => setIsViewModalOpen(false)}>Close</Button>
+            <Button onClick={handleEditFromView}>
+              <Pencil className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingArea ? "Edit Sacred Area" : "Add New Sacred Area"}</DialogTitle>
             <DialogDescription>
@@ -197,48 +451,87 @@ const Sacred = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="sacredName">Sacred Name</Label>
-              <Input
-                id="sacredName"
-                value={formData.sacredName}
-                onChange={(e) => setFormData({ ...formData, sacredName: e.target.value })}
-                placeholder="Enter sacred area name"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="sacredName">Sacred Name</Label>
+                <Input
+                  id="sacredName"
+                  value={formData.sacredName}
+                  onChange={(e) => setFormData({ ...formData, sacredName: e.target.value })}
+                  placeholder="Enter sacred area name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="guruName">Guru Name</Label>
+                <Input
+                  id="guruName"
+                  value={formData.guruName}
+                  onChange={(e) => setFormData({ ...formData, guruName: e.target.value })}
+                  placeholder="Enter guru name"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="year">Year Established</Label>
+                <Input
+                  id="year"
+                  value={formData.year}
+                  onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+                  placeholder="Enter year"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="parentStructure">Parent Structure</Label>
+                <Select
+                  value={formData.parentStructure}
+                  onValueChange={(value) => setFormData({ ...formData, parentStructure: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select parent structure" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {parentOptions.map((option) => (
+                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="timings">Timings</Label>
+                <Input
+                  id="timings"
+                  value={formData.timings}
+                  onChange={(e) => setFormData({ ...formData, timings: e.target.value })}
+                  placeholder="e.g., 5:00 AM - 9:00 PM"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value: "active" | "inactive") => setFormData({ ...formData, status: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="guruName">Guru Name</Label>
+              <Label htmlFor="location">Location</Label>
               <Input
-                id="guruName"
-                value={formData.guruName}
-                onChange={(e) => setFormData({ ...formData, guruName: e.target.value })}
-                placeholder="Enter guru name"
+                id="location"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                placeholder="e.g., Inner Sanctum, East Wing"
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="year">Year Established</Label>
-              <Input
-                id="year"
-                value={formData.year}
-                onChange={(e) => setFormData({ ...formData, year: e.target.value })}
-                placeholder="Enter year"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="parentStructure">Parent Structure</Label>
-              <Select
-                value={formData.parentStructure}
-                onValueChange={(value) => setFormData({ ...formData, parentStructure: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select parent structure" />
-                </SelectTrigger>
-                <SelectContent>
-                  {parentOptions.map((option) => (
-                    <SelectItem key={option} value={option}>{option}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
@@ -247,23 +540,28 @@ const Sacred = () => {
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 placeholder="Enter notes"
-                rows={3}
+                rows={2}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value: "active" | "inactive") => setFormData({ ...formData, status: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label htmlFor="rituals">Rituals & Ceremonies</Label>
+              <Textarea
+                id="rituals"
+                value={formData.rituals}
+                onChange={(e) => setFormData({ ...formData, rituals: e.target.value })}
+                placeholder="Enter rituals and ceremonies information"
+                rows={2}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="history">History</Label>
+              <Textarea
+                id="history"
+                value={formData.history}
+                onChange={(e) => setFormData({ ...formData, history: e.target.value })}
+                placeholder="Enter historical background"
+                rows={3}
+              />
             </div>
           </div>
           <DialogFooter>
