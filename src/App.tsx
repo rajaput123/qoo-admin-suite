@@ -99,6 +99,14 @@ import RitualAttachment from "./pages/temple/events/RitualAttachment";
 import ResourcePlanning from "./pages/temple/events/ResourcePlanning";
 import ExecutionMode from "./pages/temple/events/ExecutionMode";
 import ClosureSummary from "./pages/temple/events/ClosureSummary";
+// Task Management Module
+import TasksLayout from "./pages/temple/TasksLayout";
+import TaskDashboard from "./pages/temple/tasks/TaskDashboard";
+import TaskList from "./pages/temple/tasks/TaskList";
+import TaskTemplates from "./pages/temple/tasks/TaskTemplates";
+import TaskAssignment from "./pages/temple/tasks/TaskAssignment";
+import TaskExecution from "./pages/temple/tasks/TaskExecution";
+import TaskReports from "./pages/temple/tasks/TaskReports";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -222,7 +230,16 @@ const App = () => (
           <Route path="/temple/crowd" element={<TempleHub />} />
           <Route path="/temple/people" element={<TempleHub />} />
           <Route path="/temple/assets" element={<TempleHub />} />
-          <Route path="/temple/tasks" element={<TempleHub />} />
+          
+          {/* Task Management Module */}
+          <Route path="/temple/tasks" element={<TasksLayout />}>
+            <Route index element={<TaskDashboard />} />
+            <Route path="list" element={<TaskList />} />
+            <Route path="templates" element={<TaskTemplates />} />
+            <Route path="assignment" element={<TaskAssignment />} />
+            <Route path="execution" element={<TaskExecution />} />
+            <Route path="reports" element={<TaskReports />} />
+          </Route>
           <Route path="/temple/reports" element={<TempleHub />} />
           
           {/* Super Admin Routes */}
