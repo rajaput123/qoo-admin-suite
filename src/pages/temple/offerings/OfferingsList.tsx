@@ -11,17 +11,11 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, Filter, Pencil, Eye, List, Clock, IndianRupee, Image, History, MapPin } from "lucide-react";
+import { Plus, Search, Pencil, Eye, List, Clock, IndianRupee, Image as ImageIcon, History, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
 import SearchableSelect from "@/components/SearchableSelect";
 import CustomFieldsSection, { CustomField } from "@/components/CustomFieldsSection";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Offering {
   id: string;
@@ -52,8 +46,8 @@ interface Offering {
 }
 
 const mockOfferings: Offering[] = [
-  { id: "1", name: "Suprabhatam", type: "Ritual", category: "Daily Seva", structure: "Main Temple", defaultTime: "5:30 AM", basePrice: 500, capacity: 50, status: "Active", description: "Morning awakening ceremony for the deity", endTime: "6:00 AM", frequency: "Daily", dateRange: "All Year", maxPerDevotee: 2, groupBooking: false, free: false, refundable: true, priestRequired: true, sankalpam: true, gothram: true, nakshatra: false, walkinTracking: false, vipEnabled: false, images: ["https://images.unsplash.com/photo-1600693577615-9f3a0f7a16ba?w=400"], createdAt: "2024-01-15" },
-  { id: "2", name: "Archana", type: "Ritual", category: "Daily Seva", structure: "Padmavathi Shrine", defaultTime: "7:00 AM", basePrice: 100, capacity: 30, status: "Active", description: "Chanting of 108 names", endTime: "7:30 AM", frequency: "Daily", dateRange: "All Year", maxPerDevotee: 5, groupBooking: true, free: false, refundable: false, priestRequired: true, sankalpam: true, gothram: true, nakshatra: true, walkinTracking: false, vipEnabled: false, images: [], createdAt: "2024-01-10" },
+  { id: "1", name: "Suprabhatam", type: "Ritual", category: "Daily Seva", structure: "Main Temple", defaultTime: "5:30 AM", basePrice: 500, capacity: 50, status: "Active", description: "Morning awakening ceremony for the deity", endTime: "6:00 AM", frequency: "Daily", dateRange: "All Year", maxPerDevotee: 2, groupBooking: false, free: false, refundable: true, priestRequired: true, sankalpam: true, gothram: true, nakshatra: false, walkinTracking: false, vipEnabled: false, images: ["https://images.unsplash.com/photo-1600693577615-9f3a0f7a16ba?w=400", "https://images.unsplash.com/photo-1609766857041-ed402ea8069a?w=400"], createdAt: "2024-01-15" },
+  { id: "2", name: "Archana", type: "Ritual", category: "Daily Seva", structure: "Padmavathi Shrine", defaultTime: "7:00 AM", basePrice: 100, capacity: 30, status: "Active", description: "Chanting of 108 names", endTime: "7:30 AM", frequency: "Daily", dateRange: "All Year", maxPerDevotee: 5, groupBooking: true, free: false, refundable: false, priestRequired: true, sankalpam: true, gothram: true, nakshatra: true, walkinTracking: false, vipEnabled: false, images: ["https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=400"], createdAt: "2024-01-10" },
   { id: "3", name: "Abhishekam", type: "Ritual", category: "Special Seva", structure: "Main Temple", defaultTime: "9:00 AM", basePrice: 2000, capacity: 25, status: "Active", description: "Sacred bathing ceremony with milk, honey, and holy water", endTime: "10:00 AM", frequency: "Daily", dateRange: "All Year", maxPerDevotee: 1, groupBooking: false, free: false, refundable: true, priestRequired: true, sankalpam: true, gothram: true, nakshatra: true, walkinTracking: false, vipEnabled: false, images: ["https://images.unsplash.com/photo-1609766857041-ed402ea8069a?w=400"], createdAt: "2024-01-12" },
   { id: "4", name: "Morning Darshan", type: "Darshan", category: "Regular", structure: "Main Temple", defaultTime: "6:00 AM", basePrice: 0, capacity: 500, status: "Active", description: "General morning darshan", endTime: "10:00 AM", frequency: "Daily", dateRange: "All Year", maxPerDevotee: 10, groupBooking: true, free: true, refundable: false, priestRequired: false, sankalpam: false, gothram: false, nakshatra: false, walkinTracking: true, vipEnabled: true, images: ["https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=400"], createdAt: "2024-01-08" },
   { id: "5", name: "VIP Darshan", type: "Darshan", category: "VIP", structure: "Main Temple", defaultTime: "8:00 AM", basePrice: 300, capacity: 100, status: "Active", description: "Priority darshan with shorter wait", endTime: "10:00 AM", frequency: "Daily", dateRange: "All Year", maxPerDevotee: 4, groupBooking: true, free: false, refundable: true, priestRequired: false, sankalpam: false, gothram: false, nakshatra: false, walkinTracking: false, vipEnabled: true, images: [], createdAt: "2024-01-09" },
@@ -95,6 +89,7 @@ const OfferingsList = () => {
   const [filterType, setFilterType] = useState("all");
   const [filterStructure, setFilterStructure] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [viewMode, setViewMode] = useState<"table" | "grid">("table");
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
   const [isAddStructureOpen, setIsAddStructureOpen] = useState(false);
 
@@ -149,7 +144,13 @@ const OfferingsList = () => {
             <h1 className="text-2xl font-semibold tracking-tight">Offerings List</h1>
             <p className="text-muted-foreground">Create and manage Rituals and Darshan definitions</p>
           </div>
-          <Button onClick={() => openModal()} className="gap-2"><Plus className="h-4 w-4" />Add Offering</Button>
+          <div className="flex gap-2">
+            <div className="flex border rounded-lg overflow-hidden">
+              <Button variant={viewMode === "table" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("table")} className="rounded-none gap-1"><List className="h-4 w-4" /></Button>
+              <Button variant={viewMode === "grid" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("grid")} className="rounded-none gap-1"><LayoutGrid className="h-4 w-4" /></Button>
+            </div>
+            <Button onClick={() => openModal()} className="gap-2"><Plus className="h-4 w-4" />Add Offering</Button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -160,80 +161,107 @@ const OfferingsList = () => {
           </div>
           <Select value={filterType} onValueChange={setFilterType}>
             <SelectTrigger className="w-[140px] bg-background"><SelectValue placeholder="Type" /></SelectTrigger>
-            <SelectContent className="bg-popover">
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="Ritual">Ritual</SelectItem>
-              <SelectItem value="Darshan">Darshan</SelectItem>
-            </SelectContent>
+            <SelectContent className="bg-popover"><SelectItem value="all">All Types</SelectItem><SelectItem value="Ritual">Ritual</SelectItem><SelectItem value="Darshan">Darshan</SelectItem></SelectContent>
           </Select>
           <Select value={filterStructure} onValueChange={setFilterStructure}>
             <SelectTrigger className="w-[160px] bg-background"><SelectValue placeholder="Structure" /></SelectTrigger>
-            <SelectContent className="bg-popover">
-              <SelectItem value="all">All Structures</SelectItem>
-              {structureOptions.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
-            </SelectContent>
+            <SelectContent className="bg-popover"><SelectItem value="all">All Structures</SelectItem>{structureOptions.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
           </Select>
           <Select value={filterStatus} onValueChange={setFilterStatus}>
             <SelectTrigger className="w-[130px] bg-background"><SelectValue placeholder="Status" /></SelectTrigger>
-            <SelectContent className="bg-popover">
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="Active">Active</SelectItem>
-              <SelectItem value="Inactive">Inactive</SelectItem>
-              <SelectItem value="Draft">Draft</SelectItem>
-            </SelectContent>
+            <SelectContent className="bg-popover"><SelectItem value="all">All Status</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem><SelectItem value="Draft">Draft</SelectItem></SelectContent>
           </Select>
         </div>
 
-        {/* Table */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg"><List className="h-5 w-5 text-primary" /></div>
-              <div>
-                <CardTitle>All Offerings</CardTitle>
-                <CardDescription>{filtered.length} offerings configured</CardDescription>
+        {viewMode === "table" ? (
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg"><List className="h-5 w-5 text-primary" /></div>
+                <div><CardTitle>All Offerings</CardTitle><CardDescription>{filtered.length} offerings configured</CardDescription></div>
               </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Offering Name</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Structure</TableHead>
-                  <TableHead>Default Time</TableHead>
-                  <TableHead className="text-right">Base Price</TableHead>
-                  <TableHead className="text-center">Capacity</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map(o => (
-                  <TableRow key={o.id} className="cursor-pointer hover:bg-muted/50" onClick={() => { setViewing(o); setIsViewOpen(true); }}>
-                    <TableCell className="font-medium">{o.name}</TableCell>
-                    <TableCell><Badge variant={o.type === "Ritual" ? "default" : "secondary"}>{o.type}</Badge></TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{o.structure}</TableCell>
-                    <TableCell className="text-sm">{o.defaultTime}</TableCell>
-                    <TableCell className="text-right">{o.free ? "Free" : `₹${o.basePrice}`}</TableCell>
-                    <TableCell className="text-center">{o.capacity}</TableCell>
-                    <TableCell><Badge variant={o.status === "Active" ? "default" : "secondary"}>{o.status}</Badge></TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" onClick={e => { e.stopPropagation(); setViewing(o); setIsViewOpen(true); }}><Eye className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={e => { e.stopPropagation(); openModal(o); }}><Pencil className="h-4 w-4" /></Button>
-                      </div>
-                    </TableCell>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[60px]">Image</TableHead>
+                    <TableHead>Offering Name</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Structure</TableHead>
+                    <TableHead>Default Time</TableHead>
+                    <TableHead className="text-right">Base Price</TableHead>
+                    <TableHead className="text-center">Capacity</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-                {filtered.length === 0 && (
-                  <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No offerings found</TableCell></TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map(o => (
+                    <TableRow key={o.id} className="cursor-pointer hover:bg-muted/50" onClick={() => { setViewing(o); setIsViewOpen(true); }}>
+                      <TableCell>
+                        {o.images.length > 0 ? (
+                          <img src={o.images[0]} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center"><ImageIcon className="h-4 w-4 text-muted-foreground" /></div>
+                        )}
+                      </TableCell>
+                      <TableCell className="font-medium">{o.name}</TableCell>
+                      <TableCell><Badge variant={o.type === "Ritual" ? "default" : "secondary"}>{o.type}</Badge></TableCell>
+                      <TableCell className="text-muted-foreground text-sm">{o.structure}</TableCell>
+                      <TableCell className="text-sm">{o.defaultTime}</TableCell>
+                      <TableCell className="text-right">{o.free ? "Free" : `₹${o.basePrice}`}</TableCell>
+                      <TableCell className="text-center">{o.capacity}</TableCell>
+                      <TableCell><Badge variant={o.status === "Active" ? "default" : "secondary"}>{o.status}</Badge></TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button variant="ghost" size="icon" onClick={e => { e.stopPropagation(); setViewing(o); setIsViewOpen(true); }}><Eye className="h-4 w-4" /></Button>
+                          <Button variant="ghost" size="icon" onClick={e => { e.stopPropagation(); openModal(o); }}><Pencil className="h-4 w-4" /></Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {filtered.length === 0 && (
+                    <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No offerings found</TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filtered.map(o => (
+              <Card key={o.id} className="cursor-pointer hover:shadow-md transition-all overflow-hidden group" onClick={() => { setViewing(o); setIsViewOpen(true); }}>
+                <div className="relative h-40 bg-muted">
+                  {o.images.length > 0 ? (
+                    <img src={o.images[0]} alt={o.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center"><ImageIcon className="h-10 w-10 text-muted-foreground opacity-40" /></div>
+                  )}
+                  {o.images.length > 1 && (
+                    <Badge variant="secondary" className="absolute bottom-2 right-2 text-[10px]">+{o.images.length - 1} photos</Badge>
+                  )}
+                  <div className="absolute top-2 left-2 flex gap-1">
+                    <Badge variant={o.type === "Ritual" ? "default" : "secondary"}>{o.type}</Badge>
+                    <Badge variant={o.status === "Active" ? "default" : "secondary"}>{o.status}</Badge>
+                  </div>
+                </div>
+                <CardContent className="p-4">
+                  <h3 className="font-semibold mb-1">{o.name}</h3>
+                  <p className="text-xs text-muted-foreground mb-2">{o.structure} · {o.defaultTime}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{o.description}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-sm">{o.free ? "Free" : `₹${o.basePrice}`}</span>
+                    <span className="text-xs text-muted-foreground">Cap: {o.capacity}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            {filtered.length === 0 && (
+              <div className="col-span-3 text-center py-12 text-muted-foreground">No offerings found</div>
+            )}
+          </div>
+        )}
       </motion.div>
 
       {/* View Detail Modal */}
@@ -261,7 +289,13 @@ const OfferingsList = () => {
               ))}
             </TabsList>
             <TabsContent value="overview" className="mt-4 space-y-4">
-              {viewing?.images?.[0] && <img src={viewing.images[0]} alt={viewing.name} className="w-full h-48 object-cover rounded-lg" />}
+              {viewing?.images && viewing.images.length > 0 && (
+                <div className="grid grid-cols-2 gap-2">
+                  {viewing.images.map((img, i) => (
+                    <img key={i} src={img} alt={viewing.name} className={`w-full ${i === 0 && viewing.images.length === 1 ? "h-48 col-span-2" : "h-32"} object-cover rounded-lg`} />
+                  ))}
+                </div>
+              )}
               <p className="text-sm text-muted-foreground">{viewing?.description}</p>
               <div className="grid grid-cols-3 gap-3">
                 <div className="p-3 bg-muted/50 rounded-lg"><p className="text-xs text-muted-foreground">Category</p><p className="font-medium">{viewing?.category}</p></div>
@@ -303,7 +337,7 @@ const OfferingsList = () => {
               {viewing?.images && viewing.images.length > 0 ? (
                 <div className="grid grid-cols-2 gap-4">{viewing.images.map((img, i) => <img key={i} src={img} alt="" className="w-full h-32 object-cover rounded-lg border" />)}</div>
               ) : (
-                <div className="flex flex-col items-center py-8 text-muted-foreground"><Image className="h-12 w-12 mb-2 opacity-50" /><p>No images</p></div>
+                <div className="flex flex-col items-center py-8 text-muted-foreground"><ImageIcon className="h-12 w-12 mb-2 opacity-50" /><p>No images</p></div>
               )}
             </TabsContent>
             <TabsContent value="history" className="mt-4">
@@ -345,6 +379,11 @@ const OfferingsList = () => {
                   <SearchableSelect options={structureOptions} value={form.structure} onValueChange={v => setForm({ ...form, structure: v })} placeholder="Select structure" onAddNew={() => setIsAddStructureOpen(true)} addNewLabel="Add Structure" />
                 </div>
                 <div><Label>Description</Label><Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Describe this offering" rows={2} /></div>
+                <div>
+                  <Label>Images</Label>
+                  <p className="text-xs text-muted-foreground mb-2">Add multiple image URLs (one per line)</p>
+                  <Textarea placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg" rows={3} />
+                </div>
               </div>
             </div>
 
@@ -397,12 +436,7 @@ const OfferingsList = () => {
               </p>
               {form.type === "Ritual" ? (
                 <div className="grid grid-cols-2 gap-3">
-                  {[
-                    ["Priest Required", "priestRequired"],
-                    ["Sankalpam Required", "sankalpam"],
-                    ["Gothram Required", "gothram"],
-                    ["Nakshatra Required", "nakshatra"],
-                  ].map(([label, key]) => (
+                  {[["Priest Required", "priestRequired"], ["Sankalpam Required", "sankalpam"], ["Gothram Required", "gothram"], ["Nakshatra Required", "nakshatra"]].map(([label, key]) => (
                     <div key={key} className="flex items-center gap-2 p-3 border rounded-lg">
                       <Switch checked={(form as any)[key]} onCheckedChange={v => setForm({ ...form, [key]: v })} />
                       <Label>{label}</Label>
