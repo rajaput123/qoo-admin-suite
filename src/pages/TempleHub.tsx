@@ -112,6 +112,15 @@ const allModules = [
     description: "Vendors, purchase orders, deliveries, payments",
   },
   {
+    id: "prasadam",
+    title: "Prasadam Management",
+    icon: Package,
+    enabled: true,
+    path: "/temple/prasadam",
+    description: "Production, batches, counters, distribution",
+    category: "core",
+  },
+  {
     id: "projects",
     title: "Projects & Initiatives",
     icon: ClipboardList,

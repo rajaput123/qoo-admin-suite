@@ -65,6 +65,19 @@ import SupplierDeliveries from "./pages/temple/suppliers/Deliveries";
 import SupplierPayments from "./pages/temple/suppliers/Payments";
 import SupplierPerformance from "./pages/temple/suppliers/Performance";
 import SupplierReports from "./pages/temple/suppliers/Reports";
+// Prasadam Management Module
+import PrasadamLayout from "./pages/temple/PrasadamLayout";
+import PrasadamDashboard from "./pages/temple/prasadam/Dashboard";
+import PrasadamMaster from "./pages/temple/prasadam/PrasadamMaster";
+import RecipeMapping from "./pages/temple/prasadam/RecipeMapping";
+import ProductionPlanning from "./pages/temple/prasadam/ProductionPlanning";
+import BatchProduction from "./pages/temple/prasadam/BatchProduction";
+import FinishedStock from "./pages/temple/prasadam/FinishedStock";
+import CounterAllocation from "./pages/temple/prasadam/CounterAllocation";
+import OnlineBooking from "./pages/temple/prasadam/OnlineBooking";
+import SponsorshipAllocation from "./pages/temple/prasadam/SponsorshipAllocation";
+import ExpiryWastage from "./pages/temple/prasadam/ExpiryWastage";
+import PrasadamReports from "./pages/temple/prasadam/Reports";
 // Devotee & Volunteer Module
 import DevoteesLayout from "./pages/temple/DevoteesLayout";
 import DevoteeDashboard from "./pages/temple/devotees/Dashboard";
@@ -160,6 +173,21 @@ const App = () => (
             <Route path="security" element={<TempleProfile />} />
           </Route>
           
+          {/* Prasadam Management Module */}
+          <Route path="/temple/prasadam" element={<PrasadamLayout />}>
+            <Route index element={<PrasadamDashboard />} />
+            <Route path="master" element={<PrasadamMaster />} />
+            <Route path="recipes" element={<RecipeMapping />} />
+            <Route path="planning" element={<ProductionPlanning />} />
+            <Route path="batches" element={<BatchProduction />} />
+            <Route path="stock" element={<FinishedStock />} />
+            <Route path="counters" element={<CounterAllocation />} />
+            <Route path="online" element={<OnlineBooking />} />
+            <Route path="sponsorship" element={<SponsorshipAllocation />} />
+            <Route path="expiry" element={<ExpiryWastage />} />
+            <Route path="reports" element={<PrasadamReports />} />
+          </Route>
+
           {/* Placeholder routes for other Temple modules */}
           <Route path="/temple/donations" element={<TempleHub />} />
           
