@@ -105,11 +105,12 @@ const allModules = [
   },
   {
     id: "suppliers",
-    title: "Supplier Management",
-    icon: Truck,
+    title: "Stock / Inventory",
+    icon: Boxes,
     enabled: true,
     path: "/temple/suppliers",
-    description: "Vendors, purchase orders, deliveries, payments",
+    description: "Suppliers, purchase orders, deliveries, payments",
+    category: "core",
   },
   {
     id: "prasadam",
@@ -181,15 +182,6 @@ const allModules = [
     enabled: true,
     path: "/temple/assets",
     description: "Temple asset tracking and maintenance",
-    category: "operations",
-  },
-  {
-    id: "stock",
-    title: "Stock Management",
-    icon: Boxes,
-    enabled: true,
-    path: "/temple/stock",
-    description: "Inventory and stock tracking",
     category: "operations",
   },
   {
