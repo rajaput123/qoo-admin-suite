@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
+import TempleRegister from "./pages/TempleRegister";
+import TempleHub from "./pages/TempleHub";
 import Hub from "./pages/Hub";
 import Profile from "./pages/Profile";
 import DomainLayout from "./components/DomainLayout";
@@ -41,7 +43,14 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Auth Routes */}
           <Route path="/" element={<Login />} />
+          <Route path="/temple-register" element={<TempleRegister />} />
+          
+          {/* Temple Admin Routes */}
+          <Route path="/temple-hub" element={<TempleHub />} />
+          
+          {/* Super Admin Routes */}
           <Route path="/hub" element={<Hub />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/domain/information" element={<DomainLayout />}>
