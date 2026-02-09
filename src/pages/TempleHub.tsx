@@ -7,7 +7,6 @@ import {
   Heart,
   Users,
   Megaphone,
-  UsersRound,
   Package,
   ClipboardList,
   BarChart3,
@@ -25,6 +24,12 @@ import {
   Crown,
   ShieldAlert,
   Clock,
+  BookOpen,
+  CalendarDays,
+  GitBranch,
+  Boxes,
+  UserCheck,
+  Landmark,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -59,65 +64,16 @@ const tenantData = {
   complianceIssues: [],
 };
 
-// All Temple Management Modules with feature flags and plan requirements
+// All Temple Management Modules matching reference image
 const allModules = [
   {
-    id: "temple-info",
-    title: "Temple Info",
-    icon: Building2,
+    id: "temple-structure",
+    title: "Temple Structure",
+    icon: Landmark,
     enabled: true,
     path: "/temple/info",
-    description: "Temple profile, structure, facilities, and media",
+    description: "Temple structure, layout and facilities",
     category: "core",
-  },
-  {
-    id: "sevas",
-    title: "Sevas & Darshan",
-    icon: Sparkles,
-    enabled: true,
-    path: "/temple/sevas",
-    description: "Seva categories, darshan slots, pricing",
-    category: "core",
-    badge: "8 Active",
-  },
-  {
-    id: "bookings",
-    title: "Bookings",
-    icon: Calendar,
-    enabled: true,
-    path: "/temple/bookings",
-    description: "Manage all seva and darshan bookings",
-    category: "core",
-    badge: "12 Today",
-  },
-  {
-    id: "donations",
-    title: "Donations",
-    icon: Heart,
-    enabled: true,
-    path: "/temple/donations",
-    description: "Online, offline donations and receipts",
-    category: "core",
-    badge: "₹24,500",
-  },
-  {
-    id: "devotees",
-    title: "Devotees & Volunteers",
-    icon: Users,
-    enabled: true,
-    path: "/temple/devotees",
-    description: "Devotee database, VIPs, and volunteer management",
-    category: "engagement",
-  },
-  {
-    id: "events",
-    title: "Events",
-    icon: Calendar,
-    enabled: true,
-    path: "/temple/events",
-    description: "Event creation, registration, capacity",
-    category: "engagement",
-    badge: "3 Upcoming",
   },
   {
     id: "communication",
@@ -126,21 +82,92 @@ const allModules = [
     enabled: true,
     path: "/temple/communication",
     description: "Announcements, notifications, media",
-    category: "engagement",
+    category: "core",
   },
   {
-    id: "live",
-    title: "Live Streaming",
-    icon: Video,
-    enabled: false,
-    path: "/temple/live",
-    description: "Live darshan and event streaming",
-    category: "engagement",
-    planRequired: "Enterprise",
+    id: "sevas",
+    title: "Rituals & Darshan",
+    icon: Sparkles,
+    enabled: true,
+    path: "/temple/sevas",
+    description: "Seva categories, darshan slots, pricing",
+    category: "core",
+  },
+  {
+    id: "projects",
+    title: "Projects & Initiatives",
+    icon: ClipboardList,
+    enabled: true,
+    path: "/temple/tasks",
+    description: "Project and initiative management",
+    category: "core",
+  },
+  {
+    id: "people",
+    title: "People / HR",
+    icon: Users,
+    enabled: true,
+    path: "/temple/people",
+    description: "Employees, shifts, attendance, leaves",
+    category: "core",
+  },
+  {
+    id: "tasks",
+    title: "Task Management",
+    icon: ClipboardList,
+    enabled: true,
+    path: "/temple/tasks",
+    description: "Task assignment and tracking",
+    category: "core",
+  },
+  {
+    id: "branches",
+    title: "Branch Management",
+    icon: GitBranch,
+    enabled: true,
+    path: "/temple/branches",
+    description: "Multi-branch temple management",
+    category: "core",
+  },
+  {
+    id: "institution",
+    title: "Institution",
+    icon: Building2,
+    enabled: true,
+    path: "/temple/info",
+    description: "Temple institution details",
+    category: "operations",
+  },
+  {
+    id: "knowledge",
+    title: "Knowledge Management",
+    icon: BookOpen,
+    enabled: true,
+    path: "/temple/knowledge",
+    description: "Documents, SOPs, and knowledge base",
+    category: "operations",
+  },
+  {
+    id: "assets",
+    title: "Asset Management",
+    icon: Package,
+    enabled: true,
+    path: "/temple/assets",
+    description: "Temple asset tracking and maintenance",
+    category: "operations",
+  },
+  {
+    id: "stock",
+    title: "Stock Management",
+    icon: Boxes,
+    enabled: true,
+    path: "/temple/stock",
+    description: "Inventory and stock tracking",
+    category: "operations",
   },
   {
     id: "crowd",
-    title: "Crowd & Capacity",
+    title: "Crowd & Capacity Management",
     icon: MapPin,
     enabled: false,
     path: "/temple/crowd",
@@ -149,40 +176,49 @@ const allModules = [
     planRequired: "Enterprise",
   },
   {
-    id: "people",
-    title: "People & HR",
+    id: "devotees",
+    title: "Devotee/Volunteer Management",
+    icon: UserCheck,
+    enabled: true,
+    path: "/temple/devotees",
+    description: "Devotee database and volunteer management",
+    category: "engagement",
+  },
+  {
+    id: "freelancer",
+    title: "Freelancer",
     icon: Briefcase,
-    enabled: true,
-    path: "/temple/people",
-    description: "Employees, shifts, attendance, leaves",
-    category: "operations",
+    enabled: false,
+    path: "/temple/freelancer",
+    description: "Manage freelance workers",
+    category: "engagement",
+    planRequired: "Enterprise",
   },
   {
-    id: "assets",
-    title: "Assets & Stock",
-    icon: Package,
+    id: "vip-devotee",
+    title: "VIP Devotee Management",
+    icon: Crown,
     enabled: true,
-    path: "/temple/assets",
-    description: "Inventory and asset management",
-    category: "operations",
+    path: "/temple/vip",
+    description: "VIP devotee tracking and services",
+    category: "engagement",
   },
   {
-    id: "tasks",
-    title: "Projects & Tasks",
-    icon: ClipboardList,
+    id: "events",
+    title: "Event Management",
+    icon: CalendarDays,
     enabled: true,
-    path: "/temple/tasks",
-    description: "Project and task management",
-    category: "operations",
-    badge: "5 Pending",
+    path: "/temple/events",
+    description: "Event creation, registration, capacity",
+    category: "engagement",
   },
   {
-    id: "reports",
-    title: "Reports",
-    icon: BarChart3,
+    id: "planner",
+    title: "Planner",
+    icon: Calendar,
     enabled: true,
-    path: "/temple/reports",
-    description: "Analytics and business reports",
+    path: "/temple/planner",
+    description: "Calendar and scheduling planner",
     category: "analytics",
   },
   {
@@ -194,15 +230,6 @@ const allModules = [
     description: "Temple profile, subscription, users",
     category: "system",
   },
-];
-
-// Operational snapshot data
-const snapshotData = [
-  { label: "Today's Bookings", value: "12", trend: "+3", icon: Calendar },
-  { label: "Today's Donations", value: "₹24,500", trend: "+₹5.2K", icon: Heart },
-  { label: "Upcoming Events", value: "3", trend: null, icon: Calendar },
-  { label: "Pending Tasks", value: "5", trend: "-2", icon: ClipboardList },
-  { label: "Staff on Duty", value: "8", trend: null, icon: Users },
 ];
 
 const containerVariants = {
@@ -308,9 +335,6 @@ const TempleHub = () => {
 
   const enabledModules = allModules.filter((m) => m.enabled && !isSuspended);
   const disabledModules = allModules.filter((m) => !m.enabled);
-  const restrictedModules = isExpired 
-    ? allModules.filter(m => m.enabled && m.category !== "system") 
-    : [];
 
   const getModuleState = (module: typeof allModules[0]) => {
     if (isSuspended) return "suspended";
@@ -443,35 +467,6 @@ const TempleHub = () => {
           </div>
         </motion.div>
 
-        {/* Operational Snapshot */}
-        {!isSuspended && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10"
-          >
-            {snapshotData.map((item) => (
-              <div key={item.label} className="glass-card rounded-2xl p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <item.icon className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-xs text-muted-foreground">{item.label}</p>
-                </div>
-                <div className="flex items-end gap-2">
-                  <span className="text-xl font-bold text-foreground">{item.value}</span>
-                  {item.trend && (
-                    <span className={`text-xs font-medium mb-0.5 ${
-                      item.trend.startsWith("+") ? "text-green-600" : "text-muted-foreground"
-                    }`}>
-                      {item.trend}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </motion.div>
-        )}
-
         {/* Module Grid - Enabled */}
         {!isSuspended && (
           <div className="mb-8">
@@ -516,11 +511,6 @@ const TempleHub = () => {
                         <span className={`text-xs font-medium ${isRestricted ? "text-muted-foreground" : "text-foreground"}`}>
                           {module.title}
                         </span>
-                        {module.badge && !isRestricted && (
-                          <Badge className="absolute -top-1 -right-1 text-[10px] px-1.5 py-0 h-5">
-                            {module.badge}
-                          </Badge>
-                        )}
                       </motion.button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="max-w-[200px] text-center">
@@ -572,17 +562,17 @@ const TempleHub = () => {
           >
             <h3 className="font-medium text-foreground mb-4">Quick Actions</h3>
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" onClick={() => navigate("/temple/bookings")}>
-                View Today's Bookings
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => navigate("/temple/donations")}>
-                Record Donation
+              <Button variant="outline" size="sm" onClick={() => navigate("/temple/sevas")}>
+                Manage Rituals
               </Button>
               <Button variant="outline" size="sm" onClick={() => navigate("/temple/events")}>
                 Create Event
               </Button>
               <Button variant="outline" size="sm" onClick={() => navigate("/temple/communication")}>
                 Send Announcement
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate("/temple/planner")}>
+                Open Planner
               </Button>
             </div>
           </motion.div>
