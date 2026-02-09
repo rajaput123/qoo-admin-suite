@@ -149,7 +149,7 @@ const Today = () => {
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
                         <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => toast.success(`Capacity increased for ${r.name}`)}>
-                          <ChevronUp className="h-3 w-3" /> Cap
+                          <ChevronUp className="h-3 w-3" /> +Capacity
                         </Button>
                         <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={() => toast.info(`Slot locked: ${r.name}`)}>
                           <Lock className="h-3 w-3" />
