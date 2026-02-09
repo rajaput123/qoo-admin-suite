@@ -41,6 +41,14 @@ import BookingsLayout from "./pages/temple/BookingsLayout";
 import AllBookings from "./pages/temple/bookings/AllBookings";
 import SettingsLayout from "./pages/temple/SettingsLayout";
 import TempleProfile from "./pages/temple/settings/TempleProfile";
+// Temple Structure Module
+import TempleStructureLayout from "./pages/temple/structure/TempleStructureLayout";
+import MainTemple from "./pages/temple/structure/MainTemple";
+import Shrines from "./pages/temple/structure/Shrines";
+import Sacred from "./pages/temple/structure/Sacred";
+import Halls from "./pages/temple/structure/Halls";
+import Counters from "./pages/temple/structure/Counters";
+import HierarchyView from "./pages/temple/structure/HierarchyView";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,11 +70,20 @@ const App = () => (
           {/* Temple Info Module */}
           <Route path="/temple/info" element={<TempleInfoLayout />}>
             <Route index element={<BasicInfo />} />
-            <Route path="structure" element={<BasicInfo />} />
             <Route path="layout" element={<BasicInfo />} />
             <Route path="facilities" element={<BasicInfo />} />
             <Route path="branches" element={<BasicInfo />} />
             <Route path="media" element={<BasicInfo />} />
+          </Route>
+          
+          {/* Temple Structure Module */}
+          <Route path="/temple/structure" element={<TempleStructureLayout />}>
+            <Route index element={<MainTemple />} />
+            <Route path="shrines" element={<Shrines />} />
+            <Route path="sacred" element={<Sacred />} />
+            <Route path="halls" element={<Halls />} />
+            <Route path="counters" element={<Counters />} />
+            <Route path="hierarchy" element={<HierarchyView />} />
           </Route>
           
           {/* Sevas & Darshan Module */}

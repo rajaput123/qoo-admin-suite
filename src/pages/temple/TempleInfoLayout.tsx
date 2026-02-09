@@ -3,7 +3,6 @@ import TempleLayout from "@/components/TempleLayout";
 
 const navItems = [
   { label: "Basic Information", path: "/temple/info", icon: Building2 },
-  { label: "Temple Structure", path: "/temple/info/structure", icon: Building2 },
   { label: "Layout Mapping", path: "/temple/info/layout", icon: MapPin },
   { label: "Facilities", path: "/temple/info/facilities", icon: Users },
   { label: "Branches", path: "/temple/info/branches", icon: Globe },
