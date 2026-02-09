@@ -85,12 +85,12 @@ const allModules = [
     category: "core",
   },
   {
-    id: "sevas",
-    title: "Rituals & Darshan",
+    id: "offerings",
+    title: "Offerings",
     icon: Sparkles,
     enabled: true,
-    path: "/temple/sevas",
-    description: "Seva categories, darshan slots, pricing",
+    path: "/temple/offerings",
+    description: "Rituals, darshan, slots, bookings, pricing",
     category: "core",
   },
   {
@@ -534,7 +534,7 @@ const TempleHub = () => {
           >
             <h3 className="font-medium text-foreground mb-4">Quick Actions</h3>
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" onClick={() => navigate("/temple/sevas")}>
+              <Button variant="outline" size="sm" onClick={() => navigate("/temple/offerings")}>
                 Manage Rituals
               </Button>
               <Button variant="outline" size="sm" onClick={() => navigate("/temple/events")}>

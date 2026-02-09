@@ -35,8 +35,14 @@ import TenantLogs from "./pages/tenant/TenantLogs";
 // Temple Admin Module Layouts
 import TempleInfoLayout from "./pages/temple/TempleInfoLayout";
 import BasicInfo from "./pages/temple/info/BasicInfo";
-import SevasLayout from "./pages/temple/SevasLayout";
-import SevaCategories from "./pages/temple/sevas/SevaCategories";
+import OfferingsLayout from "./pages/temple/OfferingsLayout";
+import OfferingsToday from "./pages/temple/offerings/Today";
+import OfferingsList from "./pages/temple/offerings/OfferingsList";
+import SlotManagement from "./pages/temple/offerings/SlotManagement";
+import BookingManagement from "./pages/temple/offerings/BookingManagement";
+import PricingRules from "./pages/temple/offerings/PricingRules";
+import PriestAssignment from "./pages/temple/offerings/PriestAssignment";
+import OfferingsReports from "./pages/temple/offerings/Reports";
 import BookingsLayout from "./pages/temple/BookingsLayout";
 import AllBookings from "./pages/temple/bookings/AllBookings";
 import SettingsLayout from "./pages/temple/SettingsLayout";
@@ -86,13 +92,15 @@ const App = () => (
             <Route path="hierarchy" element={<HierarchyView />} />
           </Route>
           
-          {/* Sevas & Darshan Module */}
-          <Route path="/temple/sevas" element={<SevasLayout />}>
-            <Route index element={<SevaCategories />} />
-            <Route path="list" element={<SevaCategories />} />
-            <Route path="darshan" element={<SevaCategories />} />
-            <Route path="pricing" element={<SevaCategories />} />
-            <Route path="capacity" element={<SevaCategories />} />
+          {/* Offerings Module */}
+          <Route path="/temple/offerings" element={<OfferingsLayout />}>
+            <Route index element={<OfferingsToday />} />
+            <Route path="list" element={<OfferingsList />} />
+            <Route path="slots" element={<SlotManagement />} />
+            <Route path="bookings" element={<BookingManagement />} />
+            <Route path="pricing" element={<PricingRules />} />
+            <Route path="priests" element={<PriestAssignment />} />
+            <Route path="reports" element={<OfferingsReports />} />
           </Route>
           
           {/* Bookings Module */}
