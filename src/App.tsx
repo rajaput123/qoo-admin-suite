@@ -22,6 +22,14 @@ import VerificationQueue from "./pages/onboarding/VerificationQueue";
 import DirectOnboarding from "./pages/onboarding/DirectOnboarding";
 import ComplianceRisk from "./pages/onboarding/ComplianceRisk";
 import ApprovalLogs from "./pages/onboarding/ApprovalLogs";
+import TenantLayout from "./components/TenantLayout";
+import TenantOverview from "./pages/tenant/Overview";
+import AllTenants from "./pages/tenant/AllTenants";
+import SubscriptionPlans from "./pages/tenant/SubscriptionPlans";
+import UsageMonitoring from "./pages/tenant/UsageMonitoring";
+import SuspensionCompliance from "./pages/tenant/SuspensionCompliance";
+import RegionManagement from "./pages/tenant/RegionManagement";
+import TenantLogs from "./pages/tenant/TenantLogs";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,6 +63,16 @@ const App = () => (
             <Route path="direct-onboarding" element={<DirectOnboarding />} />
             <Route path="compliance-risk" element={<ComplianceRisk />} />
             <Route path="approval-logs" element={<ApprovalLogs />} />
+          </Route>
+          <Route path="/domain/tenants" element={<TenantLayout />}>
+            <Route index element={<Navigate to="overview" replace />} />
+            <Route path="overview" element={<TenantOverview />} />
+            <Route path="all" element={<AllTenants />} />
+            <Route path="plans" element={<SubscriptionPlans />} />
+            <Route path="usage" element={<UsageMonitoring />} />
+            <Route path="suspension" element={<SuspensionCompliance />} />
+            <Route path="regions" element={<RegionManagement />} />
+            <Route path="logs" element={<TenantLogs />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
