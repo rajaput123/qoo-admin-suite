@@ -312,7 +312,7 @@ const TempleRegister = () => {
                 <ArrowRight className="h-4 w-4" />
               </Button>
             ) : (
-              <Button type="submit" className="gap-2" disabled={!canSubmit}>
+              <Button type="submit" className="gap-2">
                 Submit Registration
                 <Check className="h-4 w-4" />
               </Button>
