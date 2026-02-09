@@ -4,13 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { Plus, Pencil, Trash2, MonitorSmartphone, Clock, MapPin, Image, FileText, Settings } from "lucide-react";
 import { toast } from "sonner";
+import SearchableSelect from "@/components/SearchableSelect";
+import CustomFieldsSection, { CustomField } from "@/components/CustomFieldsSection";
 
 type CounterType = "donation" | "ticket" | "prasadam" | "info";
 
@@ -97,18 +99,28 @@ const mockCounters: Counter[] = [
   },
 ];
 
-const counterTypes: { value: CounterType; label: string }[] = [
+const counterTypeOptions = [
   { value: "donation", label: "Donation" },
   { value: "ticket", label: "Ticket" },
   { value: "prasadam", label: "Prasadam" },
   { value: "info", label: "Info" },
 ];
 
-const parentOptions = ["Main Temple", "Padmavathi Shrine", "Varadaraja Shrine", "Kalyana Mandapam"];
+const parentOptions = [
+  { value: "Main Temple", label: "Main Temple" },
+  { value: "Padmavathi Shrine", label: "Padmavathi Shrine" },
+  { value: "Varadaraja Shrine", label: "Varadaraja Shrine" },
+  { value: "Kalyana Mandapam", label: "Kalyana Mandapam" },
+];
+
+const statusOptions = [
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Inactive" },
+];
 
 const getCounterTypeColor = (type: CounterType) => {
   switch (type) {
-    case "donation": return "bg-green-100 text-green-800 border-green-200";
+    case "donation": return "bg-primary/10 text-primary border-primary/20";
     case "ticket": return "bg-blue-100 text-blue-800 border-blue-200";
     case "prasadam": return "bg-amber-100 text-amber-800 border-amber-200";
     case "info": return "bg-purple-100 text-purple-800 border-purple-200";
@@ -122,6 +134,9 @@ const Counters = () => {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [editingCounter, setEditingCounter] = useState<Counter | null>(null);
   const [viewingCounter, setViewingCounter] = useState<Counter | null>(null);
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
+  const [isAddParentOpen, setIsAddParentOpen] = useState(false);
+  const [isAddTypeOpen, setIsAddTypeOpen] = useState(false);
   const [formData, setFormData] = useState({
     counterName: "",
     counterType: "donation" as CounterType,
@@ -147,6 +162,7 @@ const Counters = () => {
       guidelines: "",
     });
     setEditingCounter(null);
+    setCustomFields([]);
   };
 
   const handleOpenModal = (counter?: Counter) => {
@@ -215,7 +231,7 @@ const Counters = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Counters</h1>
@@ -308,7 +324,7 @@ const Counters = () => {
 
       {/* View Details Modal */}
       <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
-        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto bg-background">
           <DialogHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -333,46 +349,25 @@ const Counters = () => {
 
           <Tabs defaultValue="overview" className="mt-4">
             <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
-              <TabsTrigger 
-                value="overview" 
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="overview" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Overview
               </TabsTrigger>
-              <TabsTrigger 
-                value="details"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="details" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Details
               </TabsTrigger>
-              <TabsTrigger 
-                value="timings"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="timings" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Timings
               </TabsTrigger>
-              <TabsTrigger 
-                value="services"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="services" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Services
               </TabsTrigger>
-              <TabsTrigger 
-                value="guidelines"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="guidelines" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Guidelines
               </TabsTrigger>
-              <TabsTrigger 
-                value="gallery"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="gallery" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Gallery
               </TabsTrigger>
-              <TabsTrigger 
-                value="location"
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
-              >
+              <TabsTrigger value="location" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent">
                 Location
               </TabsTrigger>
             </TabsList>
@@ -444,7 +439,7 @@ const Counters = () => {
               <div className="flex items-start gap-3 p-4 border rounded-lg">
                 <FileText className="h-5 w-5 text-primary mt-0.5" />
                 <div>
-                  <p className="font-medium">Usage Guidelines</p>
+                  <p className="font-medium">Guidelines & Policies</p>
                   <p className="text-sm text-muted-foreground mt-1">{viewingCounter?.guidelines}</p>
                 </div>
               </div>
@@ -494,7 +489,7 @@ const Counters = () => {
 
       {/* Add/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto bg-background">
           <DialogHeader>
             <DialogTitle>{editingCounter ? "Edit Counter" : "Add New Counter"}</DialogTitle>
             <DialogDescription>
@@ -513,53 +508,40 @@ const Counters = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="counterType">Counter Type</Label>
-                <Select
+                <Label>Counter Type</Label>
+                <SearchableSelect
+                  options={counterTypeOptions}
                   value={formData.counterType}
-                  onValueChange={(value: CounterType) => setFormData({ ...formData, counterType: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {counterTypes.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onValueChange={(value) => setFormData({ ...formData, counterType: value as CounterType })}
+                  placeholder="Select type"
+                  searchPlaceholder="Search types..."
+                  onAddNew={() => setIsAddTypeOpen(true)}
+                  addNewLabel="Add New Type"
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="parentStructure">Parent Structure</Label>
-                <Select
+                <Label>Parent Structure</Label>
+                <SearchableSelect
+                  options={parentOptions}
                   value={formData.parentStructure}
                   onValueChange={(value) => setFormData({ ...formData, parentStructure: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select parent structure" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {parentOptions.map((option) => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  placeholder="Select parent"
+                  searchPlaceholder="Search structures..."
+                  onAddNew={() => setIsAddParentOpen(true)}
+                  addNewLabel="Add New Structure"
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
-                <Select
+                <Label>Status</Label>
+                <SearchableSelect
+                  options={statusOptions}
                   value={formData.status}
-                  onValueChange={(value: "active" | "inactive") => setFormData({ ...formData, status: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
+                  onValueChange={(value) => setFormData({ ...formData, status: value as "active" | "inactive" })}
+                  placeholder="Select status"
+                  searchPlaceholder="Search..."
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -588,34 +570,79 @@ const Counters = () => {
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Enter description"
+                placeholder="Enter counter description"
                 rows={2}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="services">Services Offered</Label>
+              <Label htmlFor="services">Services</Label>
               <Textarea
                 id="services"
                 value={formData.services}
                 onChange={(e) => setFormData({ ...formData, services: e.target.value })}
-                placeholder="List the services available at this counter"
+                placeholder="List services provided at this counter"
                 rows={2}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="guidelines">Usage Guidelines</Label>
+              <Label htmlFor="guidelines">Guidelines</Label>
               <Textarea
                 id="guidelines"
                 value={formData.guidelines}
                 onChange={(e) => setFormData({ ...formData, guidelines: e.target.value })}
-                placeholder="Enter guidelines for devotees"
-                rows={2}
+                placeholder="Enter guidelines and policies"
+                rows={3}
               />
             </div>
+
+            <Separator />
+
+            {/* Custom Fields */}
+            <CustomFieldsSection fields={customFields} onFieldsChange={setCustomFields} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={handleCloseModal}>Cancel</Button>
             <Button onClick={handleSave}>{editingCounter ? "Update" : "Add"} Counter</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add New Counter Type Dialog */}
+      <Dialog open={isAddTypeOpen} onOpenChange={setIsAddTypeOpen}>
+        <DialogContent className="sm:max-w-[400px] bg-background">
+          <DialogHeader>
+            <DialogTitle>Add New Counter Type</DialogTitle>
+            <DialogDescription>Create a new counter type</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Type Name</Label>
+              <Input placeholder="Enter type name" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddTypeOpen(false)}>Cancel</Button>
+            <Button onClick={() => { setIsAddTypeOpen(false); toast.success("Type added"); }}>Add Type</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add New Parent Structure Dialog */}
+      <Dialog open={isAddParentOpen} onOpenChange={setIsAddParentOpen}>
+        <DialogContent className="sm:max-w-[400px] bg-background">
+          <DialogHeader>
+            <DialogTitle>Add New Structure</DialogTitle>
+            <DialogDescription>Create a new parent structure</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Structure Name</Label>
+              <Input placeholder="Enter structure name" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddParentOpen(false)}>Cancel</Button>
+            <Button onClick={() => { setIsAddParentOpen(false); toast.success("Structure added"); }}>Add Structure</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
