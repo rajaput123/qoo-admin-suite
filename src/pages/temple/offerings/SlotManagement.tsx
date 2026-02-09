@@ -7,13 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Clock, CalendarDays, Plus, Lock, XCircle, ChevronUp, ChevronDown, Users, LayoutGrid, List } from "lucide-react";
+import { Clock, Plus, Lock, XCircle, ChevronUp, ChevronDown, Users, LayoutGrid, List, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import SearchableSelect from "@/components/SearchableSelect";
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek } from "date-fns";
 
 interface Slot {
   id: string;
@@ -38,6 +36,10 @@ const mockSlots: Slot[] = [
   { id: "6", date: "2026-02-10", time: "7:00 AM", offering: "Archana", structure: "Padmavathi Shrine", type: "Ritual", capacity: 30, booked: 5, available: 25, priest: "Unassigned", status: "Open" },
   { id: "7", date: "2026-02-10", time: "9:00 AM", offering: "Abhishekam", structure: "Main Temple", type: "Ritual", capacity: 25, booked: 0, available: 25, priest: "Unassigned", status: "Open" },
   { id: "8", date: "2026-02-11", time: "5:30 AM", offering: "Suprabhatam", structure: "Main Temple", type: "Ritual", capacity: 50, booked: 0, available: 50, priest: "Unassigned", status: "Open" },
+  { id: "9", date: "2026-02-12", time: "9:00 AM", offering: "Abhishekam", structure: "Main Temple", type: "Ritual", capacity: 25, booked: 10, available: 15, priest: "Pandit Kumar", status: "Open" },
+  { id: "10", date: "2026-02-14", time: "5:30 AM", offering: "Suprabhatam", structure: "Main Temple", type: "Ritual", capacity: 50, booked: 5, available: 45, priest: "Pandit Sharma", status: "Open" },
+  { id: "11", date: "2026-02-14", time: "6:00 AM", offering: "Morning Darshan", structure: "Main Temple", type: "Darshan", capacity: 500, booked: 100, available: 400, priest: "—", status: "Open" },
+  { id: "12", date: "2026-02-15", time: "7:00 AM", offering: "Archana", structure: "Padmavathi Shrine", type: "Ritual", capacity: 30, booked: 0, available: 30, priest: "Unassigned", status: "Open" },
 ];
 
 const priestOptions = [
@@ -47,10 +49,18 @@ const priestOptions = [
   { value: "Pandit Iyer", label: "Pandit Iyer" },
 ];
 
+const statusColor = (s: string) => {
+  if (s === "Open") return "secondary";
+  if (s === "Locked") return "outline";
+  if (s === "Cancelled") return "destructive";
+  return "default";
+};
+
 const SlotManagement = () => {
   const [slots, setSlots] = useState<Slot[]>(mockSlots);
-  const [viewMode, setViewMode] = useState<"table" | "calendar">("table");
-  const [filterDate, setFilterDate] = useState<Date | undefined>();
+  const [viewMode, setViewMode] = useState<"table" | "calendar">("calendar");
+  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 1, 1));
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date(2026, 1, 9));
   const [filterOffering, setFilterOffering] = useState("all");
   const [isGenerateOpen, setIsGenerateOpen] = useState(false);
   const [isAssignOpen, setIsAssignOpen] = useState(false);
@@ -58,7 +68,6 @@ const SlotManagement = () => {
   const [assignPriest, setAssignPriest] = useState("");
 
   const filtered = slots.filter(s => {
-    if (filterDate && s.date !== format(filterDate, "yyyy-MM-dd")) return false;
     if (filterOffering !== "all" && s.offering !== filterOffering) return false;
     return true;
   });
@@ -92,14 +101,17 @@ const SlotManagement = () => {
     setAssignPriest("");
   };
 
-  const statusColor = (s: string) => {
-    if (s === "Open") return "secondary";
-    if (s === "Locked") return "outline";
-    if (s === "Cancelled") return "destructive";
-    return "default";
-  };
-
   const uniqueOfferings = [...new Set(slots.map(s => s.offering))];
+
+  // Calendar helpers
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(currentMonth);
+  const calStart = startOfWeek(monthStart);
+  const calEnd = endOfWeek(monthEnd);
+  const calDays = eachDayOfInterval({ start: calStart, end: calEnd });
+
+  const getSlotsForDate = (date: Date) => filtered.filter(s => s.date === format(date, "yyyy-MM-dd"));
+  const selectedDateSlots = selectedDate ? getSlotsForDate(selectedDate) : [];
 
   return (
     <div className="p-6 space-y-6">
@@ -111,8 +123,8 @@ const SlotManagement = () => {
           </div>
           <div className="flex gap-2">
             <div className="flex border rounded-lg overflow-hidden">
-              <Button variant={viewMode === "table" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("table")} className="rounded-none"><List className="h-4 w-4" /></Button>
-              <Button variant={viewMode === "calendar" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("calendar")} className="rounded-none"><LayoutGrid className="h-4 w-4" /></Button>
+              <Button variant={viewMode === "calendar" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("calendar")} className="rounded-none gap-1"><LayoutGrid className="h-4 w-4" />Calendar</Button>
+              <Button variant={viewMode === "table" ? "default" : "ghost"} size="sm" onClick={() => setViewMode("table")} className="rounded-none gap-1"><List className="h-4 w-4" />Table</Button>
             </div>
             <Button onClick={() => setIsGenerateOpen(true)} className="gap-2"><Plus className="h-4 w-4" />Generate Slots</Button>
           </div>
@@ -120,15 +132,6 @@ const SlotManagement = () => {
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="gap-2"><CalendarDays className="h-4 w-4" />{filterDate ? format(filterDate, "dd MMM yyyy") : "All Dates"}</Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-popover" align="start">
-              <Calendar mode="single" selected={filterDate} onSelect={setFilterDate} />
-              {filterDate && <div className="p-2 border-t"><Button variant="ghost" size="sm" className="w-full" onClick={() => setFilterDate(undefined)}>Clear</Button></div>}
-            </PopoverContent>
-          </Popover>
           <Select value={filterOffering} onValueChange={setFilterOffering}>
             <SelectTrigger className="w-[180px] bg-background"><SelectValue placeholder="Offering" /></SelectTrigger>
             <SelectContent className="bg-popover">
@@ -138,7 +141,111 @@ const SlotManagement = () => {
           </Select>
         </div>
 
-        {viewMode === "table" ? (
+        {viewMode === "calendar" ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Calendar */}
+            <Card className="lg:col-span-2">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base">{format(currentMonth, "MMMM yyyy")}</CardTitle>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}><ChevronLeft className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}><ChevronRight className="h-4 w-4" /></Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-7 gap-px bg-border rounded-lg overflow-hidden">
+                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(d => (
+                    <div key={d} className="bg-muted/50 p-2 text-center text-xs font-medium text-muted-foreground">{d}</div>
+                  ))}
+                  {calDays.map((day, i) => {
+                    const daySlots = getSlotsForDate(day);
+                    const inMonth = isSameMonth(day, currentMonth);
+                    const today = isToday(day);
+                    const selected = selectedDate && isSameDay(day, selectedDate);
+                    const hasSlots = daySlots.length > 0;
+                    const fullyBooked = daySlots.length > 0 && daySlots.every(s => s.available === 0);
+
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => setSelectedDate(day)}
+                        className={`bg-card p-2 min-h-[80px] text-left transition-all hover:bg-muted/50 ${
+                          !inMonth ? "opacity-30" : ""
+                        } ${selected ? "ring-2 ring-primary ring-inset" : ""}`}
+                      >
+                        <div className={`text-xs font-medium mb-1 ${today ? "text-primary font-bold" : ""}`}>
+                          {format(day, "d")}
+                        </div>
+                        {hasSlots && (
+                          <div className="space-y-0.5">
+                            {daySlots.slice(0, 3).map(s => (
+                              <div key={s.id} className={`text-[10px] px-1 py-0.5 rounded truncate ${
+                                s.available === 0 ? "bg-destructive/10 text-destructive" :
+                                s.status === "Completed" ? "bg-muted text-muted-foreground" :
+                                "bg-primary/10 text-primary"
+                              }`}>
+                                {s.time.split(" ")[0]} {s.offering.substring(0, 8)}
+                              </div>
+                            ))}
+                            {daySlots.length > 3 && (
+                              <p className="text-[10px] text-muted-foreground pl-1">+{daySlots.length - 3} more</p>
+                            )}
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Selected Date Slots */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">
+                  {selectedDate ? format(selectedDate, "EEE, dd MMM yyyy") : "Select a date"}
+                </CardTitle>
+                <CardDescription>{selectedDateSlots.length} slots</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2 max-h-[500px] overflow-y-auto">
+                {selectedDateSlots.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">No slots for this date</p>
+                ) : (
+                  selectedDateSlots.map(s => (
+                    <div key={s.id} className={`p-3 border rounded-lg space-y-2 ${s.status === "Cancelled" ? "opacity-50" : ""}`}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-sm">{s.offering}</p>
+                          <p className="text-xs text-muted-foreground">{s.time} · {s.structure}</p>
+                        </div>
+                        <Badge variant={statusColor(s.status) as any} className="text-[10px]">{s.status}</Badge>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs">
+                        <span className="text-muted-foreground">Cap: <strong>{s.capacity}</strong></span>
+                        <span className="text-muted-foreground">Booked: <strong>{s.booked}</strong></span>
+                        <span className={s.available === 0 ? "text-destructive font-medium" : "text-emerald-600 font-medium"}>Avail: {s.available}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-muted-foreground">Priest: {s.priest}</p>
+                        {s.status === "Open" && (
+                          <div className="flex gap-1">
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleCapacity(s.id, 5)}><ChevronUp className="h-3 w-3" /></Button>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleCapacity(s.id, -5)}><ChevronDown className="h-3 w-3" /></Button>
+                            {s.type === "Ritual" && <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { setSelectedSlot(s); setIsAssignOpen(true); }}><Users className="h-3 w-3" /></Button>}
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleLock(s.id)}><Lock className="h-3 w-3" /></Button>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleCancel(s.id)}><XCircle className="h-3 w-3 text-destructive" /></Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
@@ -187,15 +294,6 @@ const SlotManagement = () => {
                   ))}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-center">
-                <Calendar mode="single" className="mx-auto" />
-                <p className="text-sm text-muted-foreground mt-4">Select a date to view slots</p>
-              </div>
             </CardContent>
           </Card>
         )}

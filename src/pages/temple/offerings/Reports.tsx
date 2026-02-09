@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { BarChart3, IndianRupee, TrendingUp, Users, Clock, Landmark } from "lucide-react";
+import { BarChart3, IndianRupee, TrendingUp, Users, Clock, Landmark, Download } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { toast } from "sonner";
 
 const revenueByStructure = [
   { name: "Main Temple", revenue: 285000, bookings: 1240 },
@@ -39,12 +41,48 @@ const capacityUtil = [
 
 const COLORS = ["hsl(16, 85%, 23%)", "hsl(0, 0%, 90%)"];
 
+const exportData = (title: string, data: any[], columns: string[]) => {
+  const csv = [columns.join(","), ...data.map(d => columns.map(c => d[c.toLowerCase().replace(/ /g, "")] ?? d[c] ?? "").join(","))].join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${title.toLowerCase().replace(/ /g, "-")}-${new Date().toISOString().split("T")[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast.success(`${title} exported`);
+};
+
 const Reports = () => {
   const [filterType, setFilterType] = useState("all");
   const [filterPeriod, setFilterPeriod] = useState("month");
 
   const totalRevenue = revenueByStructure.reduce((a, r) => a + r.revenue, 0);
   const totalBookings = revenueByStructure.reduce((a, r) => a + r.bookings, 0);
+
+  const handleExportAll = () => {
+    const allData = [
+      ["=== Revenue by Structure ==="],
+      ["Name", "Revenue", "Bookings"].join(","),
+      ...revenueByStructure.map(r => [r.name, r.revenue, r.bookings].join(",")),
+      [""],
+      ["=== Ritual Performance ==="],
+      ["Name", "Bookings", "Revenue", "Avg Occupancy"].join(","),
+      ...ritualPerformance.map(r => [r.name, r.bookings, r.revenue, r.avgOccupancy + "%"].join(",")),
+      [""],
+      ["=== Darshan Load ==="],
+      ["Time", "Count"].join(","),
+      ...darshanLoad.map(d => [d.time, d.count].join(",")),
+    ].join("\n");
+    const blob = new Blob([allData], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `offerings-report-${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Full report exported");
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -63,26 +101,27 @@ const Reports = () => {
               <SelectTrigger className="w-[130px] bg-background"><SelectValue /></SelectTrigger>
               <SelectContent className="bg-popover"><SelectItem value="week">This Week</SelectItem><SelectItem value="month">This Month</SelectItem><SelectItem value="quarter">Quarter</SelectItem><SelectItem value="year">This Year</SelectItem></SelectContent>
             </Select>
+            <Button variant="outline" onClick={handleExportAll} className="gap-2"><Download className="h-4 w-4" />Export All</Button>
           </div>
         </div>
 
         {/* KPI Row */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
-            { label: "Total Revenue", value: `₹${totalRevenue.toLocaleString()}`, icon: IndianRupee, color: "text-emerald-600" },
-            { label: "Total Bookings", value: totalBookings.toLocaleString(), icon: TrendingUp, color: "text-primary" },
-            { label: "Avg Occupancy", value: "78%", icon: Users, color: "text-blue-600" },
-            { label: "Peak Hour", value: "8–10 AM", icon: Clock, color: "text-amber-600" },
+            { label: "Total Revenue", value: `₹${totalRevenue.toLocaleString()}`, icon: IndianRupee, description: "Combined revenue this period" },
+            { label: "Total Bookings", value: totalBookings.toLocaleString(), icon: TrendingUp, description: "All offerings combined" },
+            { label: "Avg Occupancy", value: "78%", icon: Users, description: "Across all slots" },
+            { label: "Peak Hour", value: "8–10 AM", icon: Clock, description: "Highest demand window" },
           ].map((kpi, i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider">{kpi.label}</p>
-                    <p className="text-2xl font-bold mt-1">{kpi.value}</p>
+            <Card key={i} className="group hover:shadow-md transition-all duration-200">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-muted group-hover:bg-primary group-hover:shadow-lg transition-all duration-200">
+                    <kpi.icon className="h-5 w-5 text-muted-foreground group-hover:text-primary-foreground transition-colors duration-200" />
                   </div>
-                  <kpi.icon className={`h-8 w-8 ${kpi.color} opacity-60`} />
                 </div>
+                <p className="text-2xl font-bold">{kpi.value}</p>
+                <p className="text-xs text-muted-foreground mt-1">{kpi.label}</p>
               </CardContent>
             </Card>
           ))}
@@ -92,9 +131,10 @@ const Reports = () => {
           {/* Revenue by Structure */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Landmark className="h-4 w-4 text-primary" />Revenue by Structure
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2"><Landmark className="h-4 w-4 text-primary" />Revenue by Structure</CardTitle>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => exportData("Revenue by Structure", revenueByStructure, ["name", "revenue", "bookings"])}><Download className="h-3.5 w-3.5" /></Button>
+              </div>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={250}>
@@ -112,9 +152,10 @@ const Reports = () => {
           {/* Darshan Load */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Users className="h-4 w-4 text-blue-600" />Darshan Load by Time
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2"><Users className="h-4 w-4 text-blue-600" />Darshan Load by Time</CardTitle>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => exportData("Darshan Load", darshanLoad, ["time", "count"])}><Download className="h-3.5 w-3.5" /></Button>
+              </div>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={250}>
@@ -134,9 +175,10 @@ const Reports = () => {
           {/* Ritual Performance */}
           <Card className="lg:col-span-2">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-primary" />Ritual Performance
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base flex items-center gap-2"><BarChart3 className="h-4 w-4 text-primary" />Ritual Performance</CardTitle>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => exportData("Ritual Performance", ritualPerformance, ["name", "bookings", "revenue", "avgOccupancy"])}><Download className="h-3.5 w-3.5" /></Button>
+              </div>
             </CardHeader>
             <CardContent className="p-0">
               <Table>
