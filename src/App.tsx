@@ -297,6 +297,8 @@ const App = () => (
             <Route path="insights" element={<FreelancerInsights />} />
           </Route>
           
+          {/* VIP Management redirects to Devotees */}
+          <Route path="/temple/vip" element={<Navigate to="/temple/devotees" replace />} />
           {/* Devotee CRM Module */}
           <Route path="/temple/devotees" element={<DevoteesLayout />}>
             <Route index element={<DevoteesList />} />
