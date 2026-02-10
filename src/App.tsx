@@ -107,11 +107,10 @@ import ClosureSummary from "./pages/temple/events/ClosureSummary";
 // Task Management Module
 import TasksLayout from "./pages/temple/TasksLayout";
 import TaskDashboard from "./pages/temple/tasks/TaskDashboard";
-import TaskList from "./pages/temple/tasks/TaskList";
-import TaskTemplates from "./pages/temple/tasks/TaskTemplates";
-import TaskAssignment from "./pages/temple/tasks/TaskAssignment";
-import TaskExecution from "./pages/temple/tasks/TaskExecution";
-import TaskReports from "./pages/temple/tasks/TaskReports";
+import AllTasks from "./pages/temple/tasks/AllTasks";
+import MyTasks from "./pages/temple/tasks/MyTasks";
+import OverdueTasks from "./pages/temple/tasks/OverdueTasks";
+import CompletedTasks from "./pages/temple/tasks/CompletedTasks";
 // Crowd & Capacity Management Module
 import CrowdLayout from "./pages/temple/CrowdLayout";
 import ZoneConfiguration from "./pages/temple/crowd/ZoneConfiguration";
@@ -341,11 +340,10 @@ const App = () => (
           {/* Task Management Module */}
           <Route path="/temple/tasks" element={<TasksLayout />}>
             <Route index element={<TaskDashboard />} />
-            <Route path="list" element={<TaskList />} />
-            <Route path="templates" element={<TaskTemplates />} />
-            <Route path="assignment" element={<TaskAssignment />} />
-            <Route path="execution" element={<TaskExecution />} />
-            <Route path="reports" element={<TaskReports />} />
+            <Route path="all" element={<AllTasks />} />
+            <Route path="my" element={<MyTasks />} />
+            <Route path="overdue" element={<OverdueTasks />} />
+            <Route path="completed" element={<CompletedTasks />} />
           </Route>
           <Route path="/temple/reports" element={<TempleHub />} />
           

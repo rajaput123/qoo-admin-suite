@@ -1,13 +1,12 @@
-import { ClipboardList, LayoutDashboard, List, FileStack, UserCheck, Play, BarChart3 } from "lucide-react";
+import { ClipboardList, LayoutDashboard, List, User, AlertTriangle, CheckCircle2 } from "lucide-react";
 import TempleLayout from "@/components/TempleLayout";
 
 const navItems = [
-  { label: "Task Dashboard", path: "/temple/tasks", icon: LayoutDashboard, description: "Overview of tasks & priorities" },
-  { label: "Task List", path: "/temple/tasks/list", icon: List, description: "All tasks with filters" },
-  { label: "Task Templates", path: "/temple/tasks/templates", icon: FileStack, description: "Reusable task patterns" },
-  { label: "Assignment", path: "/temple/tasks/assignment", icon: UserCheck, description: "HR-integrated assignment" },
-  { label: "Execution & Status", path: "/temple/tasks/execution", icon: Play, description: "Track task completion" },
-  { label: "Reports", path: "/temple/tasks/reports", icon: BarChart3, description: "Task analytics & summaries" },
+  { label: "Dashboard", path: "/temple/tasks", icon: LayoutDashboard, description: "Operational overview" },
+  { label: "All Tasks", path: "/temple/tasks/all", icon: List, badge: "22", description: "All linked tasks" },
+  { label: "My Tasks", path: "/temple/tasks/my", icon: User, description: "Your assigned tasks" },
+  { label: "Overdue Tasks", path: "/temple/tasks/overdue", icon: AlertTriangle, badge: "4", description: "Past due date" },
+  { label: "Completed", path: "/temple/tasks/completed", icon: CheckCircle2, description: "Finished tasks" },
 ];
 
 const TasksLayout = () => {
