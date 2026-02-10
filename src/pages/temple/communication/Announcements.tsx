@@ -7,11 +7,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Search, Bell, Calendar, Archive, Eye, Globe, Lock } from "lucide-react";
+import { Plus, Search, Bell, Calendar, Archive, Globe, Lock } from "lucide-react";
 import { toast } from "sonner";
+import SelectWithAddNew from "@/components/SelectWithAddNew";
+import CustomFieldsSection, { type CustomField } from "@/components/CustomFieldsSection";
 
 const externalAnnouncements = [
   { id: "ANN-E001", title: "Maha Shivaratri Festival Schedule", category: "Festival", priority: "urgent", status: "published", publishDate: "2024-02-08", publishTime: "09:00", expiryDate: "2024-02-15", audienceScope: "All Devotees", linkedStructure: "Main Temple", pinned: true, views: 3420 },
@@ -55,6 +56,27 @@ const Announcements = () => {
   const [createType, setCreateType] = useState<"external" | "internal" | null>(null);
   const [selectedExt, setSelectedExt] = useState<typeof externalAnnouncements[0] | null>(null);
   const [selectedInt, setSelectedInt] = useState<typeof internalAnnouncements[0] | null>(null);
+
+  // Dynamic dropdown options
+  const [categories, setCategories] = useState(["Festival", "Operations", "Events", "Infrastructure", "Policy Update"]);
+  const [audiences, setAudiences] = useState(["All Devotees", "Registered", "Donors", "Premium", "Custom Segment"]);
+  const [structures, setStructures] = useState(["Main Temple", "Prasadam Hall", "Assembly Hall", "Community Hall"]);
+  const [departments, setDepartments] = useState(["All", "Admin", "Priests", "Security", "Finance"]);
+  const [targets, setTargets] = useState(["All Staff", "Priests", "Specific Employees"]);
+
+  // Form state
+  const [formCategory, setFormCategory] = useState("");
+  const [formPriority, setFormPriority] = useState("");
+  const [formAudience, setFormAudience] = useState("");
+  const [formStructure, setFormStructure] = useState("");
+  const [formDept, setFormDept] = useState("");
+  const [formTarget, setFormTarget] = useState("");
+
+  // Custom fields
+  const [extCustomFields, setExtCustomFields] = useState<CustomField[]>([]);
+  const [intCustomFields, setIntCustomFields] = useState<CustomField[]>([]);
+  const [extDetailFields, setExtDetailFields] = useState<CustomField[]>([]);
+  const [intDetailFields, setIntDetailFields] = useState<CustomField[]>([]);
 
   const filteredExt = externalAnnouncements.filter(a => a.title.toLowerCase().includes(search.toLowerCase()));
   const filteredInt = internalAnnouncements.filter(a => a.title.toLowerCase().includes(search.toLowerCase()));
@@ -123,37 +145,17 @@ const Announcements = () => {
                 <div><Label>Title</Label><Input placeholder="Announcement title" /></div>
                 <div className="grid grid-cols-2 gap-4">
                   <div><Label>Category</Label>
-                    <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="festival">Festival</SelectItem>
-                        <SelectItem value="operations">Operations</SelectItem>
-                        <SelectItem value="events">Events</SelectItem>
-                        <SelectItem value="infrastructure">Infrastructure</SelectItem>
-                        <SelectItem value="policy">Policy Update</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <SelectWithAddNew value={formCategory} onValueChange={setFormCategory} placeholder="Select" options={categories} onAddNew={v => setCategories(p => [...p, v])} />
                   </div>
                   <div><Label>Priority</Label>
-                    <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="normal">Normal</SelectItem>
-                        <SelectItem value="important">Important</SelectItem>
-                        <SelectItem value="urgent">Urgent</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <SelectWithAddNew value={formPriority} onValueChange={setFormPriority} placeholder="Select" options={["Normal", "Important", "Urgent"]} onAddNew={() => {}} />
                   </div>
                 </div>
-                <div><Label>Linked Structure (Optional)</Label><Input placeholder="e.g., Main Temple, Shrine" /></div>
+                <div><Label>Linked Structure (Optional)</Label>
+                  <SelectWithAddNew value={formStructure} onValueChange={setFormStructure} placeholder="Select structure" options={structures} onAddNew={v => setStructures(p => [...p, v])} />
+                </div>
                 <div><Label>Audience Scope</Label>
-                  <Select><SelectTrigger><SelectValue placeholder="Select audience" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Devotees</SelectItem>
-                      <SelectItem value="registered">Registered</SelectItem>
-                      <SelectItem value="donors">Donors</SelectItem>
-                      <SelectItem value="premium">Premium</SelectItem>
-                      <SelectItem value="custom">Custom Segment</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <SelectWithAddNew value={formAudience} onValueChange={setFormAudience} placeholder="Select audience" options={audiences} onAddNew={v => setAudiences(p => [...p, v])} />
                 </div>
                 <div><Label>Content</Label><Textarea rows={4} placeholder="Rich announcement content..." /></div>
                 <div><Label>Cover Image (Optional)</Label><Input type="file" accept="image/*" /></div>
@@ -167,6 +169,7 @@ const Announcements = () => {
                   <Switch id="pin-top" />
                   <Label htmlFor="pin-top">Pin to Top</Label>
                 </div>
+                <CustomFieldsSection fields={extCustomFields} onFieldsChange={setExtCustomFields} />
                 <div className="flex gap-2 justify-end">
                   <Button variant="outline" size="sm" onClick={() => { toast.success("Saved as draft"); setCreateOpen(false); setCreateType(null); }}>Save Draft</Button>
                   <Button size="sm" onClick={() => { toast.success("Announcement published"); setCreateOpen(false); setCreateType(null); }}>Publish</Button>
@@ -178,34 +181,14 @@ const Announcements = () => {
                 <div><Label>Title</Label><Input placeholder="Announcement title" /></div>
                 <div className="grid grid-cols-2 gap-4">
                   <div><Label>Department</Label>
-                    <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="priests">Priests</SelectItem>
-                        <SelectItem value="security">Security</SelectItem>
-                        <SelectItem value="finance">Finance</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <SelectWithAddNew value={formDept} onValueChange={setFormDept} placeholder="Select" options={departments} onAddNew={v => setDepartments(p => [...p, v])} />
                   </div>
                   <div><Label>Priority</Label>
-                    <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="normal">Normal</SelectItem>
-                        <SelectItem value="important">Important</SelectItem>
-                        <SelectItem value="urgent">Urgent</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <SelectWithAddNew value={formPriority} onValueChange={setFormPriority} placeholder="Select" options={["Normal", "Important", "Urgent"]} onAddNew={() => {}} />
                   </div>
                 </div>
                 <div><Label>Target</Label>
-                  <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all-staff">All Staff</SelectItem>
-                      <SelectItem value="priests">Priests</SelectItem>
-                      <SelectItem value="specific">Specific Employees</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <SelectWithAddNew value={formTarget} onValueChange={setFormTarget} placeholder="Select" options={targets} onAddNew={v => setTargets(p => [...p, v])} />
                 </div>
                 <div><Label>Message Content</Label><Textarea rows={4} placeholder="Staff announcement content..." /></div>
                 <div><Label>Attachment (Optional)</Label><Input type="file" /></div>
@@ -217,6 +200,7 @@ const Announcements = () => {
                   <Switch id="read-track" />
                   <Label htmlFor="read-track">Read Tracking</Label>
                 </div>
+                <CustomFieldsSection fields={intCustomFields} onFieldsChange={setIntCustomFields} />
                 <div className="flex gap-2 justify-end">
                   <Button variant="outline" size="sm" onClick={() => { toast.success("Saved as draft"); setCreateOpen(false); setCreateType(null); }}>Save Draft</Button>
                   <Button size="sm" onClick={() => { toast.success("Internal announcement published"); setCreateOpen(false); setCreateType(null); }}>Publish</Button>
@@ -306,7 +290,7 @@ const Announcements = () => {
 
       {/* External Detail Modal */}
       <Dialog open={!!selectedExt} onOpenChange={() => setSelectedExt(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>External Announcement</DialogTitle></DialogHeader>
           {selectedExt && (
             <div className="space-y-4">
@@ -322,6 +306,7 @@ const Announcements = () => {
                 <div><span className="text-muted-foreground">Views:</span> {selectedExt.views.toLocaleString()}</div>
                 <div><span className="text-muted-foreground">Pinned:</span> {selectedExt.pinned ? "Yes" : "No"}</div>
               </div>
+              <CustomFieldsSection fields={extDetailFields} onFieldsChange={setExtDetailFields} />
               <div className="flex gap-2">
                 {selectedExt.status === "draft" && <Button size="sm" onClick={() => { toast.success("Announcement published"); setSelectedExt(null); }}>Publish Now</Button>}
                 {selectedExt.status === "published" && <Button variant="outline" size="sm" onClick={() => { toast.success("Announcement archived"); setSelectedExt(null); }}>Archive</Button>}
@@ -334,7 +319,7 @@ const Announcements = () => {
 
       {/* Internal Detail Modal */}
       <Dialog open={!!selectedInt} onOpenChange={() => setSelectedInt(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Internal Announcement</DialogTitle></DialogHeader>
           {selectedInt && (
             <div className="space-y-4">
@@ -352,6 +337,7 @@ const Announcements = () => {
                   </>
                 )}
               </div>
+              <CustomFieldsSection fields={intDetailFields} onFieldsChange={setIntDetailFields} />
               <div className="flex gap-2">
                 {selectedInt.status === "draft" && <Button size="sm" onClick={() => { toast.success("Published to staff"); setSelectedInt(null); }}>Publish</Button>}
                 {selectedInt.status === "published" && <Button variant="outline" size="sm" onClick={() => { toast.success("Archived"); setSelectedInt(null); }}>Archive</Button>}
