@@ -32,6 +32,7 @@ import {
   Landmark,
   Truck,
   UtensilsCrossed,
+  FolderKanban,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -228,6 +229,15 @@ const allModules = [
     enabled: true,
     path: "/temple/planner",
     description: "Calendar and scheduling planner",
+    category: "analytics",
+  },
+  {
+    id: "projects",
+    title: "Projects & Initiatives",
+    icon: FolderKanban,
+    enabled: true,
+    path: "/temple/projects",
+    description: "Strategic projects, milestones, budget governance",
     category: "analytics",
   },
   {
