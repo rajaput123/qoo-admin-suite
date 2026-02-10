@@ -99,11 +99,13 @@ import Counters from "./pages/temple/structure/Counters";
 import HierarchyView from "./pages/temple/structure/HierarchyView";
 // Event Management Module
 import EventsLayout from "./pages/temple/EventsLayout";
-import EventSetup from "./pages/temple/events/EventSetup";
-import RitualAttachment from "./pages/temple/events/RitualAttachment";
-import ResourcePlanning from "./pages/temple/events/ResourcePlanning";
-import ExecutionMode from "./pages/temple/events/ExecutionMode";
-import ClosureSummary from "./pages/temple/events/ClosureSummary";
+import AllEvents from "./pages/temple/events/AllEvents";
+import CalendarView from "./pages/temple/events/CalendarView";
+import EventTemplates from "./pages/temple/events/EventTemplates";
+import EventDetails from "./pages/temple/events/EventDetails";
+import EventExpenses from "./pages/temple/events/EventExpenses";
+import EventReports from "./pages/temple/events/EventReports";
+import EventArchive from "./pages/temple/events/EventArchive";
 // Task Management Module
 import TasksLayout from "./pages/temple/TasksLayout";
 import TaskDashboard from "./pages/temple/tasks/TaskDashboard";
@@ -307,13 +309,14 @@ const App = () => (
           </Route>
           {/* Event Management Module */}
           <Route path="/temple/events" element={<EventsLayout />}>
-            <Route index element={<EventSetup />} />
-            <Route path="rituals" element={<RitualAttachment />} />
-            <Route path="resources" element={<ResourcePlanning />} />
-            <Route path="execution" element={<ExecutionMode />} />
-            <Route path="closure" element={<ClosureSummary />} />
+            <Route index element={<AllEvents />} />
+            <Route path="calendar" element={<CalendarView />} />
+            <Route path="templates" element={<EventTemplates />} />
+            <Route path="expenses" element={<EventExpenses />} />
+            <Route path="reports" element={<EventReports />} />
+            <Route path="archive" element={<EventArchive />} />
           </Route>
-          <Route path="/temple/events" element={<TempleHub />} />
+          <Route path="/temple/events/:eventId" element={<EventDetails />} />
           {/* PR & Communication Module */}
           <Route path="/temple/communication" element={<CommunicationLayout />}>
             <Route index element={<ControlCenter />} />
