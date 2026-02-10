@@ -56,6 +56,14 @@ import TempleProfile from "./pages/temple/settings/TempleProfile";
 import TempleStructureLayout from "./pages/temple/structure/TempleStructureLayout";
 // Supplier Management Module
 import SupplierLayout from "./pages/temple/SupplierLayout";
+// Stock & Inventory Module
+import InventoryLayout from "./pages/temple/InventoryLayout";
+import InventoryDashboard from "./pages/temple/inventory/Dashboard";
+import InventoryItems from "./pages/temple/inventory/Items";
+import InventoryTransactions from "./pages/temple/inventory/Transactions";
+import InventoryRequests from "./pages/temple/inventory/Requests";
+import InventoryAdjustments from "./pages/temple/inventory/Adjustments";
+import InventoryReports from "./pages/temple/inventory/Reports";
 import SupplierDashboard from "./pages/temple/suppliers/Dashboard";
 import SupplierRegistry from "./pages/temple/suppliers/Registry";
 import SupplierOnboarding from "./pages/temple/suppliers/Onboarding";
@@ -208,6 +216,16 @@ const App = () => (
             <Route path="payments" element={<SupplierPayments />} />
             <Route path="performance" element={<SupplierPerformance />} />
             <Route path="reports" element={<SupplierReports />} />
+          </Route>
+          
+          {/* Stock & Inventory Module */}
+          <Route path="/temple/inventory" element={<InventoryLayout />}>
+            <Route index element={<InventoryDashboard />} />
+            <Route path="items" element={<InventoryItems />} />
+            <Route path="transactions" element={<InventoryTransactions />} />
+            <Route path="requests" element={<InventoryRequests />} />
+            <Route path="adjustments" element={<InventoryAdjustments />} />
+            <Route path="reports" element={<InventoryReports />} />
           </Route>
           
           {/* Offerings Module */}
