@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import DemoVideoModal from "@/components/DemoVideoModal";
 import {
   Building2,
   Shield,
@@ -9,6 +11,7 @@ import {
   BarChart3,
   ArrowRight,
   CheckCircle2,
+  Play,
   Sparkles,
   Globe,
   Boxes,
@@ -68,6 +71,7 @@ const platformCards = [
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const [demoOpen, setDemoOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
@@ -127,8 +131,8 @@ const LandingPage = () => {
               <Button size="lg" onClick={() => navigate("/login")} className="h-12 px-8 text-base gap-2 bg-primary hover:bg-primary/90">
                 Get Started <ArrowRight className="h-4 w-4" />
               </Button>
-              <Button size="lg" variant="outline" className="h-12 px-8 text-base text-white border-white/30 hover:bg-white/10 hover:text-white">
-                Watch Demo
+              <Button size="lg" variant="outline" onClick={() => setDemoOpen(true)} className="h-12 px-8 text-base text-white border-white/30 hover:bg-white/10 hover:text-white gap-2">
+                <Play className="h-4 w-4" /> Watch Demo
               </Button>
             </div>
           </motion.div>
@@ -391,6 +395,7 @@ const LandingPage = () => {
           </div>
         </div>
       </footer>
+      <DemoVideoModal open={demoOpen} onOpenChange={setDemoOpen} />
     </div>
   );
 };

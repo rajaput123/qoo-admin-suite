@@ -98,6 +98,7 @@ import Sacred from "./pages/temple/structure/Sacred";
 import Halls from "./pages/temple/structure/Halls";
 import Counters from "./pages/temple/structure/Counters";
 import HierarchyView from "./pages/temple/structure/HierarchyView";
+import VirtualTour from "./pages/temple/structure/VirtualTour";
 // Event Management Module
 import EventsLayout from "./pages/temple/EventsLayout";
 import AllEvents from "./pages/temple/events/AllEvents";
@@ -218,6 +219,7 @@ const App = () => (
             <Route path="halls" element={<Halls />} />
             <Route path="counters" element={<Counters />} />
             <Route path="hierarchy" element={<HierarchyView />} />
+            <Route path="virtual-tour" element={<VirtualTour />} />
           </Route>
           
           {/* Supplier Management Module */}
