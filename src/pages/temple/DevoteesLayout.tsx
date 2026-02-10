@@ -8,7 +8,7 @@ const navItems = [
 ];
 
 const DevoteesLayout = () => {
-  return <TempleLayout title="Devotees CRM" icon={Users} navItems={navItems} />;
+  return <TempleLayout title="Devotee Management" icon={Users} navItems={navItems} />;
 };
 
 export default DevoteesLayout;
