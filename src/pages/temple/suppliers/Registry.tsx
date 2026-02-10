@@ -1,14 +1,15 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, Filter, Download, Star, Phone, Mail, MapPin, Building, IndianRupee, FileText, Truck, Clock, Package, Link2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, Download, Star, Phone, Mail, MapPin, Building, IndianRupee, FileText, Truck, Clock } from "lucide-react";
+import { motion } from "framer-motion";
+import { inventoryItems, supplierRefs, kitchenBatches, eventMaterialAllocations, eventRefs } from "@/data/templeData";
 
 const suppliers = [
   { id: "SUP-001", name: "Sri Lakshmi Flowers", category: "Flowers", contactPerson: "Rajesh Kumar", phone: "+91 98765 43210", email: "rajesh@srilakshmi.com", city: "Tirupati", status: "Active", rating: 4.8, gst: "37AABCU9603R1ZM", pan: "AABCU9603R", businessType: "Proprietorship", yearsInBusiness: 12, totalOrders: 24, totalSpend: 185000, lastOrder: "2026-02-06", address: "12, Flower Market, Tirupati", state: "Andhra Pradesh", bankName: "SBI", accountNumber: "****6789", ifsc: "SBIN0001234" },
@@ -39,13 +40,30 @@ const Registry = () => {
     return matchSearch && matchStatus;
   });
 
+  // Get linked inventory items for selected supplier
+  const getLinkedInventory = (supplierName: string) => {
+    return inventoryItems.filter(inv => inv.supplier === supplierName);
+  };
+
+  // Get linked event allocations for selected supplier
+  const getLinkedEvents = (supplierName: string) => {
+    const invIds = getLinkedInventory(supplierName).map(inv => inv.id);
+    return eventMaterialAllocations.filter(m => invIds.includes(m.inventoryId));
+  };
+
+  // Get linked kitchen batches for selected supplier
+  const getLinkedBatches = (supplierName: string) => {
+    const invIds = getLinkedInventory(supplierName).map(inv => inv.id);
+    return kitchenBatches.filter(b => b.inventoryDeductions.some(d => invIds.includes(d.inventoryId)));
+  };
+
   return (
     <div className="p-6 space-y-6">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Supplier Registry</h1>
-            <p className="text-muted-foreground">Master list of all approved suppliers</p>
+            <p className="text-muted-foreground">Linked to Inventory, Kitchen, and Events</p>
           </div>
           <Button size="sm"><Download className="h-4 w-4 mr-2" />Export</Button>
         </div>
@@ -58,8 +76,8 @@ const Registry = () => {
                 <Input placeholder="Search suppliers..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
               </div>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[160px]"><Filter className="h-4 w-4 mr-2" /><SelectValue /></SelectTrigger>
-                <SelectContent>
+                <SelectTrigger className="w-[160px] bg-background"><Filter className="h-4 w-4 mr-2" /><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-popover">
                   <SelectItem value="all">All Status</SelectItem>
                   <SelectItem value="Active">Active</SelectItem>
                   <SelectItem value="Inactive">Inactive</SelectItem>
@@ -77,25 +95,36 @@ const Registry = () => {
                   <TableHead>Category</TableHead>
                   <TableHead>Contact</TableHead>
                   <TableHead>City</TableHead>
+                  <TableHead>Inventory Items</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-center">Rating</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map(s => (
-                  <TableRow key={s.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelected(s)}>
-                    <TableCell className="font-mono text-xs">{s.id}</TableCell>
-                    <TableCell className="font-medium text-sm">{s.name}</TableCell>
-                    <TableCell className="text-sm">{s.category}</TableCell>
-                    <TableCell>
-                      <p className="text-sm">{s.contactPerson}</p>
-                      <p className="text-xs text-muted-foreground">{s.phone}</p>
-                    </TableCell>
-                    <TableCell className="text-sm">{s.city}</TableCell>
-                    <TableCell><Badge variant="outline" className={`text-[10px] ${statusColor(s.status)}`}>{s.status}</Badge></TableCell>
-                    <TableCell className="text-center"><Badge variant="outline" className="text-xs">⭐ {s.rating}</Badge></TableCell>
-                  </TableRow>
-                ))}
+                {filtered.map(s => {
+                  const linkedInv = getLinkedInventory(s.name);
+                  return (
+                    <TableRow key={s.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelected(s)}>
+                      <TableCell className="font-mono text-xs">{s.id}</TableCell>
+                      <TableCell className="font-medium text-sm">{s.name}</TableCell>
+                      <TableCell className="text-sm">{s.category}</TableCell>
+                      <TableCell>
+                        <p className="text-sm">{s.contactPerson}</p>
+                        <p className="text-xs text-muted-foreground">{s.phone}</p>
+                      </TableCell>
+                      <TableCell className="text-sm">{s.city}</TableCell>
+                      <TableCell>
+                        {linkedInv.length > 0 ? (
+                          <Badge variant="outline" className="text-xs">
+                            <Package className="h-3 w-3 mr-1" />{linkedInv.length} items
+                          </Badge>
+                        ) : <span className="text-xs text-muted-foreground">—</span>}
+                      </TableCell>
+                      <TableCell><Badge variant="outline" className={`text-[10px] ${statusColor(s.status)}`}>{s.status}</Badge></TableCell>
+                      <TableCell className="text-center"><Badge variant="outline" className="text-xs">⭐ {s.rating}</Badge></TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </CardContent>
@@ -103,7 +132,7 @@ const Registry = () => {
       </motion.div>
 
       <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto bg-background">
           {selected && (
             <>
               <DialogHeader>
@@ -113,11 +142,12 @@ const Registry = () => {
                 </DialogTitle>
               </DialogHeader>
               <Tabs defaultValue="overview">
-                <TabsList className="grid grid-cols-4 w-full">
+                <TabsList className="grid grid-cols-5 w-full">
                   <TabsTrigger value="overview">Overview</TabsTrigger>
-                  <TabsTrigger value="business">Business</TabsTrigger>
+                  <TabsTrigger value="inventory">Inventory Link</TabsTrigger>
+                  <TabsTrigger value="kitchen">Kitchen Link</TabsTrigger>
+                  <TabsTrigger value="events">Event Link</TabsTrigger>
                   <TabsTrigger value="financial">Financial</TabsTrigger>
-                  <TabsTrigger value="orders">Orders</TabsTrigger>
                 </TabsList>
                 <TabsContent value="overview" className="space-y-4 mt-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -127,32 +157,115 @@ const Registry = () => {
                     <div className="flex items-center gap-2 text-sm"><MapPin className="h-4 w-4 text-muted-foreground" /><span>{selected.city}, {selected.state}</span></div>
                   </div>
                   <div className="p-3 bg-muted/50 rounded-lg text-sm"><strong>Address:</strong> {selected.address}</div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 bg-muted/50 rounded-lg"><p className="text-xs text-muted-foreground">Category</p><p className="font-medium text-sm">{selected.category}</p></div>
-                    <div className="p-3 bg-muted/50 rounded-lg"><p className="text-xs text-muted-foreground">Rating</p><p className="font-medium text-sm">⭐ {selected.rating} / 5.0</p></div>
-                  </div>
                 </TabsContent>
-                <TabsContent value="business" className="space-y-4 mt-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 bg-muted/50 rounded-lg"><p className="text-xs text-muted-foreground">GST Number</p><p className="font-medium text-sm font-mono">{selected.gst}</p></div>
-                    <div className="p-3 bg-muted/50 rounded-lg"><p className="text-xs text-muted-foreground">PAN Number</p><p className="font-medium text-sm font-mono">{selected.pan}</p></div>
-                    <div className="p-3 bg-muted/50 rounded-lg"><p className="text-xs text-muted-foreground">Years in Business</p><p className="font-medium text-sm">{selected.yearsInBusiness} years</p></div>
-                    <div className="p-3 bg-muted/50 rounded-lg"><p className="text-xs text-muted-foreground">Contact Person</p><p className="font-medium text-sm">{selected.contactPerson}</p></div>
-                  </div>
+                <TabsContent value="inventory" className="space-y-4 mt-4">
+                  <p className="text-xs text-muted-foreground">Inventory items supplied by {selected.name}</p>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Item</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead className="text-right">Current Stock</TableHead>
+                        <TableHead className="text-right">Min Stock</TableHead>
+                        <TableHead>Structure</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {getLinkedInventory(selected.name).map(inv => (
+                        <TableRow key={inv.id}>
+                          <TableCell className="font-mono text-xs text-primary">{inv.id}</TableCell>
+                          <TableCell className="font-medium">{inv.name}</TableCell>
+                          <TableCell className="text-sm">{inv.category}</TableCell>
+                          <TableCell className="text-right font-mono">{inv.currentStock} {inv.unit}</TableCell>
+                          <TableCell className="text-right font-mono text-muted-foreground">{inv.minStock} {inv.unit}</TableCell>
+                          <TableCell className="text-sm">{inv.structureLinked}</TableCell>
+                          <TableCell>
+                            <Badge variant={inv.status === "In Stock" ? "default" : "secondary"} className="text-xs">{inv.status}</Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {getLinkedInventory(selected.name).length === 0 && (
+                        <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-4">No inventory items linked</TableCell></TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </TabsContent>
+                <TabsContent value="kitchen" className="space-y-4 mt-4">
+                  <p className="text-xs text-muted-foreground">Kitchen batches that consumed materials from {selected.name}</p>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Batch ID</TableHead>
+                        <TableHead>Prasadam</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Materials Used</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {getLinkedBatches(selected.name).map(b => (
+                        <TableRow key={b.id}>
+                          <TableCell className="font-mono text-xs text-primary">{b.id}</TableCell>
+                          <TableCell className="font-medium">{b.prasadam}</TableCell>
+                          <TableCell className="text-sm">{b.date}</TableCell>
+                          <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                              {b.inventoryDeductions.filter(d => getLinkedInventory(selected.name).some(inv => inv.id === d.inventoryId)).map((d, i) => (
+                                <Badge key={i} variant="outline" className="text-[10px]">{d.inventoryName}: {d.qty}{d.unit}</Badge>
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell><Badge variant={b.status === "Active" ? "default" : "secondary"} className="text-xs">{b.status}</Badge></TableCell>
+                        </TableRow>
+                      ))}
+                      {getLinkedBatches(selected.name).length === 0 && (
+                        <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-4">No kitchen batches linked</TableCell></TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </TabsContent>
+                <TabsContent value="events" className="space-y-4 mt-4">
+                  <p className="text-xs text-muted-foreground">Event material allocations sourced from {selected.name}'s inventory</p>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Event</TableHead>
+                        <TableHead>Material</TableHead>
+                        <TableHead className="text-right">Required</TableHead>
+                        <TableHead className="text-right">Allocated</TableHead>
+                        <TableHead>Source</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {getLinkedEvents(selected.name).map((m, i) => {
+                        const evt = eventRefs.find(e => e.id === m.eventId);
+                        return (
+                          <TableRow key={i}>
+                            <TableCell className="text-sm"><span className="font-mono text-primary text-xs">{m.eventId}</span> {evt?.name}</TableCell>
+                            <TableCell className="font-medium">{m.inventoryName}</TableCell>
+                            <TableCell className="text-right font-mono">{m.requiredQty} {m.unit}</TableCell>
+                            <TableCell className="text-right font-mono">{m.allocatedQty} {m.unit}</TableCell>
+                            <TableCell><Badge variant={m.source === "Stock" ? "default" : "secondary"} className="text-xs">{m.source}</Badge></TableCell>
+                          </TableRow>
+                        );
+                      })}
+                      {getLinkedEvents(selected.name).length === 0 && (
+                        <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-4">No event allocations linked</TableCell></TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
                 </TabsContent>
                 <TabsContent value="financial" className="space-y-4 mt-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 bg-muted/50 rounded-lg"><p className="text-xs text-muted-foreground">Bank</p><p className="font-medium text-sm">{selected.bankName}</p></div>
-                    <div className="p-3 bg-muted/50 rounded-lg"><p className="text-xs text-muted-foreground">Account</p><p className="font-medium text-sm font-mono">{selected.accountNumber}</p></div>
-                    <div className="p-3 bg-muted/50 rounded-lg"><p className="text-xs text-muted-foreground">IFSC</p><p className="font-medium text-sm font-mono">{selected.ifsc}</p></div>
-                    <div className="p-3 bg-muted/50 rounded-lg"><p className="text-xs text-muted-foreground">Total Spend</p><p className="font-medium text-sm">₹{selected.totalSpend.toLocaleString()}</p></div>
-                  </div>
-                </TabsContent>
-                <TabsContent value="orders" className="space-y-4 mt-4">
                   <div className="grid grid-cols-3 gap-4">
                     <div className="p-3 bg-muted/50 rounded-lg text-center"><p className="text-xs text-muted-foreground">Total Orders</p><p className="text-xl font-bold">{selected.totalOrders}</p></div>
                     <div className="p-3 bg-muted/50 rounded-lg text-center"><p className="text-xs text-muted-foreground">Total Spend</p><p className="text-xl font-bold">₹{selected.totalSpend.toLocaleString()}</p></div>
                     <div className="p-3 bg-muted/50 rounded-lg text-center"><p className="text-xs text-muted-foreground">Last Order</p><p className="text-xl font-bold">{selected.lastOrder}</p></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-3 bg-muted/50 rounded-lg"><p className="text-xs text-muted-foreground">Bank</p><p className="font-medium text-sm">{selected.bankName}</p></div>
+                    <div className="p-3 bg-muted/50 rounded-lg"><p className="text-xs text-muted-foreground">Account</p><p className="font-medium text-sm font-mono">{selected.accountNumber}</p></div>
                   </div>
                 </TabsContent>
               </Tabs>

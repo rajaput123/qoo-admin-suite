@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -6,252 +6,531 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AlertTriangle, CheckCircle2, UtensilsCrossed, Boxes, Users, Shield, Plus } from "lucide-react";
-
-const kitchenData = [
-  { prasadam: "Laddu", qty: "50,000", annadanam: "-", batch: "BATCH-0312", stock: "Sufficient", alert: false },
-  { prasadam: "Pulihora", qty: "30,000", annadanam: "-", batch: "BATCH-0313", stock: "Sufficient", alert: false },
-  { prasadam: "Annadanam Meals", qty: "-", annadanam: "75,000", batch: "BATCH-0314", stock: "Low - Rice", alert: true },
-  { prasadam: "Vada", qty: "20,000", annadanam: "-", batch: "BATCH-0315", stock: "Sufficient", alert: false },
-];
-
-const materialData = [
-  { material: "Rice (25kg bags)", qty: "200", supplier: "Sri Lakshmi Traders", po: "PO-2025-112", status: "Ordered" },
-  { material: "Ghee (15L cans)", qty: "50", supplier: "Nandini Dairy", po: "PO-2025-113", status: "Delivered" },
-  { material: "Sugar (50kg bags)", qty: "80", supplier: "Sri Lakshmi Traders", po: "-", status: "Shortage" },
-  { material: "Flowers - Marigold", qty: "500 garlands", supplier: "Temple Garden", po: "-", status: "Available" },
-  { material: "Camphor (boxes)", qty: "100", supplier: "Pooja Stores Ltd", po: "PO-2025-114", status: "Ordered" },
-];
-
-const volunteerData = [
-  { role: "Crowd Control", count: 120, shift: "6 AM – 2 PM", area: "Main Gate, Queue Lines" },
-  { role: "Kitchen Assistants", count: 80, shift: "4 AM – 12 PM", area: "Main Kitchen, Annadanam Hall" },
-  { role: "Ritual Support", count: 30, shift: "5 AM – 10 AM", area: "Main Temple, Shrines" },
-  { role: "VIP Coordination", count: 15, shift: "8 AM – 6 PM", area: "VIP Entrance, Dharshan" },
-  { role: "Medical Support", count: 10, shift: "6 AM – 10 PM", area: "First Aid Counters" },
-];
-
-const securityData = [
-  { item: "Entry Gates Active", value: "8 / 10", status: "ok" },
-  { item: "Barricade Sections", value: "24 segments", status: "ok" },
-  { item: "Medical Teams", value: "4 teams", status: "ok" },
-  { item: "Police Coordination", value: "Confirmed – SP Office", status: "ok" },
-  { item: "Emergency Contacts", value: "12 registered", status: "ok" },
-  { item: "Fire Safety", value: "2 engines standby", status: "warning" },
-];
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { AlertTriangle, CheckCircle2, UtensilsCrossed, Boxes, Users, Shield, Plus, Star, Link2, ClipboardList, ArrowRight, Package } from "lucide-react";
+import { toast } from "sonner";
+import SelectWithAddNew from "@/components/SelectWithAddNew";
+import {
+  eventRefs, eventMaterialAllocations, eventFreelancerAllocations,
+  eventVolunteerAllocations, eventSecurityData, inventoryItems,
+  freelancerRefs, kitchenBatches, recipes, autoTasks, templeStructures
+} from "@/data/templeData";
 
 const ResourcePlanning = () => {
+  const [selectedEvent, setSelectedEvent] = useState("EVT-004");
+  const [showAllocateMaterial, setShowAllocateMaterial] = useState(false);
+  const [showAllocateFreelancer, setShowAllocateFreelancer] = useState(false);
+  const [showAllocateVolunteer, setShowAllocateVolunteer] = useState(false);
+
+  const event = eventRefs.find(e => e.id === selectedEvent);
+  const materials = eventMaterialAllocations.filter(m => m.eventId === selectedEvent);
+  const freelancers = eventFreelancerAllocations.filter(f => f.eventId === selectedEvent);
+  const volunteers = eventVolunteerAllocations.filter(v => v.eventId === selectedEvent);
+  const security = eventSecurityData.filter(s => s.eventId === selectedEvent);
+  const linkedBatches = kitchenBatches.filter(b => b.eventId === selectedEvent);
+  const linkedTasks = autoTasks.filter(t => t.linkedEntityName === event?.name || freelancers.some(f => f.taskId === t.id) || volunteers.some(v => v.taskId === t.id));
+
+  const materialShortages = materials.filter(m => m.allocatedQty < m.requiredQty);
+  const totalFreelancerCost = freelancers.reduce((a, f) => a + f.agreedPayment, 0);
+  const totalVolunteers = volunteers.reduce((a, v) => a + v.count, 0);
+
+  const [freelancerOptions, setFreelancerOptions] = useState(freelancerRefs.map(f => f.businessName));
+  const [roleOptions, setRoleOptions] = useState(["Photography", "Videography", "Sound Engineering", "Decoration", "Lighting", "Catering", "Live Streaming", "Consulting"]);
+  const [volunteerRoleOptions, setVolunteerRoleOptions] = useState(["Crowd Control", "Kitchen Assistants", "Ritual Support", "VIP Coordination", "Medical Support", "Parking", "Sanitation"]);
+  const [areaOptions, setAreaOptions] = useState(["Main Gate", "Queue Lines", "Main Kitchen", "Annadanam Hall", "Main Temple", "Shrines", "VIP Entrance", "First Aid Counters"]);
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Resource Planning</h1>
-          <p className="text-sm text-muted-foreground mt-1">Plan kitchen, inventory, volunteers, and logistics for the event</p>
+          <p className="text-sm text-muted-foreground mt-1">Integrated resource allocation — materials from inventory, freelancers, volunteers, and logistics</p>
         </div>
-        <Select>
-          <SelectTrigger className="w-56">
+        <Select value={selectedEvent} onValueChange={setSelectedEvent}>
+          <SelectTrigger className="w-64 bg-background">
             <SelectValue placeholder="Select Event" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="evt-001">EVT-001 — Brahmotsavam 2025</SelectItem>
-            <SelectItem value="evt-002">EVT-002 — Vaikuntha Ekadasi</SelectItem>
+          <SelectContent className="bg-popover">
+            {eventRefs.map(e => (
+              <SelectItem key={e.id} value={e.id}>{e.id} — {e.name}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
 
+      {event && (
+        <div className="text-sm text-muted-foreground flex gap-4 items-center border rounded-lg p-3 bg-muted/30">
+          <span><strong>Event:</strong> {event.name}</span>
+          <span><strong>Type:</strong> {event.type}</span>
+          <span><strong>Structure:</strong> {event.structure}</span>
+          <span><strong>Dates:</strong> {event.startDate}{event.endDate !== event.startDate ? ` → ${event.endDate}` : ""}</span>
+          <span><strong>Footfall:</strong> {event.footfall}/day</span>
+          <Badge variant={event.status === "Approved" ? "default" : "secondary"}>{event.status}</Badge>
+        </div>
+      )}
+
       {/* Readiness Summary */}
-      <div className="grid grid-cols-4 gap-4">
-        <Card className="border-green-200">
-          <CardContent className="p-4 flex items-center gap-3">
-            <UtensilsCrossed className="h-5 w-5 text-green-600" />
-            <div>
-              <p className="text-sm font-medium">Kitchen & Prasadam</p>
-              <p className="text-xs text-amber-600">1 alert</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-amber-200">
-          <CardContent className="p-4 flex items-center gap-3">
-            <Boxes className="h-5 w-5 text-amber-600" />
-            <div>
-              <p className="text-sm font-medium">Inventory</p>
-              <p className="text-xs text-amber-600">1 shortage</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-green-200">
-          <CardContent className="p-4 flex items-center gap-3">
-            <Users className="h-5 w-5 text-green-600" />
-            <div>
-              <p className="text-sm font-medium">Volunteers</p>
-              <p className="text-xs text-green-600">All assigned</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-green-200">
-          <CardContent className="p-4 flex items-center gap-3">
-            <Shield className="h-5 w-5 text-green-600" />
-            <div>
-              <p className="text-sm font-medium">Security & Logistics</p>
-              <p className="text-xs text-green-600">Ready</p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-5 gap-4">
+        <div className={`flex items-center gap-3 p-4 rounded-lg border ${materialShortages.length > 0 ? "border-amber-200 bg-amber-50/30" : "border-green-200 bg-green-50/30"}`}>
+          <Boxes className={`h-5 w-5 ${materialShortages.length > 0 ? "text-amber-600" : "text-green-600"}`} />
+          <div>
+            <p className="text-sm font-medium">Materials</p>
+            <p className={`text-xs ${materialShortages.length > 0 ? "text-amber-600" : "text-green-600"}`}>
+              {materialShortages.length > 0 ? `${materialShortages.length} shortage(s)` : "All sourced"}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 p-4 rounded-lg border border-green-200 bg-green-50/30">
+          <Users className="h-5 w-5 text-green-600" />
+          <div>
+            <p className="text-sm font-medium">Freelancers</p>
+            <p className="text-xs text-green-600">{freelancers.length} assigned · ₹{totalFreelancerCost.toLocaleString()}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 p-4 rounded-lg border border-green-200 bg-green-50/30">
+          <Users className="h-5 w-5 text-green-600" />
+          <div>
+            <p className="text-sm font-medium">Volunteers</p>
+            <p className="text-xs text-green-600">{totalVolunteers} deployed</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 p-4 rounded-lg border border-green-200 bg-green-50/30">
+          <UtensilsCrossed className="h-5 w-5 text-green-600" />
+          <div>
+            <p className="text-sm font-medium">Kitchen</p>
+            <p className="text-xs text-green-600">{linkedBatches.length} batch(es)</p>
+          </div>
+        </div>
+        <div className={`flex items-center gap-3 p-4 rounded-lg border ${security.some(s => s.status !== "ok") ? "border-amber-200 bg-amber-50/30" : "border-green-200 bg-green-50/30"}`}>
+          <Shield className={`h-5 w-5 ${security.some(s => s.status !== "ok") ? "text-amber-600" : "text-green-600"}`} />
+          <div>
+            <p className="text-sm font-medium">Security</p>
+            <p className={`text-xs ${security.some(s => s.status !== "ok") ? "text-amber-600" : "text-green-600"}`}>
+              {security.some(s => s.status !== "ok") ? "Warnings" : "Ready"}
+            </p>
+          </div>
+        </div>
       </div>
 
-      <Tabs defaultValue="kitchen" className="w-full">
+      <Tabs defaultValue="materials" className="w-full">
         <TabsList>
-          <TabsTrigger value="kitchen">Kitchen & Prasadam</TabsTrigger>
-          <TabsTrigger value="inventory">Inventory & Materials</TabsTrigger>
+          <TabsTrigger value="materials">Materials from Inventory</TabsTrigger>
+          <TabsTrigger value="freelancers">Freelancers</TabsTrigger>
+          <TabsTrigger value="kitchen">Kitchen Batches</TabsTrigger>
           <TabsTrigger value="volunteers">Volunteers</TabsTrigger>
           <TabsTrigger value="security">Security & Logistics</TabsTrigger>
+          <TabsTrigger value="tasks">Auto-Generated Tasks</TabsTrigger>
         </TabsList>
 
-        {/* Kitchen Tab */}
-        <TabsContent value="kitchen">
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Kitchen & Prasadam Plan</CardTitle>
-                <Button size="sm"><Plus className="h-4 w-4 mr-2" />Add Item</Button>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
+        {/* Materials Tab */}
+        <TabsContent value="materials">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold">Material Allocation from Inventory</h3>
+              <Button size="sm" onClick={() => setShowAllocateMaterial(true)}><Plus className="h-4 w-4 mr-2" />Allocate Material</Button>
+            </div>
+            <div className="border rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Prasadam Type</TableHead>
-                    <TableHead>Planned Qty</TableHead>
-                    <TableHead>Annadanam Headcount</TableHead>
-                    <TableHead>Linked Batch</TableHead>
-                    <TableHead>Stock Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {kitchenData.map((k, i) => (
-                    <TableRow key={i} className={k.alert ? "bg-amber-50/50" : ""}>
-                      <TableCell className="font-medium">{k.prasadam}</TableCell>
-                      <TableCell>{k.qty}</TableCell>
-                      <TableCell>{k.annadanam}</TableCell>
-                      <TableCell className="font-mono text-xs">{k.batch}</TableCell>
-                      <TableCell>
-                        <Badge className={`text-xs border-0 ${k.alert ? "bg-amber-100 text-amber-700" : "bg-green-100 text-green-700"}`}>
-                          {k.alert && <AlertTriangle className="h-3 w-3 mr-1" />}
-                          {!k.alert && <CheckCircle2 className="h-3 w-3 mr-1" />}
-                          {k.stock}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Inventory Tab */}
-        <TabsContent value="inventory">
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Inventory & Materials</CardTitle>
-                <Button size="sm"><Plus className="h-4 w-4 mr-2" />Add Material</Button>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
+                    <TableHead>Inventory ID</TableHead>
                     <TableHead>Material</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Supplier</TableHead>
-                    <TableHead>PO #</TableHead>
+                    <TableHead className="text-right">Required</TableHead>
+                    <TableHead className="text-right">In Stock</TableHead>
+                    <TableHead className="text-right">Allocated</TableHead>
+                    <TableHead className="text-right">Deficit</TableHead>
+                    <TableHead>Source</TableHead>
                     <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {materialData.map((m, i) => (
-                    <TableRow key={i} className={m.status === "Shortage" ? "bg-red-50/50" : ""}>
-                      <TableCell className="font-medium">{m.material}</TableCell>
-                      <TableCell>{m.qty}</TableCell>
-                      <TableCell className="text-sm">{m.supplier}</TableCell>
-                      <TableCell className="font-mono text-xs">{m.po}</TableCell>
+                  {materials.map((m, i) => {
+                    const inv = inventoryItems.find(inv => inv.id === m.inventoryId);
+                    const deficit = m.requiredQty - m.allocatedQty;
+                    return (
+                      <TableRow key={i} className={deficit > 0 ? "bg-amber-50/50" : ""}>
+                        <TableCell className="font-mono text-xs text-primary">{m.inventoryId}</TableCell>
+                        <TableCell className="font-medium">{m.inventoryName}</TableCell>
+                        <TableCell className="text-right">{m.requiredQty.toLocaleString()} {m.unit}</TableCell>
+                        <TableCell className="text-right text-muted-foreground">{inv?.currentStock.toLocaleString() ?? "—"} {m.unit}</TableCell>
+                        <TableCell className="text-right font-medium">{m.allocatedQty.toLocaleString()} {m.unit}</TableCell>
+                        <TableCell className="text-right">
+                          {deficit > 0 ? (
+                            <span className="text-amber-600 font-medium">{deficit.toLocaleString()} {m.unit}</span>
+                          ) : (
+                            <span className="text-green-600">✓ Fulfilled</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={m.source === "Stock" ? "default" : "secondary"} className="text-xs">
+                            {m.source}
+                          </Badge>
+                          {m.poId && <span className="ml-1 text-xs text-muted-foreground font-mono">{m.poId}</span>}
+                        </TableCell>
+                        <TableCell>
+                          {deficit > 0 ? (
+                            <Badge className="bg-amber-100 text-amber-700 border-0 text-xs">
+                              <AlertTriangle className="h-3 w-3 mr-1" />Shortage
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-green-100 text-green-700 border-0 text-xs">
+                              <CheckCircle2 className="h-3 w-3 mr-1" />Ready
+                            </Badge>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+            {materialShortages.length > 0 && (
+              <div className="border border-amber-200 rounded-lg p-3 bg-amber-50/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle className="h-4 w-4 text-amber-600" />
+                  <span className="text-sm font-semibold text-amber-800">Shortage Alerts → Auto-Generated Tasks</span>
+                </div>
+                <div className="space-y-1 text-sm text-amber-700">
+                  {materialShortages.map((m, i) => (
+                    <p key={i}>• {m.inventoryName}: Need {(m.requiredQty - m.allocatedQty).toLocaleString()} {m.unit} more → Task auto-created for procurement</p>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* Freelancers Tab */}
+        <TabsContent value="freelancers">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-semibold">Freelancer Assignments</h3>
+                <p className="text-xs text-muted-foreground">Pulled from Freelancer Module • Each assignment auto-generates a Task</p>
+              </div>
+              <Button size="sm" onClick={() => setShowAllocateFreelancer(true)}><Plus className="h-4 w-4 mr-2" />Assign Freelancer</Button>
+            </div>
+            <div className="border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Freelancer ID</TableHead>
+                    <TableHead>Business Name</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Dates</TableHead>
+                    <TableHead className="text-right">Payment</TableHead>
+                    <TableHead>Rating</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Linked Task</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {freelancers.map((f, i) => {
+                    const ref = freelancerRefs.find(r => r.id === f.freelancerId);
+                    return (
+                      <TableRow key={i}>
+                        <TableCell className="font-mono text-xs text-primary">{f.freelancerId}</TableCell>
+                        <TableCell className="font-medium">{f.freelancerName}</TableCell>
+                        <TableCell className="text-sm">{f.role}</TableCell>
+                        <TableCell className="text-sm">{f.dates}</TableCell>
+                        <TableCell className="text-right font-medium">₹{f.agreedPayment.toLocaleString()}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-0.5">
+                            {[1, 2, 3, 4, 5].map(s => (
+                              <Star key={s} className={`h-3 w-3 ${s <= Math.round(ref?.rating ?? 0) ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
+                            ))}
+                            <span className="ml-1 text-xs text-muted-foreground">{ref?.rating.toFixed(1)}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={f.status === "Confirmed" ? "default" : f.status === "Completed" ? "default" : "secondary"}>{f.status}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          {f.taskId ? (
+                            <span className="text-xs font-mono text-primary flex items-center gap-1">
+                              <Link2 className="h-3 w-3" />{f.taskId}
+                            </span>
+                          ) : "—"}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+            <p className="text-xs text-muted-foreground flex items-center gap-1">
+              <ClipboardList className="h-3 w-3" /> Total Cost: <strong>₹{totalFreelancerCost.toLocaleString()}</strong> • {freelancers.length} freelancers assigned
+            </p>
+          </div>
+        </TabsContent>
+
+        {/* Kitchen Tab */}
+        <TabsContent value="kitchen">
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-base font-semibold">Linked Kitchen Batches</h3>
+              <p className="text-xs text-muted-foreground">Batches linked to this event • Materials auto-deducted from Inventory</p>
+            </div>
+            {linkedBatches.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-8 text-center">No kitchen batches linked to this event yet</p>
+            ) : (
+              <div className="border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Batch ID</TableHead>
+                      <TableHead>Prasadam</TableHead>
+                      <TableHead>Date/Time</TableHead>
+                      <TableHead className="text-right">Qty</TableHead>
+                      <TableHead className="text-right">Allocated</TableHead>
+                      <TableHead className="text-right">Remaining</TableHead>
+                      <TableHead>Inventory Deductions</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {linkedBatches.map(b => (
+                      <TableRow key={b.id}>
+                        <TableCell className="font-mono text-xs text-primary">{b.id}</TableCell>
+                        <TableCell className="font-medium">{b.prasadam}</TableCell>
+                        <TableCell className="text-sm">{b.date} {b.time}</TableCell>
+                        <TableCell className="text-right font-mono">{b.qty.toLocaleString()}</TableCell>
+                        <TableCell className="text-right font-mono">{b.allocated.toLocaleString()}</TableCell>
+                        <TableCell className="text-right font-mono">{b.remaining.toLocaleString()}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {b.inventoryDeductions.slice(0, 2).map((d, i) => (
+                              <Badge key={i} variant="outline" className="text-[10px]">{d.inventoryName}: {d.qty}{d.unit}</Badge>
+                            ))}
+                            {b.inventoryDeductions.length > 2 && (
+                              <Badge variant="outline" className="text-[10px]">+{b.inventoryDeductions.length - 2} more</Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={b.status === "Active" ? "default" : "secondary"}>{b.status}</Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* Volunteers Tab */}
+        <TabsContent value="volunteers">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold">Volunteer Allocation</h3>
+              <Button size="sm" onClick={() => setShowAllocateVolunteer(true)}><Plus className="h-4 w-4 mr-2" />Add Role</Button>
+            </div>
+            <div className="border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Role</TableHead>
+                    <TableHead className="text-center">Count</TableHead>
+                    <TableHead>Shift Timing</TableHead>
+                    <TableHead>Assigned Area</TableHead>
+                    <TableHead>Linked Task</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {volunteers.map((v, i) => (
+                    <TableRow key={i}>
+                      <TableCell className="font-medium">{v.role}</TableCell>
+                      <TableCell className="text-center font-medium">{v.count}</TableCell>
+                      <TableCell className="text-sm">{v.shift}</TableCell>
+                      <TableCell className="text-sm">{v.area}</TableCell>
                       <TableCell>
-                        <Badge className={`text-xs border-0 ${
-                          m.status === "Delivered" ? "bg-green-100 text-green-700" :
-                          m.status === "Ordered" ? "bg-blue-100 text-blue-700" :
-                          m.status === "Shortage" ? "bg-red-100 text-red-700" :
-                          "bg-muted text-muted-foreground"
-                        }`}>{m.status}</Badge>
+                        {v.taskId ? (
+                          <span className="text-xs font-mono text-primary flex items-center gap-1">
+                            <Link2 className="h-3 w-3" />{v.taskId}
+                          </span>
+                        ) : "—"}
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Volunteers Tab */}
-        <TabsContent value="volunteers">
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Volunteer Allocation</CardTitle>
-                <Button size="sm"><Plus className="h-4 w-4 mr-2" />Add Role</Button>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Count</TableHead>
-                    <TableHead>Shift Timing</TableHead>
-                    <TableHead>Assigned Area</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {volunteerData.map((v, i) => (
-                    <TableRow key={i}>
-                      <TableCell className="font-medium">{v.role}</TableCell>
-                      <TableCell>{v.count}</TableCell>
-                      <TableCell className="text-sm">{v.shift}</TableCell>
-                      <TableCell className="text-sm">{v.area}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+            </div>
+            <p className="text-xs text-muted-foreground">Total: <strong>{totalVolunteers}</strong> volunteers across {volunteers.length} roles</p>
+          </div>
         </TabsContent>
 
         {/* Security Tab */}
         <TabsContent value="security">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Security & Logistics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                {securityData.map((s, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-lg border">
-                    <div>
-                      <p className="text-sm font-medium">{s.item}</p>
-                      <p className="text-sm text-muted-foreground">{s.value}</p>
-                    </div>
-                    {s.status === "ok" ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    ) : (
-                      <AlertTriangle className="h-5 w-5 text-amber-500" />
-                    )}
+          <div className="space-y-4">
+            <h3 className="text-base font-semibold">Security & Logistics</h3>
+            <div className="grid grid-cols-2 gap-4">
+              {security.map((s, i) => (
+                <div key={i} className="flex items-center justify-between p-3 rounded-lg border">
+                  <div>
+                    <p className="text-sm font-medium">{s.item}</p>
+                    <p className="text-sm text-muted-foreground">{s.value}</p>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  {s.status === "ok" ? (
+                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  ) : (
+                    <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Auto-Generated Tasks Tab */}
+        <TabsContent value="tasks">
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-base font-semibold">Auto-Generated Tasks</h3>
+              <p className="text-xs text-muted-foreground">Tasks auto-created from freelancer assignments, volunteer roles, and material shortages</p>
+            </div>
+            <div className="border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Task ID</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Source</TableHead>
+                    <TableHead>Linked To</TableHead>
+                    <TableHead>Assignee</TableHead>
+                    <TableHead>Due</TableHead>
+                    <TableHead>Priority</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {linkedTasks.filter(t => t.autoGenerated).map(t => (
+                    <TableRow key={t.id}>
+                      <TableCell className="font-mono text-xs text-primary">{t.id}</TableCell>
+                      <TableCell className="font-medium text-sm">{t.title}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="text-[10px]">
+                          {t.sourceType.replace("-", " → ")}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs">
+                        {t.linkedEntityId && (
+                          <span className="font-mono text-primary">{t.linkedEntityId}</span>
+                        )}
+                        {t.linkedEntityName && <span className="ml-1 text-muted-foreground">({t.linkedEntityName})</span>}
+                      </TableCell>
+                      <TableCell className="text-sm">{t.assignee}</TableCell>
+                      <TableCell className="text-sm">{t.dueDate}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={`text-xs ${
+                          t.priority === "Critical" ? "bg-red-100 text-red-700" :
+                          t.priority === "High" ? "bg-orange-100 text-orange-700" :
+                          "bg-yellow-100 text-yellow-700"
+                        }`}>{t.priority}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={`text-xs ${
+                          t.status === "Open" ? "bg-blue-100 text-blue-700" :
+                          t.status === "Assigned" ? "bg-indigo-100 text-indigo-700" :
+                          t.status === "In Progress" ? "bg-amber-100 text-amber-700" :
+                          "bg-green-100 text-green-700"
+                        }`}>{t.status}</Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {linkedTasks.filter(t => t.autoGenerated).length === 0 && (
+                    <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No auto-generated tasks for this event</TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
+
+      {/* Allocate Material Dialog */}
+      <Dialog open={showAllocateMaterial} onOpenChange={setShowAllocateMaterial}>
+        <DialogContent className="max-w-lg bg-background">
+          <DialogHeader><DialogTitle>Allocate Material from Inventory</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label className="text-xs">Material (from Inventory)</Label>
+              <Select>
+                <SelectTrigger className="bg-background"><SelectValue placeholder="Select inventory item" /></SelectTrigger>
+                <SelectContent className="bg-popover">
+                  {inventoryItems.map(inv => (
+                    <SelectItem key={inv.id} value={inv.id}>{inv.id} – {inv.name} ({inv.currentStock} {inv.unit} available)</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label className="text-xs">Required Qty</Label><Input type="number" placeholder="e.g., 200" /></div>
+              <div><Label className="text-xs">Unit</Label><Input placeholder="kg / ltr / pcs" /></div>
+            </div>
+            <div className="border rounded-lg p-3 bg-muted/30 text-xs text-muted-foreground">
+              <Package className="h-4 w-4 inline mr-1" /> System will check current stock. If insufficient, a procurement task will be auto-generated.
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAllocateMaterial(false)}>Cancel</Button>
+            <Button onClick={() => { toast.success("Material allocated & stock checked"); setShowAllocateMaterial(false); }}>Allocate</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign Freelancer Dialog */}
+      <Dialog open={showAllocateFreelancer} onOpenChange={setShowAllocateFreelancer}>
+        <DialogContent className="max-w-lg bg-background">
+          <DialogHeader><DialogTitle>Assign Freelancer to Event</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label className="text-xs">Freelancer</Label>
+              <SelectWithAddNew value="" onValueChange={() => {}} placeholder="Select freelancer" options={freelancerOptions} onAddNew={v => setFreelancerOptions(p => [...p, v])} />
+            </div>
+            <div>
+              <Label className="text-xs">Role / Service</Label>
+              <SelectWithAddNew value="" onValueChange={() => {}} placeholder="Select role" options={roleOptions} onAddNew={v => setRoleOptions(p => [...p, v])} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label className="text-xs">Dates</Label><Input type="text" placeholder="e.g., 2026-02-15" /></div>
+              <div><Label className="text-xs">Agreed Payment (₹)</Label><Input type="number" placeholder="Amount" /></div>
+            </div>
+            <div className="border rounded-lg p-3 bg-muted/30 text-xs text-muted-foreground">
+              <ClipboardList className="h-4 w-4 inline mr-1" /> A task will be auto-generated in the Task module for this assignment.
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAllocateFreelancer(false)}>Cancel</Button>
+            <Button onClick={() => { toast.success("Freelancer assigned & task generated"); setShowAllocateFreelancer(false); }}>Assign</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Allocate Volunteer Dialog */}
+      <Dialog open={showAllocateVolunteer} onOpenChange={setShowAllocateVolunteer}>
+        <DialogContent className="max-w-lg bg-background">
+          <DialogHeader><DialogTitle>Add Volunteer Role</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label className="text-xs">Role</Label>
+              <SelectWithAddNew value="" onValueChange={() => {}} placeholder="Select role" options={volunteerRoleOptions} onAddNew={v => setVolunteerRoleOptions(p => [...p, v])} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label className="text-xs">Count</Label><Input type="number" placeholder="e.g., 50" /></div>
+              <div><Label className="text-xs">Shift</Label><Input placeholder="e.g., 6 AM – 2 PM" /></div>
+            </div>
+            <div>
+              <Label className="text-xs">Assigned Area</Label>
+              <SelectWithAddNew value="" onValueChange={() => {}} placeholder="Select area" options={areaOptions} onAddNew={v => setAreaOptions(p => [...p, v])} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAllocateVolunteer(false)}>Cancel</Button>
+            <Button onClick={() => { toast.success("Volunteer role added & task generated"); setShowAllocateVolunteer(false); }}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
