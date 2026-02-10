@@ -271,6 +271,7 @@ const App = () => (
           <Route path="/temple/finance" element={<TempleHub />} />
           
           {/* Freelancer Management Module */}
+          <Route path="/temple/freelancer" element={<Navigate to="/temple/freelancers" replace />} />
           <Route path="/temple/freelancers" element={<FreelancerLayout />}>
             <Route index element={<FreelancersList />} />
             <Route path="assignments" element={<FreelancerAssignments />} />
