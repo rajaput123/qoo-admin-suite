@@ -129,6 +129,14 @@ import TaskIntegration from "./pages/temple/projects/TaskIntegration";
 import RiskChange from "./pages/temple/projects/RiskChange";
 import ProgressAnalytics from "./pages/temple/projects/ProgressAnalytics";
 import ReportsGovernance from "./pages/temple/projects/ReportsGovernance";
+// Feedback & Analytics Module
+import FeedbackLayout from "./pages/temple/FeedbackLayout";
+import FeedbackDashboard from "./pages/temple/feedback/Dashboard";
+import FeedbackCollection from "./pages/temple/feedback/Collection";
+import FeedbackRatings from "./pages/temple/feedback/Ratings";
+import FeedbackSentiment from "./pages/temple/feedback/Sentiment";
+import FeedbackAnalytics from "./pages/temple/feedback/Analytics";
+import FeedbackConfiguration from "./pages/temple/feedback/Configuration";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -274,6 +282,16 @@ const App = () => (
             <Route path="reports" element={<TaskReports />} />
           </Route>
           <Route path="/temple/reports" element={<TempleHub />} />
+          
+          {/* Feedback & Analytics Module */}
+          <Route path="/temple/feedback" element={<FeedbackLayout />}>
+            <Route index element={<FeedbackDashboard />} />
+            <Route path="collection" element={<FeedbackCollection />} />
+            <Route path="ratings" element={<FeedbackRatings />} />
+            <Route path="sentiment" element={<FeedbackSentiment />} />
+            <Route path="analytics" element={<FeedbackAnalytics />} />
+            <Route path="config" element={<FeedbackConfiguration />} />
+          </Route>
           
           {/* Projects & Initiatives Module */}
           <Route path="/temple/projects" element={<ProjectsLayout />}>
