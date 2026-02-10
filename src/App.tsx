@@ -113,6 +113,12 @@ import AllTasks from "./pages/temple/tasks/AllTasks";
 import MyTasks from "./pages/temple/tasks/MyTasks";
 import OverdueTasks from "./pages/temple/tasks/OverdueTasks";
 import CompletedTasks from "./pages/temple/tasks/CompletedTasks";
+// Branch Management Module
+import BranchLayout from "./pages/temple/BranchLayout";
+import AllBranches from "./pages/temple/branches/AllBranches";
+import BranchDetails from "./pages/temple/branches/BranchDetails";
+import BranchReports from "./pages/temple/branches/BranchReports";
+import BranchSettings from "./pages/temple/branches/BranchSettings";
 // Crowd & Capacity Management Module
 import CrowdLayout from "./pages/temple/CrowdLayout";
 import ZoneConfiguration from "./pages/temple/crowd/ZoneConfiguration";
@@ -351,6 +357,14 @@ const App = () => (
             <Route path="completed" element={<CompletedTasks />} />
           </Route>
           <Route path="/temple/reports" element={<TempleHub />} />
+          
+          {/* Branch Management Module */}
+          <Route path="/temple/branches" element={<BranchLayout />}>
+            <Route index element={<AllBranches />} />
+            <Route path="reports" element={<BranchReports />} />
+            <Route path="settings" element={<BranchSettings />} />
+          </Route>
+          <Route path="/temple/branches/:branchId" element={<BranchDetails />} />
           
           {/* Feedback & Analytics Module */}
           <Route path="/temple/feedback" element={<FeedbackLayout />}>
