@@ -137,7 +137,6 @@ import MediaCommunication from "./pages/temple/communication/MediaCommunication"
 import LiveBroadcast from "./pages/temple/communication/LiveBroadcast";
 import DevoteeExperience from "./pages/temple/communication/DevoteeExperience";
 import PublicMeetings from "./pages/temple/communication/PublicMeetings";
-import CrisisCommunication from "./pages/temple/communication/CrisisCommunication";
 import CommLogsReports from "./pages/temple/communication/LogsReports";
 // Donation Management Module
 import DonationsLayout from "./pages/temple/DonationsLayout";
@@ -294,7 +293,6 @@ const App = () => (
             <Route path="broadcast" element={<LiveBroadcast />} />
             <Route path="experience" element={<DevoteeExperience />} />
             <Route path="meetings" element={<PublicMeetings />} />
-            <Route path="crisis" element={<CrisisCommunication />} />
             <Route path="logs" element={<CommLogsReports />} />
           </Route>
           <Route path="/temple/live" element={<TempleHub />} />
