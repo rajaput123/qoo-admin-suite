@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import TempleRegister from "./pages/TempleRegister";
 import TempleHub from "./pages/TempleHub";
@@ -192,8 +193,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Auth Routes */}
-          <Route path="/" element={<Login />} />
+          {/* Landing & Auth Routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/temple-register" element={<TempleRegister />} />
           
           {/* Temple Admin Routes */}

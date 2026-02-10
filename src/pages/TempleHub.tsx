@@ -444,7 +444,7 @@ const TempleHub = () => {
                   Help & Support
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/")} className="gap-2 text-destructive focus:text-destructive">
+                <DropdownMenuItem onClick={() => navigate("/login")} className="gap-2 text-destructive focus:text-destructive">
                   <LogOut className="h-4 w-4" />
                   Sign Out
                 </DropdownMenuItem>
