@@ -1,15 +1,15 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, Filter, List, Link2, Calendar, User, Flag, StickyNote } from "lucide-react";
+import { Plus, Search, Filter } from "lucide-react";
+import TaskDetailModal, { type TaskDetail } from "@/components/tasks/TaskDetailModal";
 
 const allTasks = [
   { id: "TSK-001", title: "Morning Abhishekam Preparation", category: "Ritual", linkedModule: "Rituals & Sevas", priority: "High", dueDate: "2026-02-09", assignee: "Pandit Sharma", assigneeType: "Employee", status: "In Progress", notes: "Ensure all vessels are ready by 4:30 AM" },
@@ -43,6 +43,7 @@ const TaskList = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [createOpen, setCreateOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<typeof allTasks[0] | null>(null);
 
   const filtered = allTasks.filter((t) => {
     const matchSearch = t.title.toLowerCase().includes(search.toLowerCase()) || t.id.toLowerCase().includes(search.toLowerCase());
@@ -65,6 +66,7 @@ const TaskList = () => {
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>Create New Task</DialogTitle>
+              <DialogDescription>Fill in task details and assign to a person or team</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 pt-2">
               <div className="space-y-1.5">
@@ -193,7 +195,7 @@ const TaskList = () => {
             </TableHeader>
             <TableBody>
               {filtered.map((task) => (
-                <TableRow key={task.id} className="cursor-pointer hover:bg-muted/50">
+                <TableRow key={task.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedTask(task)}>
                   <TableCell className="font-mono text-xs text-muted-foreground">{task.id}</TableCell>
                   <TableCell>
                     <p className="font-medium text-sm">{task.title}</p>
@@ -219,6 +221,12 @@ const TaskList = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <TaskDetailModal
+        task={selectedTask ? { ...selectedTask, linkedModule: selectedTask.linkedModule } as TaskDetail : null}
+        open={!!selectedTask}
+        onOpenChange={() => setSelectedTask(null)}
+      />
     </div>
   );
 };

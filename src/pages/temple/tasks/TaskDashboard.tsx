@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ClipboardList, AlertTriangle, CalendarDays, Clock, ArrowRight, CheckCircle2, Timer, Flag } from "lucide-react";
+import { ClipboardList, AlertTriangle, CalendarDays, Clock, ArrowRight, CheckCircle2, Flag } from "lucide-react";
+import TaskDetailModal, { type TaskDetail } from "@/components/tasks/TaskDetailModal";
 
 const stats = [
   { label: "Due Today", value: 24, icon: Clock, color: "text-blue-600 bg-blue-50" },
@@ -11,17 +13,17 @@ const stats = [
 ];
 
 const dueTodayTasks = [
-  { id: "TSK-001", title: "Morning Abhishekam Preparation", category: "Ritual", priority: "High", assignee: "Pandit Sharma", status: "In Progress" },
-  { id: "TSK-002", title: "Annadanam Kitchen Setup", category: "Kitchen", priority: "Critical", assignee: "Head Cook Team", status: "Open" },
-  { id: "TSK-003", title: "Main Hall Flower Decoration", category: "Event", priority: "High", assignee: "Decoration Volunteers", status: "In Progress" },
-  { id: "TSK-004", title: "Security Gate Check", category: "Security", priority: "Medium", assignee: "Security Team A", status: "Completed" },
-  { id: "TSK-005", title: "Prasadam Counter Restock", category: "Kitchen", priority: "Medium", assignee: "Counter Staff", status: "Open" },
+  { id: "TSK-001", title: "Morning Abhishekam Preparation", category: "Ritual", priority: "High", assignee: "Pandit Sharma", status: "In Progress", dueDate: "2026-02-09", notes: "Ensure all vessels are ready by 4:30 AM" },
+  { id: "TSK-002", title: "Annadanam Kitchen Setup", category: "Kitchen", priority: "Critical", assignee: "Head Cook Team", status: "Open", dueDate: "2026-02-09", notes: "Prepare for 5000 devotees" },
+  { id: "TSK-003", title: "Main Hall Flower Decoration", category: "Event", priority: "High", assignee: "Decoration Volunteers", status: "In Progress", dueDate: "2026-02-09", notes: "Maha Shivaratri decoration" },
+  { id: "TSK-004", title: "Security Gate Check", category: "Security", priority: "Medium", assignee: "Security Team A", status: "Completed", dueDate: "2026-02-09", notes: "" },
+  { id: "TSK-005", title: "Prasadam Counter Restock", category: "Kitchen", priority: "Medium", assignee: "Counter Staff", status: "Open", dueDate: "2026-02-09", notes: "" },
 ];
 
 const overdueTasks = [
-  { id: "TSK-098", title: "Generator Maintenance Check", category: "Maintenance", priority: "High", assignee: "Electrical Team", dueDate: "Feb 07", daysOverdue: 2 },
-  { id: "TSK-091", title: "Fire Extinguisher Inspection", category: "Security", priority: "Critical", assignee: "Safety Officer", dueDate: "Feb 06", daysOverdue: 3 },
-  { id: "TSK-088", title: "Water Tank Cleaning", category: "Maintenance", priority: "Medium", assignee: "Maintenance Crew", dueDate: "Feb 05", daysOverdue: 4 },
+  { id: "TSK-098", title: "Generator Maintenance Check", category: "Maintenance", priority: "High", assignee: "Electrical Team", dueDate: "2026-02-07", daysOverdue: 2, status: "Blocked", notes: "Spare parts awaited" },
+  { id: "TSK-091", title: "Fire Extinguisher Inspection", category: "Security", priority: "Critical", assignee: "Safety Officer", dueDate: "2026-02-06", daysOverdue: 3, status: "Open", notes: "Quarterly inspection overdue" },
+  { id: "TSK-088", title: "Water Tank Cleaning", category: "Maintenance", priority: "Medium", assignee: "Maintenance Crew", dueDate: "2026-02-05", daysOverdue: 4, status: "Open", notes: "" },
 ];
 
 const categoryBreakdown = [
@@ -48,6 +50,8 @@ const statusColor: Record<string, string> = {
 };
 
 const TaskDashboard = () => {
+  const [selectedTask, setSelectedTask] = useState<TaskDetail | null>(null);
+
   return (
     <div className="space-y-6">
       <div>
@@ -55,7 +59,6 @@ const TaskDashboard = () => {
         <p className="text-muted-foreground text-sm mt-1">Operational task overview for today</p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map((s) => (
           <Card key={s.label} className="border">
@@ -73,60 +76,56 @@ const TaskDashboard = () => {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
-        {/* Due Today */}
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
-                <Clock className="h-4 w-4 text-blue-600" />
-                Tasks Due Today
+                <Clock className="h-4 w-4 text-blue-600" /> Tasks Due Today
               </CardTitle>
-              <Button variant="ghost" size="sm" className="text-xs gap-1">
-                View All <ArrowRight className="h-3 w-3" />
-              </Button>
+              <Button variant="ghost" size="sm" className="text-xs gap-1">View All <ArrowRight className="h-3 w-3" /></Button>
             </div>
           </CardHeader>
           <CardContent className="space-y-2">
             {dueTodayTasks.map((task) => (
-              <div key={task.id} className="flex items-center justify-between p-2.5 rounded-lg border bg-card hover:bg-muted/50 transition-colors">
+              <div
+                key={task.id}
+                className="flex items-center justify-between p-2.5 rounded-lg border bg-card hover:bg-muted/50 transition-colors cursor-pointer"
+                onClick={() => setSelectedTask(task as TaskDetail)}
+              >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs font-mono text-muted-foreground">{task.id}</span>
-                    <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${priorityColor[task.priority]}`}>
-                      {task.priority}
-                    </Badge>
+                    <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${priorityColor[task.priority]}`}>{task.priority}</Badge>
                   </div>
                   <p className="text-sm font-medium text-foreground truncate">{task.title}</p>
                   <p className="text-xs text-muted-foreground">{task.assignee}</p>
                 </div>
-                <Badge variant="outline" className={`text-[10px] ${statusColor[task.status]}`}>
-                  {task.status}
-                </Badge>
+                <Badge variant="outline" className={`text-[10px] ${statusColor[task.status]}`}>{task.status}</Badge>
               </div>
             ))}
           </CardContent>
         </Card>
 
-        {/* Overdue */}
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-red-600" />
-                Overdue Tasks
+                <AlertTriangle className="h-4 w-4 text-red-600" /> Overdue Tasks
               </CardTitle>
               <Badge variant="destructive" className="text-xs">{overdueTasks.length}</Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-2">
             {overdueTasks.map((task) => (
-              <div key={task.id} className="flex items-center justify-between p-2.5 rounded-lg border border-red-100 bg-red-50/30 hover:bg-red-50/60 transition-colors">
+              <div
+                key={task.id}
+                className="flex items-center justify-between p-2.5 rounded-lg border border-red-100 bg-red-50/30 hover:bg-red-50/60 transition-colors cursor-pointer"
+                onClick={() => setSelectedTask(task as TaskDetail)}
+              >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs font-mono text-muted-foreground">{task.id}</span>
-                    <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${priorityColor[task.priority]}`}>
-                      {task.priority}
-                    </Badge>
+                    <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${priorityColor[task.priority]}`}>{task.priority}</Badge>
                   </div>
                   <p className="text-sm font-medium text-foreground truncate">{task.title}</p>
                   <p className="text-xs text-muted-foreground">{task.assignee}</p>
@@ -140,22 +139,16 @@ const TaskDashboard = () => {
 
             <div className="pt-2">
               <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                <ClipboardList className="h-4 w-4 text-muted-foreground" />
-                Tasks by Category
+                <ClipboardList className="h-4 w-4 text-muted-foreground" /> Tasks by Category
               </h4>
               <div className="space-y-2.5">
                 {categoryBreakdown.map((cat) => (
                   <div key={cat.category} className="flex items-center gap-3">
                     <span className="text-xs text-muted-foreground w-24">{cat.category}</span>
                     <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${cat.color}`}
-                        style={{ width: `${(cat.completed / cat.total) * 100}%` }}
-                      />
+                      <div className={`h-full rounded-full ${cat.color}`} style={{ width: `${(cat.completed / cat.total) * 100}%` }} />
                     </div>
-                    <span className="text-xs font-medium text-foreground w-12 text-right">
-                      {cat.completed}/{cat.total}
-                    </span>
+                    <span className="text-xs font-medium text-foreground w-12 text-right">{cat.completed}/{cat.total}</span>
                   </div>
                 ))}
               </div>
@@ -163,6 +156,12 @@ const TaskDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      <TaskDetailModal
+        task={selectedTask}
+        open={!!selectedTask}
+        onOpenChange={() => setSelectedTask(null)}
+      />
     </div>
   );
 };
