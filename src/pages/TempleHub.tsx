@@ -225,6 +225,15 @@ const allModules = [
     category: "analytics",
   },
   {
+    id: "feedback",
+    title: "Feedback & Analytics",
+    icon: BarChart3,
+    enabled: true,
+    path: "/temple/feedback",
+    description: "Devotee feedback, ratings, sentiment analysis",
+    category: "analytics",
+  },
+  {
     id: "donations",
     title: "Donation Management",
     icon: Heart,
