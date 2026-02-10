@@ -145,11 +145,11 @@ const allModules = [
   },
   {
     id: "institution",
-    title: "Institution",
+    title: "Institutions",
     icon: Building2,
     enabled: true,
-    path: "/temple/info",
-    description: "Temple institution details",
+    path: "/temple/institutions",
+    description: "Schools, hospitals, goshalas & trust entities",
     category: "operations",
   },
   {

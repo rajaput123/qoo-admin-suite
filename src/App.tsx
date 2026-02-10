@@ -119,6 +119,12 @@ import AllBranches from "./pages/temple/branches/AllBranches";
 import BranchDetails from "./pages/temple/branches/BranchDetails";
 import BranchReports from "./pages/temple/branches/BranchReports";
 import BranchSettings from "./pages/temple/branches/BranchSettings";
+// Institution Management Module
+import InstitutionLayout from "./pages/temple/InstitutionLayout";
+import AllInstitutions from "./pages/temple/institutions/AllInstitutions";
+import InstitutionDetails from "./pages/temple/institutions/InstitutionDetails";
+import InstitutionReports from "./pages/temple/institutions/InstitutionReports";
+import InstitutionSettings from "./pages/temple/institutions/InstitutionSettings";
 // Crowd & Capacity Management Module
 import CrowdLayout from "./pages/temple/CrowdLayout";
 import ZoneConfiguration from "./pages/temple/crowd/ZoneConfiguration";
@@ -366,6 +372,14 @@ const App = () => (
           </Route>
           <Route path="/temple/branches/:branchId" element={<BranchDetails />} />
           
+          {/* Institution Management Module */}
+          <Route path="/temple/institutions" element={<InstitutionLayout />}>
+            <Route index element={<AllInstitutions />} />
+            <Route path="reports" element={<InstitutionReports />} />
+            <Route path="settings" element={<InstitutionSettings />} />
+          </Route>
+          <Route path="/temple/institutions/:institutionId" element={<InstitutionDetails />} />
+
           {/* Feedback & Analytics Module */}
           <Route path="/temple/feedback" element={<FeedbackLayout />}>
             <Route index element={<FeedbackDashboard />} />
