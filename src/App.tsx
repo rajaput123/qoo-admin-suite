@@ -153,6 +153,13 @@ import FeedbackRatings from "./pages/temple/feedback/Ratings";
 import FeedbackSentiment from "./pages/temple/feedback/Sentiment";
 import FeedbackAnalytics from "./pages/temple/feedback/Analytics";
 import FeedbackConfiguration from "./pages/temple/feedback/Configuration";
+// Freelancer Management Module
+import FreelancerLayout from "./pages/temple/FreelancerLayout";
+import FreelancersList from "./pages/temple/freelancers/FreelancersList";
+import FreelancerAssignments from "./pages/temple/freelancers/Assignments";
+import FreelancerPayments from "./pages/temple/freelancers/Payments";
+import FreelancerPerformance from "./pages/temple/freelancers/Performance";
+import FreelancerInsights from "./pages/temple/freelancers/Insights";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -262,6 +269,15 @@ const App = () => (
             <Route path="reports" element={<DonationReportsGovernance />} />
           </Route>
           <Route path="/temple/finance" element={<TempleHub />} />
+          
+          {/* Freelancer Management Module */}
+          <Route path="/temple/freelancers" element={<FreelancerLayout />}>
+            <Route index element={<FreelancersList />} />
+            <Route path="assignments" element={<FreelancerAssignments />} />
+            <Route path="payments" element={<FreelancerPayments />} />
+            <Route path="performance" element={<FreelancerPerformance />} />
+            <Route path="insights" element={<FreelancerInsights />} />
+          </Route>
           
           {/* Devotee CRM Module */}
           <Route path="/temple/devotees" element={<DevoteesLayout />}>

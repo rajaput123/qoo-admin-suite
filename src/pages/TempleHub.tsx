@@ -193,7 +193,7 @@ const allModules = [
     title: "Freelancer",
     icon: Briefcase,
     enabled: true,
-    path: "/temple/freelancer",
+    path: "/temple/freelancers",
     description: "Manage freelance workers",
     category: "engagement",
   },
