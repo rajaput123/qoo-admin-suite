@@ -129,6 +129,16 @@ import TaskIntegration from "./pages/temple/projects/TaskIntegration";
 import RiskChange from "./pages/temple/projects/RiskChange";
 import ProgressAnalytics from "./pages/temple/projects/ProgressAnalytics";
 import ReportsGovernance from "./pages/temple/projects/ReportsGovernance";
+// PR & Communication Module
+import CommunicationLayout from "./pages/temple/CommunicationLayout";
+import ControlCenter from "./pages/temple/communication/ControlCenter";
+import CommAnnouncements from "./pages/temple/communication/Announcements";
+import MediaCommunication from "./pages/temple/communication/MediaCommunication";
+import LiveBroadcast from "./pages/temple/communication/LiveBroadcast";
+import DevoteeExperience from "./pages/temple/communication/DevoteeExperience";
+import PublicMeetings from "./pages/temple/communication/PublicMeetings";
+import CrisisCommunication from "./pages/temple/communication/CrisisCommunication";
+import CommLogsReports from "./pages/temple/communication/LogsReports";
 // Donation Management Module
 import DonationsLayout from "./pages/temple/DonationsLayout";
 import DonationDashboard from "./pages/temple/donations/Dashboard";
@@ -276,7 +286,17 @@ const App = () => (
             <Route path="closure" element={<ClosureSummary />} />
           </Route>
           <Route path="/temple/events" element={<TempleHub />} />
-          <Route path="/temple/communication" element={<TempleHub />} />
+          {/* PR & Communication Module */}
+          <Route path="/temple/communication" element={<CommunicationLayout />}>
+            <Route index element={<ControlCenter />} />
+            <Route path="announcements" element={<CommAnnouncements />} />
+            <Route path="media" element={<MediaCommunication />} />
+            <Route path="broadcast" element={<LiveBroadcast />} />
+            <Route path="experience" element={<DevoteeExperience />} />
+            <Route path="meetings" element={<PublicMeetings />} />
+            <Route path="crisis" element={<CrisisCommunication />} />
+            <Route path="logs" element={<CommLogsReports />} />
+          </Route>
           <Route path="/temple/live" element={<TempleHub />} />
           {/* Crowd & Capacity Management Module */}
           <Route path="/temple/crowd" element={<CrowdLayout />}>
