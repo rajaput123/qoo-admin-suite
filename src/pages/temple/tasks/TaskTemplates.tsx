@@ -2,14 +2,14 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, FileStack, Play, Copy, Pencil, Clock, List } from "lucide-react";
+import { Plus, FileStack, Play, Copy, Pencil, Clock, List, CheckCircle2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
-const templates = [
+const initialTemplates = [
   {
     id: "TPL-001",
     name: "Morning Temple Opening",
@@ -69,7 +69,25 @@ const templates = [
 
 const TaskTemplates = () => {
   const [createOpen, setCreateOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<typeof templates[0] | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<typeof initialTemplates[0] | null>(null);
+  const { toast } = useToast();
+
+  const handleGenerateTasks = (e: React.MouseEvent, tpl: typeof initialTemplates[0]) => {
+    e.stopPropagation();
+    toast({
+      title: `${tpl.taskCount} tasks generated`,
+      description: `Created from "${tpl.name}" template and added to Task List`,
+    });
+  };
+
+  const handleGenerateFromDetail = () => {
+    if (!selectedTemplate) return;
+    toast({
+      title: `${selectedTemplate.taskCount} tasks generated`,
+      description: `Created from "${selectedTemplate.name}" template and added to Task List`,
+    });
+    setSelectedTemplate(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -78,55 +96,60 @@ const TaskTemplates = () => {
           <h1 className="text-2xl font-bold text-foreground">Task Templates</h1>
           <p className="text-muted-foreground text-sm mt-1">Reusable task patterns for recurring operations</p>
         </div>
-        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2"><Plus className="h-4 w-4" /> New Template</Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader><DialogTitle>Create Task Template</DialogTitle></DialogHeader>
-            <div className="space-y-4 pt-2">
-              <div className="space-y-1.5"><Label>Template Name</Label><Input placeholder="e.g., Morning Temple Opening" /></div>
-              <div className="grid grid-cols-2 gap-3">
+        <div className="flex gap-2">
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2"><Plus className="h-4 w-4" /> New Template</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Create Task Template</DialogTitle>
+                <DialogDescription>Define a reusable task pattern for recurring operations</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div className="space-y-1.5"><Label>Template Name</Label><Input placeholder="e.g., Morning Temple Opening" /></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label>Default Category</Label>
+                    <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>
+                        {["Ritual", "Kitchen", "Event", "Maintenance", "Admin", "Security"].map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Default Role (from HR)</Label>
+                    <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>
+                        {["Temple Priest", "Head Cook", "Event Coordinator", "Maintenance Supervisor", "Security Officer"].map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-1.5"><Label>Default Timeline</Label><Input placeholder="e.g., Daily 4:00–6:00 AM" /></div>
                 <div className="space-y-1.5">
-                  <Label>Default Category</Label>
-                  <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>
-                      {["Ritual", "Kitchen", "Event", "Maintenance", "Admin", "Security"].map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <Label>Task Items</Label>
+                  <p className="text-xs text-muted-foreground">Add individual tasks that this template generates</p>
+                  <div className="border rounded-lg p-3 bg-muted/30 space-y-2">
+                    {["Task 1", "Task 2", "Task 3"].map((_, i) => (
+                      <Input key={i} placeholder={`Task ${i + 1} title`} />
+                    ))}
+                    <Button variant="outline" size="sm" className="w-full gap-1"><Plus className="h-3 w-3" /> Add Task</Button>
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <Label>Default Role (from HR)</Label>
-                  <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>
-                      {["Temple Priest", "Head Cook", "Event Coordinator", "Maintenance Supervisor", "Security Officer"].map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+                  <Button onClick={() => { setCreateOpen(false); toast({ title: "Template created", description: "New task template has been saved" }); }}>Create Template</Button>
                 </div>
               </div>
-              <div className="space-y-1.5"><Label>Default Timeline</Label><Input placeholder="e.g., Daily 4:00–6:00 AM" /></div>
-              <div className="space-y-1.5">
-                <Label>Task Items</Label>
-                <p className="text-xs text-muted-foreground">Add individual tasks that this template generates</p>
-                <div className="border rounded-lg p-3 bg-muted/30 space-y-2">
-                  {["Task 1", "Task 2", "Task 3"].map((_, i) => (
-                    <Input key={i} placeholder={`Task ${i + 1} title`} />
-                  ))}
-                  <Button variant="outline" size="sm" className="w-full gap-1"><Plus className="h-3 w-3" /> Add Task</Button>
-                </div>
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-                <Button onClick={() => setCreateOpen(false)}>Create Template</Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Template Cards */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {templates.map((tpl) => (
+        {initialTemplates.map((tpl) => (
           <Card key={tpl.id} className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => setSelectedTemplate(tpl)}>
             <CardHeader className="pb-2">
               <div className="flex items-start justify-between">
@@ -146,10 +169,10 @@ const TaskTemplates = () => {
               <div className="flex items-center justify-between pt-1 border-t">
                 <span className="text-[10px] text-muted-foreground">Used {tpl.usageCount} times • Last: {tpl.lastUsed}</span>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); }}>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" title="Generate Tasks" onClick={(e) => handleGenerateTasks(e, tpl)}>
                     <Play className="h-3.5 w-3.5 text-green-600" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); }}>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" title="Duplicate" onClick={(e) => { e.stopPropagation(); toast({ title: "Template duplicated" }); }}>
                     <Copy className="h-3.5 w-3.5" />
                   </Button>
                 </div>
@@ -167,6 +190,7 @@ const TaskTemplates = () => {
               <FileStack className="h-5 w-5 text-primary" />
               {selectedTemplate?.name}
             </DialogTitle>
+            <DialogDescription>Template details and task checklist</DialogDescription>
           </DialogHeader>
           {selectedTemplate && (
             <div className="space-y-4">
@@ -188,7 +212,7 @@ const TaskTemplates = () => {
               </div>
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" className="gap-1"><Pencil className="h-3.5 w-3.5" /> Edit</Button>
-                <Button className="gap-1"><Play className="h-3.5 w-3.5" /> Generate Tasks</Button>
+                <Button onClick={handleGenerateFromDetail} className="gap-1"><Play className="h-3.5 w-3.5" /> Generate Tasks</Button>
               </div>
             </div>
           )}

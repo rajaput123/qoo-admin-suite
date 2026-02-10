@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, CheckCircle2, Clock, AlertTriangle, Users, Calendar, TrendingUp } from "lucide-react";
+import TaskDetailModal, { type TaskDetail } from "@/components/tasks/TaskDetailModal";
 
 const dailySummary = {
   date: "Feb 09, 2026",
@@ -31,10 +33,10 @@ const eventWiseTasks = [
 ];
 
 const overdueTasks = [
-  { id: "TSK-098", title: "Generator Maintenance Check", category: "Maintenance", assignee: "Electrical Team", dueDate: "Feb 07", daysOverdue: 2, priority: "High" },
-  { id: "TSK-091", title: "Fire Extinguisher Inspection", category: "Security", assignee: "Safety Officer", dueDate: "Feb 06", daysOverdue: 3, priority: "Critical" },
-  { id: "TSK-088", title: "Water Tank Cleaning", category: "Maintenance", assignee: "Maintenance Crew", dueDate: "Feb 05", daysOverdue: 4, priority: "Medium" },
-  { id: "TSK-085", title: "CCTV Storage Review", category: "Security", assignee: "IT Admin", dueDate: "Feb 04", daysOverdue: 5, priority: "Low" },
+  { id: "TSK-098", title: "Generator Maintenance Check", category: "Maintenance", assignee: "Electrical Team", dueDate: "2026-02-07", daysOverdue: 2, priority: "High", status: "Blocked", notes: "Spare parts awaited" },
+  { id: "TSK-091", title: "Fire Extinguisher Inspection", category: "Security", assignee: "Safety Officer", dueDate: "2026-02-06", daysOverdue: 3, priority: "Critical", status: "Open", notes: "Quarterly inspection overdue" },
+  { id: "TSK-088", title: "Water Tank Cleaning", category: "Maintenance", assignee: "Maintenance Crew", dueDate: "2026-02-05", daysOverdue: 4, priority: "Medium", status: "Open", notes: "" },
+  { id: "TSK-085", title: "CCTV Storage Review", category: "Security", assignee: "IT Admin", dueDate: "2026-02-04", daysOverdue: 5, priority: "Low", status: "Open", notes: "" },
 ];
 
 const hrParticipation = [
@@ -44,6 +46,8 @@ const hrParticipation = [
 ];
 
 const TaskReports = () => {
+  const [selectedTask, setSelectedTask] = useState<TaskDetail | null>(null);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -74,7 +78,6 @@ const TaskReports = () => {
           <TabsTrigger value="hr">HR Participation</TabsTrigger>
         </TabsList>
 
-        {/* Daily Summary */}
         <TabsContent value="daily" className="mt-4 space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {[
@@ -116,7 +119,6 @@ const TaskReports = () => {
           </Card>
         </TabsContent>
 
-        {/* Event-wise */}
         <TabsContent value="event" className="mt-4">
           <Card>
             <CardContent className="p-0">
@@ -152,7 +154,6 @@ const TaskReports = () => {
           </Card>
         </TabsContent>
 
-        {/* Overdue */}
         <TabsContent value="overdue" className="mt-4">
           <Card>
             <CardContent className="p-0">
@@ -170,7 +171,11 @@ const TaskReports = () => {
                 </TableHeader>
                 <TableBody>
                   {overdueTasks.map((t) => (
-                    <TableRow key={t.id}>
+                    <TableRow
+                      key={t.id}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() => setSelectedTask(t as TaskDetail)}
+                    >
                       <TableCell className="font-mono text-xs text-muted-foreground">{t.id}</TableCell>
                       <TableCell className="font-medium text-sm">{t.title}</TableCell>
                       <TableCell><Badge variant="outline" className="text-xs">{t.category}</Badge></TableCell>
@@ -190,7 +195,6 @@ const TaskReports = () => {
           </Card>
         </TabsContent>
 
-        {/* By Category */}
         <TabsContent value="category" className="mt-4">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {categoryDistribution.map((cat) => (
@@ -224,7 +228,6 @@ const TaskReports = () => {
           </div>
         </TabsContent>
 
-        {/* HR Participation */}
         <TabsContent value="hr" className="mt-4">
           <Card>
             <CardHeader className="pb-2">
@@ -263,6 +266,12 @@ const TaskReports = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <TaskDetailModal
+        task={selectedTask}
+        open={!!selectedTask}
+        onOpenChange={() => setSelectedTask(null)}
+      />
     </div>
   );
 };

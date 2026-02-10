@@ -2,11 +2,13 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle2, Play, AlertOctagon, Clock, User, StickyNote, Paperclip, Camera, Video, Image, Eye, X, ShieldCheck } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { CheckCircle2, Play, AlertOctagon, Clock, User, Camera, Video, Image, Eye, X, ShieldCheck } from "lucide-react";
+import TaskDetailModal, { type TaskDetail } from "@/components/tasks/TaskDetailModal";
 
 type TaskStatus = "Open" | "In Progress" | "Completed" | "Blocked" | "Pending Review";
 
@@ -61,12 +63,12 @@ const initialTasks: Task[] = [
   },
 ];
 
-const statusFlow: Record<string, { next: TaskStatus[]; color: string; icon: typeof Clock }> = {
-  Open: { next: ["In Progress"], color: "bg-blue-100 text-blue-700", icon: Clock },
-  "In Progress": { next: ["Completed", "Blocked"], color: "bg-amber-100 text-amber-700", icon: Play },
-  "Pending Review": { next: [], color: "bg-purple-100 text-purple-700", icon: Eye },
-  Completed: { next: [], color: "bg-green-100 text-green-700", icon: CheckCircle2 },
-  Blocked: { next: ["In Progress"], color: "bg-red-100 text-red-700", icon: AlertOctagon },
+const statusColor: Record<string, string> = {
+  Open: "bg-blue-100 text-blue-700",
+  "In Progress": "bg-amber-100 text-amber-700",
+  "Pending Review": "bg-purple-100 text-purple-700",
+  Completed: "bg-green-100 text-green-700",
+  Blocked: "bg-red-100 text-red-700",
 };
 
 const priorityColor: Record<string, string> = {
@@ -80,6 +82,7 @@ const TaskExecution = () => {
   const [tasks, setTasks] = useState(initialTasks);
   const [completeDialog, setCompleteDialog] = useState<Task | null>(null);
   const [reviewDialog, setReviewDialog] = useState<Task | null>(null);
+  const [detailTask, setDetailTask] = useState<Task | null>(null);
   const [statusTab, setStatusTab] = useState("all");
   const [uploadedEvidence, setUploadedEvidence] = useState<EvidenceFile[]>([]);
 
@@ -94,7 +97,8 @@ const TaskExecution = () => {
 
   const filteredTasks = statusTab === "all" ? tasks : tasks.filter((t) => t.status === statusTab);
 
-  const handleStatusChange = (taskId: string, newStatus: TaskStatus) => {
+  const handleStatusChange = (e: React.MouseEvent, taskId: string, newStatus: TaskStatus) => {
+    e.stopPropagation();
     if (newStatus === "Completed") {
       const task = tasks.find((t) => t.id === taskId);
       if (task) {
@@ -137,7 +141,8 @@ const TaskExecution = () => {
     setCompleteDialog(null);
   };
 
-  const handleReview = (approved: boolean) => {
+  const handleReview = (e: React.MouseEvent, approved: boolean) => {
+    e.stopPropagation();
     if (!reviewDialog) return;
     setTasks((prev) =>
       prev.map((t) =>
@@ -153,6 +158,14 @@ const TaskExecution = () => {
       )
     );
     setReviewDialog(null);
+  };
+
+  const statusFlow: Record<string, { next: TaskStatus[] }> = {
+    Open: { next: ["In Progress"] },
+    "In Progress": { next: ["Completed", "Blocked"] },
+    "Pending Review": { next: [] },
+    Completed: { next: [] },
+    Blocked: { next: ["In Progress"] },
   };
 
   return (
@@ -176,81 +189,76 @@ const TaskExecution = () => {
         ))}
       </div>
 
-      {/* Task Cards */}
-      <div className="space-y-3">
-        {filteredTasks.map((task) => {
-          const flow = statusFlow[task.status];
-          const isCompleted = task.status === "Completed";
-          const isPendingReview = task.status === "Pending Review";
-          return (
-            <Card key={task.id} className={`${isCompleted ? "opacity-70" : ""}`}>
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-mono text-muted-foreground">{task.id}</span>
-                      <Badge variant="outline" className={`text-[10px] ${priorityColor[task.priority]}`}>{task.priority}</Badge>
-                      <Badge variant="outline" className="text-[10px]">{task.category}</Badge>
-                    </div>
-                    <p className="font-medium text-foreground">{task.title}</p>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1"><User className="h-3 w-3" /> {task.assignee}</span>
-                      <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> Due: {task.dueDate}</span>
-                    </div>
-                    {task.notes && (
-                      <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
-                        <StickyNote className="h-3 w-3" /> {task.notes}
-                      </p>
-                    )}
-                    {/* Evidence Strip */}
-                    {task.evidence && task.evidence.length > 0 && (
-                      <div className="mt-2 flex items-center gap-2">
-                        <Paperclip className="h-3 w-3 text-muted-foreground" />
-                        <div className="flex gap-1.5">
-                          {task.evidence.map((ev, i) => (
-                            <Badge key={i} variant="outline" className="text-[10px] gap-0.5">
-                              {ev.type === "photo" ? <Image className="h-2.5 w-2.5" /> : <Video className="h-2.5 w-2.5" />}
-                              {ev.name}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    {/* Review Status */}
-                    {task.reviewStatus && (
-                      <div className={`mt-2 p-2 rounded text-xs border ${
-                        task.reviewStatus === "Approved" ? "bg-green-50 border-green-100 text-green-800" :
-                        task.reviewStatus === "Rejected" ? "bg-red-50 border-red-100 text-red-800" :
-                        "bg-purple-50 border-purple-100 text-purple-800"
-                      }`}>
-                        <p className="flex items-center gap-1">
-                          {task.reviewStatus === "Approved" && <ShieldCheck className="h-3 w-3" />}
-                          {task.reviewStatus === "Pending" && <Eye className="h-3 w-3" />}
-                          <strong>Review:</strong> {task.reviewStatus}
-                          {task.reviewedBy && <span> by {task.reviewedBy}</span>}
-                        </p>
-                        {task.completedBy && <p className="mt-0.5"><strong>Completed by:</strong> {task.completedBy} on {task.completionDate}</p>}
-                        {task.completionNotes && <p className="mt-0.5">{task.completionNotes}</p>}
-                        {task.reviewNotes && <p className="mt-0.5 italic">{task.reviewNotes}</p>}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <Badge className={`${flow.color} border-0`}>{task.status}</Badge>
-                    {isPendingReview && (
-                      <Button size="sm" variant="outline" className="text-xs h-7 gap-1" onClick={() => setReviewDialog(task)}>
-                        <Eye className="h-3 w-3" /> Review
-                      </Button>
-                    )}
-                    {!isCompleted && !isPendingReview && flow.next.length > 0 && (
-                      <div className="flex gap-1.5">
-                        {flow.next.map((next) => (
+      {/* Task Table */}
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[80px]">ID</TableHead>
+                <TableHead>Title</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Priority</TableHead>
+                <TableHead>Assignee</TableHead>
+                <TableHead>Due Date</TableHead>
+                <TableHead>Evidence</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="w-[150px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredTasks.map((task) => {
+                const flow = statusFlow[task.status];
+                const isCompleted = task.status === "Completed";
+                const isPendingReview = task.status === "Pending Review";
+                return (
+                  <TableRow
+                    key={task.id}
+                    className={`cursor-pointer hover:bg-muted/50 ${isCompleted ? "opacity-70" : ""}`}
+                    onClick={() => setDetailTask(task)}
+                  >
+                    <TableCell className="font-mono text-xs text-muted-foreground">{task.id}</TableCell>
+                    <TableCell>
+                      <p className="font-medium text-sm">{task.title}</p>
+                      {task.notes && <p className="text-xs text-muted-foreground truncate max-w-[200px]">{task.notes}</p>}
+                    </TableCell>
+                    <TableCell><Badge variant="outline" className="text-[10px]">{task.category}</Badge></TableCell>
+                    <TableCell><Badge variant="outline" className={`text-[10px] ${priorityColor[task.priority]}`}>{task.priority}</Badge></TableCell>
+                    <TableCell className="text-sm">{task.assignee}</TableCell>
+                    <TableCell className="text-xs">{task.dueDate}</TableCell>
+                    <TableCell>
+                      {task.evidence && task.evidence.length > 0 ? (
+                        <Badge variant="secondary" className="text-[10px] gap-1">
+                          <Image className="h-2.5 w-2.5" /> {task.evidence.length} files
+                        </Badge>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={`text-[10px] ${statusColor[task.status]}`}>{task.status}</Badge>
+                      {task.reviewStatus && (
+                        <Badge variant="outline" className={`text-[10px] ml-1 ${
+                          task.reviewStatus === "Approved" ? "bg-green-50 text-green-700" :
+                          task.reviewStatus === "Rejected" ? "bg-red-50 text-red-700" :
+                          "bg-purple-50 text-purple-700"
+                        }`}>{task.reviewStatus}</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                        {isPendingReview && (
+                          <Button size="sm" variant="outline" className="text-xs h-7 gap-1" onClick={(e) => { e.stopPropagation(); setReviewDialog(task); }}>
+                            <Eye className="h-3 w-3" /> Review
+                          </Button>
+                        )}
+                        {!isCompleted && !isPendingReview && flow.next.map((next) => (
                           <Button
                             key={next}
                             size="sm"
                             variant={next === "Completed" ? "default" : "outline"}
                             className="text-xs h-7 gap-1"
-                            onClick={() => handleStatusChange(task.id, next)}
+                            onClick={(e) => handleStatusChange(e, task.id, next)}
                           >
                             {next === "Completed" && <CheckCircle2 className="h-3 w-3" />}
                             {next === "In Progress" && <Play className="h-3 w-3" />}
@@ -259,14 +267,24 @@ const TaskExecution = () => {
                           </Button>
                         ))}
                       </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+              {filteredTasks.length === 0 && (
+                <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No tasks found</TableCell></TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Detail Modal */}
+      <TaskDetailModal
+        task={detailTask as TaskDetail | null}
+        open={!!detailTask}
+        onOpenChange={() => setDetailTask(null)}
+      />
 
       {/* Complete Dialog with Evidence Upload */}
       <Dialog open={!!completeDialog} onOpenChange={() => { setCompleteDialog(null); setUploadedEvidence([]); }}>
@@ -276,6 +294,7 @@ const TaskExecution = () => {
               <CheckCircle2 className="h-5 w-5 text-green-600" />
               Complete Task with Evidence
             </DialogTitle>
+            <DialogDescription>Upload photo/video evidence before submitting for manager review</DialogDescription>
           </DialogHeader>
           {completeDialog && (
             <div className="space-y-4">
@@ -300,7 +319,6 @@ const TaskExecution = () => {
                 )}
               </div>
 
-              {/* Evidence Upload Section */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-1">
                   <Camera className="h-3.5 w-3.5" /> Photo / Video Evidence
@@ -315,7 +333,6 @@ const TaskExecution = () => {
                     <Video className="h-3.5 w-3.5" /> Record Video
                   </Button>
                 </div>
-                {/* Uploaded Evidence List */}
                 {uploadedEvidence.length > 0 && (
                   <div className="space-y-1.5 mt-2">
                     {uploadedEvidence.map((ev, i) => (
@@ -325,10 +342,7 @@ const TaskExecution = () => {
                           <span className="font-medium">{ev.name}</span>
                           <span className="text-muted-foreground">{ev.timestamp}</span>
                         </div>
-                        <Button
-                          variant="ghost" size="sm" className="h-6 w-6 p-0"
-                          onClick={() => setUploadedEvidence((prev) => prev.filter((_, idx) => idx !== i))}
-                        >
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => setUploadedEvidence((prev) => prev.filter((_, idx) => idx !== i))}>
                           <X className="h-3 w-3" />
                         </Button>
                       </div>
@@ -358,6 +372,7 @@ const TaskExecution = () => {
               <ShieldCheck className="h-5 w-5 text-primary" />
               Manager Review
             </DialogTitle>
+            <DialogDescription>Review submitted evidence and approve or reject the task</DialogDescription>
           </DialogHeader>
           {reviewDialog && (
             <div className="space-y-4">
@@ -367,7 +382,6 @@ const TaskExecution = () => {
                 {reviewDialog.completionNotes && <p className="text-xs mt-1">{reviewDialog.completionNotes}</p>}
               </div>
 
-              {/* Evidence Review */}
               {reviewDialog.evidence && reviewDialog.evidence.length > 0 ? (
                 <div className="space-y-2">
                   <Label>Submitted Evidence ({reviewDialog.evidence.length} files)</Label>
@@ -396,10 +410,10 @@ const TaskExecution = () => {
 
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setReviewDialog(null)}>Cancel</Button>
-                <Button variant="destructive" onClick={() => handleReview(false)} className="gap-1">
+                <Button variant="destructive" onClick={(e) => handleReview(e, false)} className="gap-1">
                   <AlertOctagon className="h-4 w-4" /> Reject
                 </Button>
-                <Button onClick={() => handleReview(true)} className="gap-1">
+                <Button onClick={(e) => handleReview(e, true)} className="gap-1">
                   <ShieldCheck className="h-4 w-4" /> Approve
                 </Button>
               </div>

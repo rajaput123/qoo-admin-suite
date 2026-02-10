@@ -1,10 +1,11 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Users, UserCheck, Briefcase, ShieldCheck, ArrowRight, Clock, AlertTriangle } from "lucide-react";
+import { Users, UserCheck, Briefcase, ShieldCheck, AlertTriangle } from "lucide-react";
+import TaskDetailModal, { type TaskDetail } from "@/components/tasks/TaskDetailModal";
 
 const hrSummary = [
   { type: "Employees", count: 45, available: 38, icon: UserCheck, color: "text-blue-600 bg-blue-50" },
@@ -13,12 +14,12 @@ const hrSummary = [
 ];
 
 const assignments = [
-  { id: "TSK-001", title: "Morning Abhishekam Preparation", primaryOwner: "Pandit Sharma", ownerType: "Employee", helpers: ["Acolyte Ravi", "Acolyte Sujith"], status: "In Progress", available: true },
-  { id: "TSK-002", title: "Annadanam Kitchen Setup", primaryOwner: "Head Cook", ownerType: "Role", helpers: ["Kitchen Helper 1", "Kitchen Helper 2", "Kitchen Helper 3"], status: "Open", available: true },
-  { id: "TSK-003", title: "Main Hall Flower Decoration", primaryOwner: "Latha (Volunteer)", ownerType: "Volunteer", helpers: ["Meena", "Saroja", "Kavitha"], status: "In Progress", available: true },
-  { id: "TSK-005", title: "Generator Maintenance", primaryOwner: "Suresh Kumar", ownerType: "Employee", helpers: [], status: "Blocked", available: false },
-  { id: "TSK-007", title: "VIP Lounge Preparation", primaryOwner: "Admin Team", ownerType: "Team", helpers: ["Reception Staff", "Housekeeping"], status: "Open", available: true },
-  { id: "TSK-008", title: "Fire Extinguisher Inspection", primaryOwner: "Rajesh (Safety)", ownerType: "Employee", helpers: [], status: "Open", available: true },
+  { id: "TSK-001", title: "Morning Abhishekam Preparation", primaryOwner: "Pandit Sharma", ownerType: "Employee", helpers: ["Acolyte Ravi", "Acolyte Sujith"], status: "In Progress", available: true, category: "Ritual", priority: "High", dueDate: "2026-02-09", notes: "Ensure all vessels are ready by 4:30 AM" },
+  { id: "TSK-002", title: "Annadanam Kitchen Setup", primaryOwner: "Head Cook", ownerType: "Role", helpers: ["Kitchen Helper 1", "Kitchen Helper 2", "Kitchen Helper 3"], status: "Open", available: true, category: "Kitchen", priority: "Critical", dueDate: "2026-02-09", notes: "Prepare for 5000 devotees" },
+  { id: "TSK-003", title: "Main Hall Flower Decoration", primaryOwner: "Latha (Volunteer)", ownerType: "Volunteer", helpers: ["Meena", "Saroja", "Kavitha"], status: "In Progress", available: true, category: "Event", priority: "High", dueDate: "2026-02-09", notes: "Maha Shivaratri decoration" },
+  { id: "TSK-005", title: "Generator Maintenance", primaryOwner: "Suresh Kumar", ownerType: "Employee", helpers: [], status: "Blocked", available: false, category: "Maintenance", priority: "High", dueDate: "2026-02-07", notes: "Spare parts awaited from supplier" },
+  { id: "TSK-007", title: "VIP Lounge Preparation", primaryOwner: "Admin Team", ownerType: "Team", helpers: ["Reception Staff", "Housekeeping"], status: "Open", available: true, category: "Admin", priority: "High", dueDate: "2026-02-10", notes: "Governor visit expected" },
+  { id: "TSK-008", title: "Fire Extinguisher Inspection", primaryOwner: "Rajesh (Safety)", ownerType: "Employee", helpers: [], status: "Open", available: true, category: "Security", priority: "Critical", dueDate: "2026-02-06", notes: "Quarterly inspection overdue" },
 ];
 
 const availablePeople = [
@@ -39,6 +40,8 @@ const statusBadge: Record<string, string> = {
 };
 
 const TaskAssignment = () => {
+  const [selectedTask, setSelectedTask] = useState<TaskDetail | null>(null);
+
   return (
     <div className="space-y-6">
       <div>
@@ -46,7 +49,6 @@ const TaskAssignment = () => {
         <p className="text-muted-foreground text-sm mt-1">Assign tasks using HR-managed people data (read-only)</p>
       </div>
 
-      {/* HR Availability Summary */}
       <div className="grid grid-cols-3 gap-4">
         {hrSummary.map((s) => (
           <Card key={s.type}>
@@ -93,7 +95,21 @@ const TaskAssignment = () => {
                 </TableHeader>
                 <TableBody>
                   {assignments.map((a) => (
-                    <TableRow key={a.id} className="cursor-pointer">
+                    <TableRow
+                      key={a.id}
+                      className="cursor-pointer"
+                      onClick={() => setSelectedTask({
+                        id: a.id,
+                        title: a.title,
+                        category: a.category,
+                        priority: a.priority,
+                        assignee: a.primaryOwner,
+                        assigneeType: a.ownerType,
+                        status: a.status,
+                        dueDate: a.dueDate,
+                        notes: a.notes,
+                      })}
+                    >
                       <TableCell className="font-mono text-xs text-muted-foreground">{a.id}</TableCell>
                       <TableCell className="font-medium text-sm">{a.title}</TableCell>
                       <TableCell>
@@ -107,9 +123,7 @@ const TaskAssignment = () => {
                       <TableCell><Badge variant="outline" className="text-[10px]">{a.ownerType}</Badge></TableCell>
                       <TableCell>
                         {a.helpers.length > 0 ? (
-                          <div className="flex items-center gap-1">
-                            <span className="text-xs text-muted-foreground">{a.helpers.length} helper{a.helpers.length > 1 ? "s" : ""}</span>
-                          </div>
+                          <span className="text-xs text-muted-foreground">{a.helpers.length} helper{a.helpers.length > 1 ? "s" : ""}</span>
                         ) : (
                           <span className="text-xs text-muted-foreground">None</span>
                         )}
@@ -183,6 +197,12 @@ const TaskAssignment = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <TaskDetailModal
+        task={selectedTask}
+        open={!!selectedTask}
+        onOpenChange={() => setSelectedTask(null)}
+      />
     </div>
   );
 };
