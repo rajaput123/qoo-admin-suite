@@ -129,6 +129,16 @@ import TaskIntegration from "./pages/temple/projects/TaskIntegration";
 import RiskChange from "./pages/temple/projects/RiskChange";
 import ProgressAnalytics from "./pages/temple/projects/ProgressAnalytics";
 import ReportsGovernance from "./pages/temple/projects/ReportsGovernance";
+// Donation Management Module
+import DonationsLayout from "./pages/temple/DonationsLayout";
+import DonationDashboard from "./pages/temple/donations/Dashboard";
+import DonorRegistry from "./pages/temple/donations/DonorRegistry";
+import RecordDonation from "./pages/temple/donations/RecordDonation";
+import Receipts80G from "./pages/temple/donations/Receipts80G";
+import FundAllocation from "./pages/temple/donations/FundAllocation";
+import DonationCampaigns from "./pages/temple/donations/Campaigns";
+import UtilizationTracking from "./pages/temple/donations/UtilizationTracking";
+import DonationReportsGovernance from "./pages/temple/donations/ReportsGovernance";
 // Feedback & Analytics Module
 import FeedbackLayout from "./pages/temple/FeedbackLayout";
 import FeedbackDashboard from "./pages/temple/feedback/Dashboard";
@@ -234,7 +244,17 @@ const App = () => (
           </Route>
 
           {/* Placeholder routes for other Temple modules */}
-          <Route path="/temple/donations" element={<TempleHub />} />
+          {/* Donation Management Module */}
+          <Route path="/temple/donations" element={<DonationsLayout />}>
+            <Route index element={<DonationDashboard />} />
+            <Route path="donors" element={<DonorRegistry />} />
+            <Route path="record" element={<RecordDonation />} />
+            <Route path="receipts" element={<Receipts80G />} />
+            <Route path="allocation" element={<FundAllocation />} />
+            <Route path="campaigns" element={<DonationCampaigns />} />
+            <Route path="utilization" element={<UtilizationTracking />} />
+            <Route path="reports" element={<DonationReportsGovernance />} />
+          </Route>
           <Route path="/temple/finance" element={<TempleHub />} />
           
           {/* Devotee & Volunteer Module */}
