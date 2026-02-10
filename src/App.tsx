@@ -227,6 +227,7 @@ const App = () => (
 
           {/* Placeholder routes for other Temple modules */}
           <Route path="/temple/donations" element={<TempleHub />} />
+          <Route path="/temple/finance" element={<TempleHub />} />
           
           {/* Devotee & Volunteer Module */}
           <Route path="/temple/devotees" element={<DevoteesLayout />}>

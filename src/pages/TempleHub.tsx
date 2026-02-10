@@ -33,6 +33,8 @@ import {
   Truck,
   UtensilsCrossed,
   FolderKanban,
+  IndianRupee,
+  Wallet,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -115,21 +117,12 @@ const allModules = [
     category: "core",
   },
   {
-    id: "prasadam",
-    title: "Prasadam Management",
-    icon: Package,
-    enabled: true,
-    path: "/temple/prasadam",
-    description: "Production, batches, counters, distribution",
-    category: "core",
-  },
-  {
-    id: "kitchen",
-    title: "Kitchen Management",
+    id: "prasadam-kitchen",
+    title: "Prasadam & Kitchen",
     icon: UtensilsCrossed,
     enabled: true,
-    path: "/temple/kitchen",
-    description: "Annadanam, meal planning, kitchen operations",
+    path: "/temple/prasadam",
+    description: "Prasadam production, Annadanam, kitchen operations",
     category: "core",
   },
   {
@@ -230,6 +223,24 @@ const allModules = [
     path: "/temple/planner",
     description: "Calendar and scheduling planner",
     category: "analytics",
+  },
+  {
+    id: "donations",
+    title: "Donation Management",
+    icon: Heart,
+    enabled: true,
+    path: "/temple/donations",
+    description: "Donor records, receipts, fund tracking",
+    category: "core",
+  },
+  {
+    id: "finance",
+    title: "Finance & Accounts",
+    icon: IndianRupee,
+    enabled: true,
+    path: "/temple/finance",
+    description: "Budget, expenses, audit, financial reports",
+    category: "operations",
   },
   {
     id: "projects",
