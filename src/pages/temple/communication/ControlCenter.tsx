@@ -7,11 +7,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Send, Clock, CheckCircle, AlertTriangle, Plus, Search, MessageSquare, Zap, FileText, ScrollText } from "lucide-react";
 import { toast } from "sonner";
+import SelectWithAddNew from "@/components/SelectWithAddNew";
+import CustomFieldsSection, { type CustomField } from "@/components/CustomFieldsSection";
 
 // --- Data ---
 const manualMessages = [
@@ -65,6 +66,34 @@ const ControlCenter = () => {
   const [selectedRule, setSelectedRule] = useState<typeof autoRules[0] | null>(null);
   const [selectedTpl, setSelectedTpl] = useState<typeof templates[0] | null>(null);
 
+  // Dynamic options
+  const [audiences, setAudiences] = useState(["All Devotees", "Today's Bookings", "Seva Participants", "Darshan Visitors", "Donors", "Custom Segment"]);
+  const [triggers, setTriggers] = useState(["Booking Created", "Reminder Before Slot", "Payment Success", "Donation Received", "Slot Cancelled"]);
+  const [scopes, setScopes] = useState(["All Offerings", "Specific Offering", "Specific Structure"]);
+  const [channels, setChannels] = useState(["SMS", "WhatsApp", "Email", "Push"]);
+  const [timings, setTimings] = useState(["Immediate", "Before Event 1 hour", "Before Event 2 hours", "Before Event 24 hours", "After Event 1 hour"]);
+  const [tplCategories, setTplCategories] = useState(["Booking", "Donation", "Events", "Finance", "General"]);
+  const [languages, setLanguages] = useState(["English", "Hindi", "Telugu", "Kannada", "Tamil"]);
+
+  // Form state
+  const [formAudience, setFormAudience] = useState("");
+  const [formTrigger, setFormTrigger] = useState("");
+  const [formScope, setFormScope] = useState("");
+  const [formChannel, setFormChannel] = useState("");
+  const [formTiming, setFormTiming] = useState("");
+  const [formTplCat, setFormTplCat] = useState("");
+  const [formTplChannel, setFormTplChannel] = useState("");
+  const [formLanguage, setFormLanguage] = useState("");
+  const [formTemplate, setFormTemplate] = useState("");
+
+  // Custom fields for each create dialog
+  const [msgCustomFields, setMsgCustomFields] = useState<CustomField[]>([]);
+  const [ruleCustomFields, setRuleCustomFields] = useState<CustomField[]>([]);
+  const [tplCustomFields, setTplCustomFields] = useState<CustomField[]>([]);
+  const [msgDetailFields, setMsgDetailFields] = useState<CustomField[]>([]);
+  const [ruleDetailFields, setRuleDetailFields] = useState<CustomField[]>([]);
+  const [tplDetailFields, setTplDetailFields] = useState<CustomField[]>([]);
+
   return (
     <div className="space-y-6">
       {/* KPIs */}
@@ -111,13 +140,7 @@ const ControlCenter = () => {
                 <div className="space-y-4">
                   <div><Label>Message Title</Label><Input placeholder="Message title" /></div>
                   <div><Label>Template (Optional)</Label>
-                    <Select><SelectTrigger><SelectValue placeholder="Select template" /></SelectTrigger>
-                      <SelectContent>
-                        {templates.filter(t => t.status === "active").map(t => (
-                          <SelectItem key={t.id} value={t.id}>{t.name} ({t.channel})</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <SelectWithAddNew value={formTemplate} onValueChange={setFormTemplate} placeholder="Select template" options={templates.filter(t => t.status === "active").map(t => `${t.name} (${t.channel})`)} onAddNew={() => {}} />
                   </div>
                   <div><Label>Channel (at least one)</Label>
                     <div className="grid grid-cols-2 gap-2 mt-1">
@@ -130,16 +153,7 @@ const ControlCenter = () => {
                     </div>
                   </div>
                   <div><Label>Audience</Label>
-                    <Select><SelectTrigger><SelectValue placeholder="Select audience" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Devotees</SelectItem>
-                        <SelectItem value="today">Today's Bookings</SelectItem>
-                        <SelectItem value="seva">Seva Participants</SelectItem>
-                        <SelectItem value="darshan">Darshan Visitors</SelectItem>
-                        <SelectItem value="donors">Donors</SelectItem>
-                        <SelectItem value="custom">Custom Segment</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <SelectWithAddNew value={formAudience} onValueChange={setFormAudience} placeholder="Select audience" options={audiences} onAddNew={v => setAudiences(p => [...p, v])} />
                   </div>
                   <div><Label>Subject (Email only)</Label><Input placeholder="Email subject line" /></div>
                   <div><Label>Message Body</Label><Textarea rows={4} placeholder="Type your message..." /></div>
@@ -151,6 +165,7 @@ const ControlCenter = () => {
                     <div><Label>Schedule Date</Label><Input type="date" /></div>
                     <div><Label>Schedule Time</Label><Input type="time" /></div>
                   </div>
+                  <CustomFieldsSection fields={msgCustomFields} onFieldsChange={setMsgCustomFields} />
                   <div className="flex gap-2 justify-end">
                     <Button variant="outline" size="sm" onClick={() => toast.success("Saved as draft")}>Save Draft</Button>
                     <Button size="sm" onClick={() => toast.success("Message sent / scheduled")}><Send className="h-4 w-4 mr-1" />Send / Schedule</Button>
@@ -201,55 +216,21 @@ const ControlCenter = () => {
                 <div className="space-y-4">
                   <div><Label>Rule Name</Label><Input placeholder="e.g., Booking Confirmation" /></div>
                   <div><Label>Trigger Event</Label>
-                    <Select><SelectTrigger><SelectValue placeholder="Select trigger" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="booking_created">Booking Created</SelectItem>
-                        <SelectItem value="reminder_before">Reminder Before Slot</SelectItem>
-                        <SelectItem value="payment_success">Payment Success</SelectItem>
-                        <SelectItem value="donation_received">Donation Received</SelectItem>
-                        <SelectItem value="slot_cancelled">Slot Cancelled</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <SelectWithAddNew value={formTrigger} onValueChange={setFormTrigger} placeholder="Select trigger" options={triggers} onAddNew={v => setTriggers(p => [...p, v])} />
                   </div>
                   <div><Label>Scope</Label>
-                    <Select><SelectTrigger><SelectValue placeholder="Select scope" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Offerings</SelectItem>
-                        <SelectItem value="specific-offering">Specific Offering</SelectItem>
-                        <SelectItem value="specific-structure">Specific Structure</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <SelectWithAddNew value={formScope} onValueChange={setFormScope} placeholder="Select scope" options={scopes} onAddNew={v => setScopes(p => [...p, v])} />
                   </div>
                   <div><Label>Channel</Label>
-                    <Select><SelectTrigger><SelectValue placeholder="Select channel" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="sms">SMS</SelectItem>
-                        <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                        <SelectItem value="email">Email</SelectItem>
-                        <SelectItem value="push">Push</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <SelectWithAddNew value={formChannel} onValueChange={setFormChannel} placeholder="Select channel" options={channels} onAddNew={v => setChannels(p => [...p, v])} />
                   </div>
                   <div><Label>Template (Mandatory)</Label>
-                    <Select><SelectTrigger><SelectValue placeholder="Select template" /></SelectTrigger>
-                      <SelectContent>
-                        {templates.filter(t => t.status === "active").map(t => (
-                          <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <SelectWithAddNew value={formTemplate} onValueChange={setFormTemplate} placeholder="Select template" options={templates.filter(t => t.status === "active").map(t => t.name)} onAddNew={() => {}} />
                   </div>
                   <div><Label>Timing</Label>
-                    <Select><SelectTrigger><SelectValue placeholder="Select timing" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="immediate">Immediate</SelectItem>
-                        <SelectItem value="before_1h">Before Event 1 hour</SelectItem>
-                        <SelectItem value="before_2h">Before Event 2 hours</SelectItem>
-                        <SelectItem value="before_24h">Before Event 24 hours</SelectItem>
-                        <SelectItem value="after_1h">After Event 1 hour</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <SelectWithAddNew value={formTiming} onValueChange={setFormTiming} placeholder="Select timing" options={timings} onAddNew={v => setTimings(p => [...p, v])} />
                   </div>
+                  <CustomFieldsSection fields={ruleCustomFields} onFieldsChange={setRuleCustomFields} />
                   <div className="flex gap-2 justify-end">
                     <Button size="sm" onClick={() => toast.success("Rule created and activated")}><Zap className="h-4 w-4 mr-1" />Create Rule</Button>
                   </div>
@@ -302,37 +283,14 @@ const ControlCenter = () => {
                   <div><Label>Template Name</Label><Input placeholder="e.g., Booking Confirmation" /></div>
                   <div className="grid grid-cols-2 gap-4">
                     <div><Label>Category</Label>
-                      <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="booking">Booking</SelectItem>
-                          <SelectItem value="donation">Donation</SelectItem>
-                          <SelectItem value="events">Events</SelectItem>
-                          <SelectItem value="finance">Finance</SelectItem>
-                          <SelectItem value="general">General</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <SelectWithAddNew value={formTplCat} onValueChange={setFormTplCat} placeholder="Select" options={tplCategories} onAddNew={v => setTplCategories(p => [...p, v])} />
                     </div>
                     <div><Label>Channel Type</Label>
-                      <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="sms">SMS</SelectItem>
-                          <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                          <SelectItem value="email">Email</SelectItem>
-                          <SelectItem value="push">Push</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <SelectWithAddNew value={formTplChannel} onValueChange={setFormTplChannel} placeholder="Select" options={channels} onAddNew={v => setChannels(p => [...p, v])} />
                     </div>
                   </div>
                   <div><Label>Language</Label>
-                    <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="english">English</SelectItem>
-                        <SelectItem value="hindi">Hindi</SelectItem>
-                        <SelectItem value="telugu">Telugu</SelectItem>
-                        <SelectItem value="kannada">Kannada</SelectItem>
-                        <SelectItem value="tamil">Tamil</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <SelectWithAddNew value={formLanguage} onValueChange={setFormLanguage} placeholder="Select" options={languages} onAddNew={v => setLanguages(p => [...p, v])} />
                   </div>
                   <div><Label>Subject (Email only)</Label><Input placeholder="Email subject line" /></div>
                   <div><Label>Message Body</Label><Textarea rows={4} placeholder="Use variables like {{DevoteeName}}, {{OfferingName}}, {{SlotTime}}, {{TempleName}}, {{Amount}}, {{StructureName}}" /></div>
@@ -344,6 +302,7 @@ const ControlCenter = () => {
                       ))}
                     </div>
                   </div>
+                  <CustomFieldsSection fields={tplCustomFields} onFieldsChange={setTplCustomFields} />
                   <div className="flex gap-2 justify-end">
                     <Button size="sm" onClick={() => toast.success("Template created")}><FileText className="h-4 w-4 mr-1" />Create Template</Button>
                   </div>
@@ -420,7 +379,7 @@ const ControlCenter = () => {
 
       {/* Manual Message Detail Modal */}
       <Dialog open={!!selectedMsg} onOpenChange={() => setSelectedMsg(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Message Details</DialogTitle></DialogHeader>
           {selectedMsg && (
             <div className="space-y-4">
@@ -432,6 +391,7 @@ const ControlCenter = () => {
                 <div><span className="text-muted-foreground">Scheduled:</span> {selectedMsg.scheduledAt}</div>
                 <div><span className="text-muted-foreground">Sent:</span> {selectedMsg.sentAt}</div>
               </div>
+              <CustomFieldsSection fields={msgDetailFields} onFieldsChange={setMsgDetailFields} />
               <div className="flex gap-2">
                 {selectedMsg.status === "draft" && <Button size="sm" onClick={() => { toast.success("Message sent"); setSelectedMsg(null); }}><Send className="h-4 w-4 mr-1" />Send Now</Button>}
                 {selectedMsg.status === "scheduled" && <Button variant="outline" size="sm" onClick={() => { toast.success("Schedule cancelled"); setSelectedMsg(null); }}>Cancel Schedule</Button>}
@@ -444,7 +404,7 @@ const ControlCenter = () => {
 
       {/* Rule Detail Modal */}
       <Dialog open={!!selectedRule} onOpenChange={() => setSelectedRule(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Rule Details</DialogTitle></DialogHeader>
           {selectedRule && (
             <div className="space-y-4">
@@ -457,6 +417,7 @@ const ControlCenter = () => {
                 <div><span className="text-muted-foreground">Template:</span> <span className="font-mono">{selectedRule.template}</span></div>
                 <div><span className="text-muted-foreground">Timing:</span> {selectedRule.timing}</div>
               </div>
+              <CustomFieldsSection fields={ruleDetailFields} onFieldsChange={setRuleDetailFields} />
               <div className="flex gap-2">
                 {selectedRule.status === "active" && <Button variant="outline" size="sm" onClick={() => { toast.success("Rule paused"); setSelectedRule(null); }}>Pause Rule</Button>}
                 {selectedRule.status === "paused" && <Button size="sm" onClick={() => { toast.success("Rule activated"); setSelectedRule(null); }}>Activate Rule</Button>}
@@ -468,7 +429,7 @@ const ControlCenter = () => {
 
       {/* Template Detail Modal */}
       <Dialog open={!!selectedTpl} onOpenChange={() => setSelectedTpl(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Template Details</DialogTitle></DialogHeader>
           {selectedTpl && (
             <div className="space-y-4">
@@ -487,6 +448,7 @@ const ControlCenter = () => {
                   ))}
                 </div>
               </div>
+              <CustomFieldsSection fields={tplDetailFields} onFieldsChange={setTplDetailFields} />
               <div className="flex gap-2">
                 {selectedTpl.status === "active" && <Button variant="outline" size="sm" onClick={() => { toast.success("Template archived"); setSelectedTpl(null); }}>Archive</Button>}
                 {selectedTpl.status === "archived" && <Button size="sm" onClick={() => { toast.success("Template reactivated"); setSelectedTpl(null); }}>Reactivate</Button>}

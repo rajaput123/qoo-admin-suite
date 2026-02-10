@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Radio, Eye, Clock, Play, Square, Pause, RotateCcw, Pencil, X, Video, Calendar, Users, Timer } from "lucide-react";
+import { Plus, Radio, Eye, Clock, Play, Square, Pause, RotateCcw, X, Video, Calendar, Users, Timer } from "lucide-react";
 import { toast } from "sonner";
+import SelectWithAddNew from "@/components/SelectWithAddNew";
+import CustomFieldsSection, { type CustomField } from "@/components/CustomFieldsSection";
 
 type BroadcastStatus = "live" | "scheduled" | "completed" | "interrupted" | "cancelled";
 
@@ -54,16 +55,21 @@ const statusConfig: Record<BroadcastStatus, { label: string; className: string }
   cancelled: { label: "Cancelled", className: "text-muted-foreground bg-muted border-border" },
 };
 
-const purposes = ["Daily Darshan", "Festival / Event", "Discourse", "Emergency"];
-const structures = ["Main Sanctum", "Main Temple", "Discourse Hall", "Durga Shrine", "Full Campus", "Hanuman Shrine"];
-const platformOptions = ["Temple App", "YouTube", "Facebook"];
-const visibilityOptions = ["Public", "App Only", "Members Only"];
-
 const LiveBroadcast = () => {
   const [broadcasts, setBroadcasts] = useState<Broadcast[]>(initialBroadcasts);
   const [selected, setSelected] = useState<Broadcast | null>(null);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [step, setStep] = useState(1);
+
+  // Dynamic dropdown options
+  const [purposes, setPurposes] = useState(["Daily Darshan", "Festival / Event", "Discourse", "Emergency"]);
+  const [structures, setStructures] = useState(["Main Sanctum", "Main Temple", "Discourse Hall", "Durga Shrine", "Full Campus", "Hanuman Shrine"]);
+  const [platformOptions, setPlatformOptions] = useState(["Temple App", "YouTube", "Facebook"]);
+  const [visibilityOptions, setVisibilityOptions] = useState(["Public", "App Only", "Members Only"]);
+
+  // Custom fields
+  const [scheduleCustomFields, setScheduleCustomFields] = useState<CustomField[]>([]);
+  const [detailCustomFields, setDetailCustomFields] = useState<CustomField[]>([]);
 
   // Schedule form state
   const [form, setForm] = useState({
@@ -76,6 +82,7 @@ const LiveBroadcast = () => {
   const resetForm = () => {
     setForm({ purpose: "", title: "", structure: "", description: "", daily: false, date: "", startTime: "", duration: "", platforms: [], reminder: false, reminderTiming: [], visibility: "Public" });
     setStep(1);
+    setScheduleCustomFields([]);
   };
 
   const liveBroadcasts = broadcasts.filter(b => b.status === "live");
@@ -183,7 +190,7 @@ const LiveBroadcast = () => {
           <DialogTrigger asChild>
             <Button><Plus className="h-4 w-4 mr-1" />Schedule Broadcast</Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Schedule Broadcast – Step {step} of 6</DialogTitle></DialogHeader>
             <div className="space-y-4">
               {step === 1 && (
@@ -198,6 +205,10 @@ const LiveBroadcast = () => {
                       </Card>
                     ))}
                   </div>
+                  <Button variant="outline" size="sm" className="w-full" onClick={() => {
+                    const name = prompt("Enter new purpose:");
+                    if (name?.trim()) setPurposes(p => [...p, name.trim()]);
+                  }}>+ Add New Purpose</Button>
                 </div>
               )}
 
@@ -205,10 +216,7 @@ const LiveBroadcast = () => {
                 <div className="space-y-3">
                   <div><Label>Title</Label><Input value={form.title} onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))} placeholder="Broadcast title" /></div>
                   <div><Label>Linked Structure</Label>
-                    <Select value={form.structure} onValueChange={v => setForm(prev => ({ ...prev, structure: v }))}>
-                      <SelectTrigger><SelectValue placeholder="Select structure" /></SelectTrigger>
-                      <SelectContent>{structures.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                    </Select>
+                    <SelectWithAddNew value={form.structure} onValueChange={v => setForm(prev => ({ ...prev, structure: v }))} placeholder="Select structure" options={structures} onAddNew={v => setStructures(p => [...p, v])} />
                   </div>
                   <div><Label>Description (Optional)</Label><Textarea rows={2} value={form.description} onChange={e => setForm(prev => ({ ...prev, description: e.target.value }))} placeholder="Brief description..." /></div>
                 </div>
@@ -241,6 +249,10 @@ const LiveBroadcast = () => {
                       <Label htmlFor={`plat-${p}`} className="cursor-pointer font-normal">{p}</Label>
                     </div>
                   ))}
+                  <Button variant="outline" size="sm" className="w-full" onClick={() => {
+                    const name = prompt("Enter new platform:");
+                    if (name?.trim()) setPlatformOptions(p => [...p, name.trim()]);
+                  }}>+ Add New Platform</Button>
                 </div>
               )}
 
@@ -266,10 +278,7 @@ const LiveBroadcast = () => {
               {step === 6 && (
                 <div className="space-y-3">
                   <Label>Visibility</Label>
-                  <Select value={form.visibility} onValueChange={v => setForm(prev => ({ ...prev, visibility: v }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{visibilityOptions.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}</SelectContent>
-                  </Select>
+                  <SelectWithAddNew value={form.visibility} onValueChange={v => setForm(prev => ({ ...prev, visibility: v }))} options={visibilityOptions} onAddNew={v => setVisibilityOptions(p => [...p, v])} />
                   <Separator />
                   <div className="text-sm space-y-1">
                     <p><span className="text-muted-foreground">Purpose:</span> {form.purpose}</p>
@@ -279,6 +288,7 @@ const LiveBroadcast = () => {
                     <p><span className="text-muted-foreground">Platforms:</span> {form.platforms.join(", ")}</p>
                     <p><span className="text-muted-foreground">Reminder:</span> {form.reminder ? form.reminderTiming.join(", ") : "No"}</p>
                   </div>
+                  <CustomFieldsSection fields={scheduleCustomFields} onFieldsChange={setScheduleCustomFields} />
                 </div>
               )}
 
@@ -334,7 +344,7 @@ const LiveBroadcast = () => {
 
       {/* Detail Modal */}
       <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Broadcast Details</DialogTitle></DialogHeader>
           {selected && (
             <div className="space-y-4">
@@ -352,6 +362,7 @@ const LiveBroadcast = () => {
                 {selected.actualDuration !== "-" && <div><span className="text-muted-foreground">Actual Duration:</span> {selected.actualDuration}</div>}
               </div>
               {selected.description && <p className="text-sm"><span className="text-muted-foreground">Description:</span> {selected.description}</p>}
+              <CustomFieldsSection fields={detailCustomFields} onFieldsChange={setDetailCustomFields} />
               <Separator />
               <div className="flex gap-2 flex-wrap">
                 {selected.status === "live" && (

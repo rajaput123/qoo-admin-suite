@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -10,28 +10,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Search, Users, Calendar, FileText, Clock, MapPin, Video, Upload, CheckCircle, AlertTriangle } from "lucide-react";
+import { Plus, Search, Users, Calendar, FileText, Clock, MapPin, Video, Upload, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
-
-const MEETING_TYPES = [
-  "Trustee Meeting",
-  "Donor Meeting",
-  "Community Consultation",
-  "Government Coordination Meeting",
-  "Crisis / Emergency Meeting",
-] as const;
-
-const MEETING_MODES = ["In-Person", "Online", "Hybrid"] as const;
-const PARTICIPANT_GROUPS = ["Trustees", "Donors", "Staff", "Public", "Government"] as const;
-const STRUCTURES = ["Main Temple", "Sanctum Sanctorum", "Assembly Hall", "Community Hall", "Meeting Room A", "Meeting Room B"] as const;
+import SelectWithAddNew from "@/components/SelectWithAddNew";
+import CustomFieldsSection, { type CustomField } from "@/components/CustomFieldsSection";
 
 type MeetingStatus = "draft" | "scheduled" | "ongoing" | "completed" | "archived" | "cancelled";
 
 interface Meeting {
   id: string;
   title: string;
-  type: typeof MEETING_TYPES[number];
-  mode: typeof MEETING_MODES[number];
+  type: string;
+  mode: string;
   structure: string;
   date: string;
   startTime: string;
@@ -53,65 +43,12 @@ interface Meeting {
 }
 
 const initialMeetings: Meeting[] = [
-  {
-    id: "MTG-001", title: "Q1 Trustee Board Review", type: "Trustee Meeting", mode: "In-Person",
-    structure: "Assembly Hall", date: "2024-01-28", startTime: "10:00", duration: "2 hours",
-    venue: "Assembly Hall - Ground Floor", onlineLink: "", participantGroup: "Trustees",
-    individuals: ["Sri Ramesh", "Sri Govind", "Smt. Lakshmi"], maxParticipants: "15",
-    agenda: "Review Q1 financials, temple expansion update, staffing decisions",
-    agendaDoc: true, sendInvitation: true, status: "completed", attendanceCount: 12,
-    minutesUploaded: true, decisions: "Approved Phase 2 expansion budget. Hired 3 new priests.",
-    actionItems: "Finance team to prepare Phase 2 cost breakdown by Feb 15. HR to onboard priests by March 1.",
-    publicSummary: "",
-  },
-  {
-    id: "MTG-002", title: "Annual Donor Appreciation & Update", type: "Donor Meeting", mode: "Hybrid",
-    structure: "Community Hall", date: "2024-03-15", startTime: "09:00", duration: "3 hours",
-    venue: "Community Hall", onlineLink: "https://meet.temple.org/donor-2024",
-    participantGroup: "Donors", individuals: [], maxParticipants: "100",
-    agenda: "Annual financial transparency report, upcoming projects, donor recognition",
-    agendaDoc: true, sendInvitation: false, status: "scheduled", attendanceCount: null,
-    minutesUploaded: false, decisions: "", actionItems: "", publicSummary: "",
-  },
-  {
-    id: "MTG-003", title: "Temple Expansion Community Hearing", type: "Community Consultation", mode: "In-Person",
-    structure: "Community Hall", date: "2024-02-02", startTime: "14:00", duration: "2 hours",
-    venue: "Community Hall", onlineLink: "", participantGroup: "Public",
-    individuals: ["Ward Councilor", "Local Residents Assoc."], maxParticipants: "200",
-    agenda: "Present expansion plans, address community concerns, collect feedback",
-    agendaDoc: true, sendInvitation: true, status: "completed", attendanceCount: 156,
-    minutesUploaded: true, decisions: "Community supports expansion with noise mitigation measures.",
-    actionItems: "Architect to present noise mitigation plan. Next hearing in 30 days.",
-    publicSummary: "Temple presented Phase 2 expansion plans. Community feedback was positive with requests for noise control during construction.",
-  },
-  {
-    id: "MTG-004", title: "Municipal Compliance Review", type: "Government Coordination Meeting", mode: "In-Person",
-    structure: "Meeting Room A", date: "2024-02-14", startTime: "11:00", duration: "1.5 hours",
-    venue: "Meeting Room A", onlineLink: "", participantGroup: "Government",
-    individuals: ["Municipal Inspector", "Fire Safety Officer"], maxParticipants: "10",
-    agenda: "Review fire safety compliance, crowd management plans, structural audit",
-    agendaDoc: true, sendInvitation: true, status: "scheduled", attendanceCount: null,
-    minutesUploaded: false, decisions: "", actionItems: "", publicSummary: "",
-  },
-  {
-    id: "MTG-005", title: "Emergency Water Supply Discussion", type: "Crisis / Emergency Meeting", mode: "Online",
-    structure: "Main Temple", date: "2024-02-05", startTime: "08:00", duration: "1 hour",
-    venue: "", onlineLink: "https://meet.temple.org/emergency-water",
-    participantGroup: "Staff", individuals: ["Head Priest", "Maintenance Lead", "Admin Head"], maxParticipants: "",
-    agenda: "Address water supply disruption, arrange tanker service, rationing plan",
-    agendaDoc: false, sendInvitation: false, status: "completed", attendanceCount: 8,
-    minutesUploaded: true, decisions: "Tanker service arranged for 7 days. Rationing protocol activated.",
-    actionItems: "Maintenance to fix pipeline by Feb 12. Finance to release emergency funds.",
-    publicSummary: "",
-  },
-  {
-    id: "MTG-006", title: "Festival Committee Planning", type: "Trustee Meeting", mode: "In-Person",
-    structure: "Assembly Hall", date: "2024-02-20", startTime: "15:00", duration: "2 hours",
-    venue: "Assembly Hall", onlineLink: "", participantGroup: "Trustees",
-    individuals: [], maxParticipants: "20", agenda: "",
-    agendaDoc: false, sendInvitation: false, status: "draft", attendanceCount: null,
-    minutesUploaded: false, decisions: "", actionItems: "", publicSummary: "",
-  },
+  { id: "MTG-001", title: "Q1 Trustee Board Review", type: "Trustee Meeting", mode: "In-Person", structure: "Assembly Hall", date: "2024-01-28", startTime: "10:00", duration: "2 hours", venue: "Assembly Hall - Ground Floor", onlineLink: "", participantGroup: "Trustees", individuals: ["Sri Ramesh", "Sri Govind", "Smt. Lakshmi"], maxParticipants: "15", agenda: "Review Q1 financials, temple expansion update, staffing decisions", agendaDoc: true, sendInvitation: true, status: "completed", attendanceCount: 12, minutesUploaded: true, decisions: "Approved Phase 2 expansion budget. Hired 3 new priests.", actionItems: "Finance team to prepare Phase 2 cost breakdown by Feb 15. HR to onboard priests by March 1.", publicSummary: "" },
+  { id: "MTG-002", title: "Annual Donor Appreciation & Update", type: "Donor Meeting", mode: "Hybrid", structure: "Community Hall", date: "2024-03-15", startTime: "09:00", duration: "3 hours", venue: "Community Hall", onlineLink: "https://meet.temple.org/donor-2024", participantGroup: "Donors", individuals: [], maxParticipants: "100", agenda: "Annual financial transparency report, upcoming projects, donor recognition", agendaDoc: true, sendInvitation: false, status: "scheduled", attendanceCount: null, minutesUploaded: false, decisions: "", actionItems: "", publicSummary: "" },
+  { id: "MTG-003", title: "Temple Expansion Community Hearing", type: "Community Consultation", mode: "In-Person", structure: "Community Hall", date: "2024-02-02", startTime: "14:00", duration: "2 hours", venue: "Community Hall", onlineLink: "", participantGroup: "Public", individuals: ["Ward Councilor", "Local Residents Assoc."], maxParticipants: "200", agenda: "Present expansion plans, address community concerns, collect feedback", agendaDoc: true, sendInvitation: true, status: "completed", attendanceCount: 156, minutesUploaded: true, decisions: "Community supports expansion with noise mitigation measures.", actionItems: "Architect to present noise mitigation plan. Next hearing in 30 days.", publicSummary: "Temple presented Phase 2 expansion plans. Community feedback was positive with requests for noise control during construction." },
+  { id: "MTG-004", title: "Municipal Compliance Review", type: "Government Coordination Meeting", mode: "In-Person", structure: "Meeting Room A", date: "2024-02-14", startTime: "11:00", duration: "1.5 hours", venue: "Meeting Room A", onlineLink: "", participantGroup: "Government", individuals: ["Municipal Inspector", "Fire Safety Officer"], maxParticipants: "10", agenda: "Review fire safety compliance, crowd management plans, structural audit", agendaDoc: true, sendInvitation: true, status: "scheduled", attendanceCount: null, minutesUploaded: false, decisions: "", actionItems: "", publicSummary: "" },
+  { id: "MTG-005", title: "Emergency Water Supply Discussion", type: "Crisis / Emergency Meeting", mode: "Online", structure: "Main Temple", date: "2024-02-05", startTime: "08:00", duration: "1 hour", venue: "", onlineLink: "https://meet.temple.org/emergency-water", participantGroup: "Staff", individuals: ["Head Priest", "Maintenance Lead", "Admin Head"], maxParticipants: "", agenda: "Address water supply disruption, arrange tanker service, rationing plan", agendaDoc: false, sendInvitation: false, status: "completed", attendanceCount: 8, minutesUploaded: true, decisions: "Tanker service arranged for 7 days. Rationing protocol activated.", actionItems: "Maintenance to fix pipeline by Feb 12. Finance to release emergency funds.", publicSummary: "" },
+  { id: "MTG-006", title: "Festival Committee Planning", type: "Trustee Meeting", mode: "In-Person", structure: "Assembly Hall", date: "2024-02-20", startTime: "15:00", duration: "2 hours", venue: "Assembly Hall", onlineLink: "", participantGroup: "Trustees", individuals: [], maxParticipants: "20", agenda: "", agendaDoc: false, sendInvitation: false, status: "draft", attendanceCount: null, minutesUploaded: false, decisions: "", actionItems: "", publicSummary: "" },
 ];
 
 const statusConfig: Record<MeetingStatus, { label: string; class: string }> = {
@@ -139,14 +76,22 @@ const PublicMeetings = () => {
   const [form, setForm] = useState<Omit<Meeting, "id">>(emptyMeeting);
   const [individualInput, setIndividualInput] = useState("");
 
+  // Dynamic dropdown options
+  const [meetingTypes, setMeetingTypes] = useState(["Trustee Meeting", "Donor Meeting", "Community Consultation", "Government Coordination Meeting", "Crisis / Emergency Meeting"]);
+  const [meetingModes, setMeetingModes] = useState(["In-Person", "Online", "Hybrid"]);
+  const [structuresList, setStructuresList] = useState(["Main Temple", "Sanctum Sanctorum", "Assembly Hall", "Community Hall", "Meeting Room A", "Meeting Room B"]);
+  const [participantGroups, setParticipantGroups] = useState(["Trustees", "Donors", "Staff", "Public", "Government"]);
+
+  // Custom fields
+  const [createCustomFields, setCreateCustomFields] = useState<CustomField[]>([]);
+  const [detailCustomFields, setDetailCustomFields] = useState<CustomField[]>([]);
+
   const sectionFilter = (m: Meeting) => {
     if (section === "all") return true;
     return m.status === section;
   };
 
-  const filtered = meetings
-    .filter(m => m.title.toLowerCase().includes(search.toLowerCase()))
-    .filter(sectionFilter);
+  const filtered = meetings.filter(m => m.title.toLowerCase().includes(search.toLowerCase())).filter(sectionFilter);
 
   const counts = {
     draft: meetings.filter(m => m.status === "draft").length,
@@ -161,6 +106,7 @@ const PublicMeetings = () => {
     setMeetings(prev => [newMeeting, ...prev]);
     setForm(emptyMeeting);
     setCreateOpen(false);
+    setCreateCustomFields([]);
     toast.success("Meeting created");
   };
 
@@ -235,35 +181,24 @@ const PublicMeetings = () => {
           <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Create Meeting</DialogTitle></DialogHeader>
             <div className="space-y-5">
-              {/* Basic Details */}
               <div>
                 <h4 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">Basic Details</h4>
                 <div className="space-y-3">
                   <div><Label>Meeting Title</Label><Input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} placeholder="e.g., Q2 Trustee Board Review" /></div>
                   <div className="grid grid-cols-2 gap-4">
                     <div><Label>Meeting Type</Label>
-                      <Select value={form.type} onValueChange={v => setForm(p => ({ ...p, type: v as any }))}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>{MEETING_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
-                      </Select>
+                      <SelectWithAddNew value={form.type} onValueChange={v => setForm(p => ({ ...p, type: v }))} options={meetingTypes} onAddNew={v => setMeetingTypes(p => [...p, v])} />
                     </div>
                     <div><Label>Linked Structure</Label>
-                      <Select value={form.structure} onValueChange={v => setForm(p => ({ ...p, structure: v }))}>
-                        <SelectTrigger><SelectValue placeholder="Select structure" /></SelectTrigger>
-                        <SelectContent>{STRUCTURES.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                      </Select>
+                      <SelectWithAddNew value={form.structure} onValueChange={v => setForm(p => ({ ...p, structure: v }))} placeholder="Select structure" options={structuresList} onAddNew={v => setStructuresList(p => [...p, v])} />
                     </div>
                   </div>
                   <div><Label>Meeting Mode</Label>
-                    <Select value={form.mode} onValueChange={v => setForm(p => ({ ...p, mode: v as any }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>{MEETING_MODES.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
-                    </Select>
+                    <SelectWithAddNew value={form.mode} onValueChange={v => setForm(p => ({ ...p, mode: v }))} options={meetingModes} onAddNew={v => setMeetingModes(p => [...p, v])} />
                   </div>
                 </div>
               </div>
 
-              {/* Schedule */}
               <div>
                 <h4 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">Schedule</h4>
                 <div className="grid grid-cols-3 gap-4">
@@ -273,7 +208,6 @@ const PublicMeetings = () => {
                 </div>
               </div>
 
-              {/* Location */}
               <div>
                 <h4 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">Location</h4>
                 <div className="space-y-3">
@@ -286,16 +220,12 @@ const PublicMeetings = () => {
                 </div>
               </div>
 
-              {/* Participants */}
               <div>
                 <h4 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">Participants</h4>
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-4">
                     <div><Label>Participant Group</Label>
-                      <Select value={form.participantGroup} onValueChange={v => setForm(p => ({ ...p, participantGroup: v }))}>
-                        <SelectTrigger><SelectValue placeholder="Select group" /></SelectTrigger>
-                        <SelectContent>{PARTICIPANT_GROUPS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent>
-                      </Select>
+                      <SelectWithAddNew value={form.participantGroup} onValueChange={v => setForm(p => ({ ...p, participantGroup: v }))} placeholder="Select group" options={participantGroups} onAddNew={v => setParticipantGroups(p => [...p, v])} />
                     </div>
                     <div><Label>Max Participants (Optional)</Label><Input value={form.maxParticipants} onChange={e => setForm(p => ({ ...p, maxParticipants: e.target.value }))} placeholder="e.g., 50" /></div>
                   </div>
@@ -316,7 +246,6 @@ const PublicMeetings = () => {
                 </div>
               </div>
 
-              {/* Agenda */}
               <div>
                 <h4 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">Agenda</h4>
                 <div className="space-y-3">
@@ -328,7 +257,6 @@ const PublicMeetings = () => {
                 </div>
               </div>
 
-              {/* Communication */}
               <div>
                 <h4 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wide">Communication (Optional)</h4>
                 <div className="flex items-center gap-3">
@@ -340,7 +268,8 @@ const PublicMeetings = () => {
                 )}
               </div>
 
-              {/* Actions */}
+              <CustomFieldsSection fields={createCustomFields} onFieldsChange={setCreateCustomFields} />
+
               <div className="flex gap-2 justify-end pt-2 border-t">
                 <Button variant="outline" size="sm" onClick={() => { handleCreate(); }}>Save as Draft</Button>
                 <Button size="sm" onClick={() => { setForm(p => ({ ...p, status: "scheduled" })); setTimeout(handleCreate, 0); }}>Save & Schedule</Button>
@@ -397,25 +326,14 @@ const PublicMeetings = () => {
           <DialogHeader><DialogTitle>Meeting Details</DialogTitle></DialogHeader>
           {selected && (
             <div className="space-y-4">
-              {/* Status Actions */}
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <Badge variant="outline" className={`${statusConfig[selected.status].class} text-sm px-3 py-1`}>{statusConfig[selected.status].label}</Badge>
                 <div className="flex gap-2 flex-wrap">
-                  {selected.status === "draft" && (
-                    <Button size="sm" onClick={() => updateStatus(selected.id, "scheduled")}>Schedule</Button>
-                  )}
-                  {selected.status === "scheduled" && (
-                    <Button size="sm" onClick={() => updateStatus(selected.id, "ongoing")}>Mark Started</Button>
-                  )}
-                  {selected.status === "ongoing" && (
-                    <Button size="sm" onClick={() => updateStatus(selected.id, "completed")}>Mark Completed</Button>
-                  )}
-                  {selected.status === "completed" && (
-                    <Button size="sm" variant="outline" onClick={() => updateStatus(selected.id, "archived")}>Archive</Button>
-                  )}
-                  {(selected.status === "draft" || selected.status === "scheduled") && (
-                    <Button size="sm" variant="destructive" onClick={() => updateStatus(selected.id, "cancelled")}>Cancel</Button>
-                  )}
+                  {selected.status === "draft" && <Button size="sm" onClick={() => updateStatus(selected.id, "scheduled")}>Schedule</Button>}
+                  {selected.status === "scheduled" && <Button size="sm" onClick={() => updateStatus(selected.id, "ongoing")}>Mark Started</Button>}
+                  {selected.status === "ongoing" && <Button size="sm" onClick={() => updateStatus(selected.id, "completed")}>Mark Completed</Button>}
+                  {selected.status === "completed" && <Button size="sm" variant="outline" onClick={() => updateStatus(selected.id, "archived")}>Archive</Button>}
+                  {(selected.status === "draft" || selected.status === "scheduled") && <Button size="sm" variant="destructive" onClick={() => updateStatus(selected.id, "cancelled")}>Cancel</Button>}
                 </div>
               </div>
 
@@ -427,6 +345,7 @@ const PublicMeetings = () => {
                   {(selected.status === "ongoing" || selected.status === "completed" || selected.status === "archived") && (
                     <TabsTrigger value="records" className="flex-1">Post-Meeting</TabsTrigger>
                   )}
+                  <TabsTrigger value="custom" className="flex-1">Custom Fields</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-4 mt-4">
@@ -485,7 +404,6 @@ const PublicMeetings = () => {
                 {(selected.status === "ongoing" || selected.status === "completed" || selected.status === "archived") && (
                   <TabsContent value="records" className="space-y-4 mt-4">
                     <div className="text-sm space-y-4">
-                      {/* Attendance */}
                       <div>
                         <span className="text-muted-foreground block text-xs mb-0.5">Attendance Count</span>
                         {selected.status === "completed" || selected.status === "archived" ? (
@@ -494,8 +412,6 @@ const PublicMeetings = () => {
                           <Input type="number" className="w-32" value={selected.attendanceCount ?? ""} onChange={e => updateSelectedField("attendanceCount", parseInt(e.target.value) || 0)} />
                         )}
                       </div>
-
-                      {/* Minutes */}
                       <div>
                         <span className="text-muted-foreground block text-xs mb-1">Minutes of Meeting</span>
                         {selected.minutesUploaded ? (
@@ -506,27 +422,20 @@ const PublicMeetings = () => {
                           </Button>
                         )}
                       </div>
-
-                      {/* Decisions */}
                       <div>
                         <Label className="text-xs text-muted-foreground">Key Decisions Taken</Label>
                         <Textarea rows={3} value={selected.decisions} onChange={e => updateSelectedField("decisions", e.target.value)} placeholder="Record key decisions made during the meeting..." />
                       </div>
-
-                      {/* Action Items */}
                       <div>
                         <Label className="text-xs text-muted-foreground">Action Items</Label>
                         <Textarea rows={3} value={selected.actionItems} onChange={e => updateSelectedField("actionItems", e.target.value)} placeholder="List action items with owners and deadlines..." />
                       </div>
-
-                      {/* Public Summary (for community meetings) */}
                       {(selected.type === "Community Consultation" || selected.type === "Donor Meeting") && (
                         <div>
                           <Label className="text-xs text-muted-foreground">Public Summary (Optional)</Label>
                           <Textarea rows={2} value={selected.publicSummary} onChange={e => updateSelectedField("publicSummary", e.target.value)} placeholder="Summary for public visibility..." />
                         </div>
                       )}
-
                       {selected.status === "ongoing" && (
                         <div className="pt-2 border-t flex justify-end">
                           <Button size="sm" onClick={() => updateStatus(selected.id, "completed")}>
@@ -537,6 +446,10 @@ const PublicMeetings = () => {
                     </div>
                   </TabsContent>
                 )}
+
+                <TabsContent value="custom" className="mt-4">
+                  <CustomFieldsSection fields={detailCustomFields} onFieldsChange={setDetailCustomFields} />
+                </TabsContent>
               </Tabs>
             </div>
           )}

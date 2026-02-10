@@ -7,9 +7,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, Newspaper, Tv, Share2, FileText } from "lucide-react";
 import { toast } from "sonner";
+import SelectWithAddNew from "@/components/SelectWithAddNew";
+import CustomFieldsSection, { type CustomField } from "@/components/CustomFieldsSection";
 
 const mediaRecords = [
   { id: "MED-001", title: "Press Release: Annual Festival", mediaType: "Press Release", date: "2024-02-08", platform: "Deccan Herald, Times of India", spokesperson: "Sri Ramesh Kumar", linkedEvent: "EVT-045", tone: "Positive", summary: "Official press release announcing the 5-day annual festival schedule, visitor guidelines, and special arrangements.", attachment: "festival-press-release.pdf" },
@@ -37,6 +38,16 @@ const toneColors: Record<string, string> = {
 const MediaCommunication = () => {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<typeof mediaRecords[0] | null>(null);
+
+  // Dynamic options
+  const [mediaTypes, setMediaTypes] = useState(["Press Release", "Media Coverage", "Social Media Post", "TV Interview"]);
+  const [tones, setTones] = useState(["Positive", "Neutral", "Negative", "Mixed"]);
+  const [formType, setFormType] = useState("");
+  const [formTone, setFormTone] = useState("");
+
+  // Custom fields
+  const [createCustomFields, setCreateCustomFields] = useState<CustomField[]>([]);
+  const [detailCustomFields, setDetailCustomFields] = useState<CustomField[]>([]);
 
   const filtered = mediaRecords.filter(m => m.title.toLowerCase().includes(search.toLowerCase()));
 
@@ -82,33 +93,18 @@ const MediaCommunication = () => {
             <div className="space-y-4">
               <div><Label>Title</Label><Input placeholder="Short summary of the communication" /></div>
               <div><Label>Media Type</Label>
-                <Select>
-                  <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="press_release">Press Release</SelectItem>
-                    <SelectItem value="media_coverage">Media Coverage</SelectItem>
-                    <SelectItem value="social_media">Social Media Post</SelectItem>
-                    <SelectItem value="tv_interview">TV Interview</SelectItem>
-                  </SelectContent>
-                </Select>
+                <SelectWithAddNew value={formType} onValueChange={setFormType} placeholder="Select type" options={mediaTypes} onAddNew={v => setMediaTypes(p => [...p, v])} />
               </div>
               <div><Label>Date of Communication</Label><Input type="date" /></div>
               <div><Label>Platform / Outlet</Label><Input placeholder="e.g., Deccan Herald, Instagram, Zee Kannada" /></div>
               <div><Label>Spokesperson / Representative</Label><Input placeholder="Person who represented the temple" /></div>
               <div><Label>Linked Event (Optional)</Label><Input placeholder="Event ID, e.g., EVT-045" /></div>
               <div><Label>Tone / Sentiment</Label>
-                <Select>
-                  <SelectTrigger><SelectValue placeholder="Select tone" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="positive">Positive</SelectItem>
-                    <SelectItem value="neutral">Neutral</SelectItem>
-                    <SelectItem value="negative">Negative</SelectItem>
-                    <SelectItem value="mixed">Mixed</SelectItem>
-                  </SelectContent>
-                </Select>
+                <SelectWithAddNew value={formTone} onValueChange={setFormTone} placeholder="Select tone" options={tones} onAddNew={v => setTones(p => [...p, v])} />
               </div>
               <div><Label>Summary / Notes</Label><Textarea rows={4} placeholder="What was communicated, key points covered..." /></div>
               <div><Label>Attachment (Optional)</Label><Input type="file" /></div>
+              <CustomFieldsSection fields={createCustomFields} onFieldsChange={setCreateCustomFields} />
               <div className="flex gap-2 justify-end">
                 <Button size="sm" onClick={() => toast.success("Media record logged")}><FileText className="h-4 w-4 mr-1" />Save Record</Button>
               </div>
@@ -136,11 +132,11 @@ const MediaCommunication = () => {
               <TableRow key={rec.id} className="cursor-pointer" onClick={() => setSelected(rec)}>
                 <TableCell className="font-mono text-xs">{rec.id}</TableCell>
                 <TableCell className="font-medium">{rec.title}</TableCell>
-                <TableCell><Badge variant="outline" className={typeColors[rec.mediaType]}>{rec.mediaType}</Badge></TableCell>
+                <TableCell><Badge variant="outline" className={typeColors[rec.mediaType] || ""}>{rec.mediaType}</Badge></TableCell>
                 <TableCell className="text-xs">{rec.date}</TableCell>
                 <TableCell className="text-xs">{rec.platform}</TableCell>
                 <TableCell className="text-xs">{rec.spokesperson}</TableCell>
-                <TableCell><Badge variant="outline" className={toneColors[rec.tone]}>{rec.tone}</Badge></TableCell>
+                <TableCell><Badge variant="outline" className={toneColors[rec.tone] || ""}>{rec.tone}</Badge></TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -149,15 +145,15 @@ const MediaCommunication = () => {
 
       {/* Detail Modal */}
       <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Media Record Details</DialogTitle></DialogHeader>
           {selected && (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div><span className="text-muted-foreground">ID:</span> <span className="font-mono">{selected.id}</span></div>
-                <div><span className="text-muted-foreground">Type:</span> <Badge variant="outline" className={typeColors[selected.mediaType]}>{selected.mediaType}</Badge></div>
+                <div><span className="text-muted-foreground">Type:</span> <Badge variant="outline" className={typeColors[selected.mediaType] || ""}>{selected.mediaType}</Badge></div>
                 <div><span className="text-muted-foreground">Date:</span> {selected.date}</div>
-                <div><span className="text-muted-foreground">Tone:</span> <Badge variant="outline" className={toneColors[selected.tone]}>{selected.tone}</Badge></div>
+                <div><span className="text-muted-foreground">Tone:</span> <Badge variant="outline" className={toneColors[selected.tone] || ""}>{selected.tone}</Badge></div>
                 <div><span className="text-muted-foreground">Platform:</span> {selected.platform}</div>
                 <div><span className="text-muted-foreground">Spokesperson:</span> {selected.spokesperson}</div>
                 <div><span className="text-muted-foreground">Linked Event:</span> {selected.linkedEvent || "None"}</div>
@@ -167,6 +163,7 @@ const MediaCommunication = () => {
                 <Label className="text-muted-foreground text-xs">Summary</Label>
                 <p className="text-sm mt-1">{selected.summary}</p>
               </div>
+              <CustomFieldsSection fields={detailCustomFields} onFieldsChange={setDetailCustomFields} />
             </div>
           )}
         </DialogContent>
