@@ -117,6 +117,18 @@ import PredictionRisk from "./pages/temple/crowd/PredictionRisk";
 import CompliancePreparedness from "./pages/temple/crowd/CompliancePreparedness";
 import DroneMonitoring from "./pages/temple/crowd/DroneMonitoring";
 import AlertsEmergency from "./pages/temple/crowd/AlertsEmergency";
+// Projects & Initiatives Module
+import ProjectsLayout from "./pages/temple/ProjectsLayout";
+import PortfolioDashboard from "./pages/temple/projects/PortfolioDashboard";
+import ProjectMaster from "./pages/temple/projects/ProjectMaster";
+import MilestonesPhases from "./pages/temple/projects/MilestonesPhases";
+import BudgetFunding from "./pages/temple/projects/BudgetFunding";
+import DonationMapping from "./pages/temple/projects/DonationMapping";
+import ApprovalWorkflow from "./pages/temple/projects/ApprovalWorkflow";
+import TaskIntegration from "./pages/temple/projects/TaskIntegration";
+import RiskChange from "./pages/temple/projects/RiskChange";
+import ProgressAnalytics from "./pages/temple/projects/ProgressAnalytics";
+import ReportsGovernance from "./pages/temple/projects/ReportsGovernance";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -261,6 +273,20 @@ const App = () => (
             <Route path="reports" element={<TaskReports />} />
           </Route>
           <Route path="/temple/reports" element={<TempleHub />} />
+          
+          {/* Projects & Initiatives Module */}
+          <Route path="/temple/projects" element={<ProjectsLayout />}>
+            <Route index element={<PortfolioDashboard />} />
+            <Route path="master" element={<ProjectMaster />} />
+            <Route path="milestones" element={<MilestonesPhases />} />
+            <Route path="budget" element={<BudgetFunding />} />
+            <Route path="donations" element={<DonationMapping />} />
+            <Route path="approvals" element={<ApprovalWorkflow />} />
+            <Route path="tasks" element={<TaskIntegration />} />
+            <Route path="risk" element={<RiskChange />} />
+            <Route path="analytics" element={<ProgressAnalytics />} />
+            <Route path="reports" element={<ReportsGovernance />} />
+          </Route>
           
           {/* Super Admin Routes */}
           <Route path="/hub" element={<Hub />} />
