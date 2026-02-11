@@ -112,8 +112,8 @@ const allModules = [
     title: "Stock / Inventory",
     icon: Boxes,
     enabled: true,
-    path: "/temple/suppliers",
-    description: "Suppliers, purchase orders, deliveries, payments",
+    path: "/temple/inventory/items",
+    description: "Stock management, items, transactions, requests",
     category: "core",
   },
   {
