@@ -77,7 +77,6 @@ const AllBookings = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Booking ID</TableHead>
                 <TableHead>Devotee</TableHead>
                 <TableHead>Seva</TableHead>
                 <TableHead>Date & Time</TableHead>
@@ -90,7 +89,6 @@ const AllBookings = () => {
             <TableBody>
               {bookings.map((booking) => (
                 <TableRow key={booking.id} className="cursor-pointer hover:bg-muted/50">
-                  <TableCell className="font-mono text-sm">{booking.id}</TableCell>
                   <TableCell className="font-medium">{booking.devotee}</TableCell>
                   <TableCell>{booking.seva}</TableCell>
                   <TableCell>

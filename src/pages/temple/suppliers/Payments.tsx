@@ -80,7 +80,6 @@ const Payments = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Payment ID</TableHead>
                   <TableHead>Supplier</TableHead>
                   <TableHead>PO Ref</TableHead>
                   <TableHead>Invoice</TableHead>
@@ -93,7 +92,6 @@ const Payments = () => {
               <TableBody>
                 {filtered.map(p => (
                   <TableRow key={p.id}>
-                    <TableCell className="font-mono text-xs">{p.id}</TableCell>
                     <TableCell className="font-medium text-sm">{p.supplier}</TableCell>
                     <TableCell className="font-mono text-xs">{p.poId}</TableCell>
                     <TableCell className="font-mono text-xs">{p.invoiceNo}</TableCell>

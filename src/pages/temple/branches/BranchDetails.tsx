@@ -74,16 +74,16 @@ const BranchDetails = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="flex flex-wrap h-auto gap-1">
-          <TabsTrigger value="overview" className="gap-1.5 text-xs"><Building2 className="h-3.5 w-3.5" />Overview</TabsTrigger>
-          <TabsTrigger value="structures" className="gap-1.5 text-xs"><MapPin className="h-3.5 w-3.5" />Structures</TabsTrigger>
-          <TabsTrigger value="admins" className="gap-1.5 text-xs"><Shield className="h-3.5 w-3.5" />Admin Users</TabsTrigger>
-          <TabsTrigger value="stock" className="gap-1.5 text-xs"><Package className="h-3.5 w-3.5" />Stock Summary</TabsTrigger>
-          <TabsTrigger value="events" className="gap-1.5 text-xs"><CalendarDays className="h-3.5 w-3.5" />Events</TabsTrigger>
-          <TabsTrigger value="volunteers" className="gap-1.5 text-xs"><UserCheck className="h-3.5 w-3.5" />Volunteers</TabsTrigger>
-          <TabsTrigger value="freelancers" className="gap-1.5 text-xs"><Briefcase className="h-3.5 w-3.5" />Freelancers</TabsTrigger>
-          <TabsTrigger value="kitchen" className="gap-1.5 text-xs"><UtensilsCrossed className="h-3.5 w-3.5" />Kitchen</TabsTrigger>
-          <TabsTrigger value="reports" className="gap-1.5 text-xs"><BarChart3 className="h-3.5 w-3.5" />Reports</TabsTrigger>
+        <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent flex-wrap">
+          <TabsTrigger value="overview" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground"><Building2 className="h-3.5 w-3.5" />Overview</TabsTrigger>
+          <TabsTrigger value="structures" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground"><MapPin className="h-3.5 w-3.5" />Structures</TabsTrigger>
+          <TabsTrigger value="admins" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground"><Shield className="h-3.5 w-3.5" />Admin Users</TabsTrigger>
+          <TabsTrigger value="stock" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground"><Package className="h-3.5 w-3.5" />Stock Summary</TabsTrigger>
+          <TabsTrigger value="events" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground"><CalendarDays className="h-3.5 w-3.5" />Events</TabsTrigger>
+          <TabsTrigger value="volunteers" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground"><UserCheck className="h-3.5 w-3.5" />Volunteers</TabsTrigger>
+          <TabsTrigger value="freelancers" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground"><Briefcase className="h-3.5 w-3.5" />Freelancers</TabsTrigger>
+          <TabsTrigger value="kitchen" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground"><UtensilsCrossed className="h-3.5 w-3.5" />Kitchen</TabsTrigger>
+          <TabsTrigger value="reports" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground"><BarChart3 className="h-3.5 w-3.5" />Reports</TabsTrigger>
         </TabsList>
 
         {/* Overview */}

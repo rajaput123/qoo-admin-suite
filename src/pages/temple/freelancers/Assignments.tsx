@@ -1,5 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,22 +9,38 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Search, Plus, ChevronLeft, ChevronRight, Link2, Zap, ClipboardList } from "lucide-react";
+import { Search, Plus, ChevronLeft, ChevronRight, Link2, Zap, ClipboardList, ArrowLeft, User, Calendar as CalendarIcon, IndianRupee, Building2, Clock, FileText, Edit } from "lucide-react";
 import { toast } from "sonner";
 import SelectWithAddNew from "@/components/SelectWithAddNew";
 import { eventRefs, freelancerRefs, templeStructures, autoTasks } from "@/data/templeData";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const assignments = [
-  { id: "ASN-001", freelancerId: "FRL-0001", freelancerName: "Pixel Studio", eventId: "EVT-002", eventName: "Vaikuntha Ekadasi", linkedStructure: "Main Temple", date: "2026-01-10", duration: "1 day", agreedPayment: 20000, status: "Completed", taskId: "" },
-  { id: "ASN-002", freelancerId: "FRL-0002", freelancerName: "Decor Dreams", eventId: "EVT-002", eventName: "Vaikuntha Ekadasi", linkedStructure: "Main Temple", date: "2026-01-10", duration: "2 days", agreedPayment: 35000, status: "Completed", taskId: "" },
-  { id: "ASN-003", freelancerId: "FRL-0003", freelancerName: "Sound Waves Pro", eventId: "", eventName: "Daily Live Broadcast", linkedStructure: "Main Temple", date: "2026-02-09", duration: "Ongoing", agreedPayment: 18000, status: "Assigned", taskId: "" },
-  { id: "ASN-004", freelancerId: "FRL-0001", freelancerName: "Pixel Studio", eventId: "EVT-004", eventName: "Maha Shivaratri", linkedStructure: "Main Temple", date: "2026-02-15", duration: "1 day", agreedPayment: 25000, status: "Confirmed", taskId: "TSK-020" },
-  { id: "ASN-005", freelancerId: "FRL-0003", freelancerName: "Sound Waves Pro", eventId: "EVT-004", eventName: "Maha Shivaratri", linkedStructure: "Main Temple", date: "2026-02-15", duration: "1 day", agreedPayment: 18000, status: "Confirmed", taskId: "TSK-021" },
-  { id: "ASN-006", freelancerId: "FRL-0002", freelancerName: "Decor Dreams", eventId: "EVT-004", eventName: "Maha Shivaratri", linkedStructure: "Main Temple", date: "2026-02-14", duration: "2 days", agreedPayment: 45000, status: "Assigned", taskId: "TSK-022" },
-  { id: "ASN-007", freelancerId: "FRL-0007", freelancerName: "Heritage Electricals", eventId: "EVT-004", eventName: "Maha Shivaratri", linkedStructure: "Main Temple", date: "2026-02-14", duration: "2 days", agreedPayment: 28000, status: "Assigned", taskId: "TSK-023" },
-  { id: "ASN-008", freelancerId: "FRL-0004", freelancerName: "CreativeMinds Design", eventId: "", eventName: "Annual Calendar Design", linkedStructure: "Administration", date: "2026-01-05", duration: "10 days", agreedPayment: 25000, status: "Completed", taskId: "" },
-  { id: "ASN-009", freelancerId: "FRL-0001", freelancerName: "Pixel Studio", eventId: "EVT-001", eventName: "Brahmotsavam 2026", linkedStructure: "Main Temple", date: "2026-03-15", duration: "10 days", agreedPayment: 150000, status: "Assigned", taskId: "" },
-  { id: "ASN-010", freelancerId: "FRL-0003", freelancerName: "Sound Waves Pro", eventId: "EVT-001", eventName: "Brahmotsavam 2026", linkedStructure: "Main Temple", date: "2026-03-15", duration: "10 days", agreedPayment: 100000, status: "Assigned", taskId: "" },
+type AssignmentRow = {
+  id: string;
+  freelancerId: string;
+  freelancerName: string;
+  eventId: string;
+  eventName: string;
+  linkedStructure: string;
+  date: string;
+  duration: string;
+  agreedPayment: number;
+  status: string;
+  taskId: string;
+  paymentId: string;
+};
+
+const seedAssignments: AssignmentRow[] = [
+  { id: "ASN-001", freelancerId: "FRL-0001", freelancerName: "Pixel Studio", eventId: "EVT-002", eventName: "Vaikuntha Ekadasi", linkedStructure: "Main Temple", date: "2026-01-10", duration: "1 day", agreedPayment: 20000, status: "Completed", taskId: "", paymentId: "PAY-001" },
+  { id: "ASN-002", freelancerId: "FRL-0002", freelancerName: "Decor Dreams", eventId: "EVT-002", eventName: "Vaikuntha Ekadasi", linkedStructure: "Main Temple", date: "2026-01-10", duration: "2 days", agreedPayment: 35000, status: "Completed", taskId: "", paymentId: "PAY-002" },
+  { id: "ASN-003", freelancerId: "FRL-0003", freelancerName: "Sound Waves Pro", eventId: "", eventName: "Daily Live Broadcast", linkedStructure: "Main Temple", date: "2026-02-09", duration: "Ongoing", agreedPayment: 18000, status: "Assigned", taskId: "", paymentId: "" },
+  { id: "ASN-004", freelancerId: "FRL-0001", freelancerName: "Pixel Studio", eventId: "EVT-004", eventName: "Maha Shivaratri", linkedStructure: "Main Temple", date: "2026-02-15", duration: "1 day", agreedPayment: 25000, status: "Confirmed", taskId: "TSK-020", paymentId: "" },
+  { id: "ASN-005", freelancerId: "FRL-0003", freelancerName: "Sound Waves Pro", eventId: "EVT-004", eventName: "Maha Shivaratri", linkedStructure: "Main Temple", date: "2026-02-15", duration: "1 day", agreedPayment: 18000, status: "Confirmed", taskId: "TSK-021", paymentId: "" },
+  { id: "ASN-006", freelancerId: "FRL-0002", freelancerName: "Decor Dreams", eventId: "EVT-004", eventName: "Maha Shivaratri", linkedStructure: "Main Temple", date: "2026-02-14", duration: "2 days", agreedPayment: 45000, status: "Assigned", taskId: "TSK-022", paymentId: "" },
+  { id: "ASN-007", freelancerId: "FRL-0007", freelancerName: "Heritage Electricals", eventId: "EVT-004", eventName: "Maha Shivaratri", linkedStructure: "Main Temple", date: "2026-02-14", duration: "2 days", agreedPayment: 28000, status: "Assigned", taskId: "TSK-023", paymentId: "" },
+  { id: "ASN-008", freelancerId: "FRL-0004", freelancerName: "CreativeMinds Design", eventId: "", eventName: "Annual Calendar Design", linkedStructure: "Administration", date: "2026-01-05", duration: "10 days", agreedPayment: 25000, status: "Completed", taskId: "", paymentId: "PAY-004" },
+  { id: "ASN-009", freelancerId: "FRL-0001", freelancerName: "Pixel Studio", eventId: "EVT-001", eventName: "Brahmotsavam 2026", linkedStructure: "Main Temple", date: "2026-03-15", duration: "10 days", agreedPayment: 150000, status: "Assigned", taskId: "", paymentId: "" },
+  { id: "ASN-010", freelancerId: "FRL-0003", freelancerName: "Sound Waves Pro", eventId: "EVT-001", eventName: "Brahmotsavam 2026", linkedStructure: "Main Temple", date: "2026-03-15", duration: "10 days", agreedPayment: 100000, status: "Assigned", taskId: "", paymentId: "" },
 ];
 
 const Assignments = () => {
@@ -32,20 +50,318 @@ const Assignments = () => {
   const [showAdd, setShowAdd] = useState(false);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
+  const [selectedAssignment, setSelectedAssignment] = useState<AssignmentRow | null>(null);
+
+  const [allAssignments, setAllAssignments] = useState<AssignmentRow[]>(seedAssignments);
 
   const [freelancerOptions, setFreelancerOptions] = useState(freelancerRefs.map(f => f.businessName));
   const [eventOptions, setEventOptions] = useState(eventRefs.map(e => `${e.id} — ${e.name}`));
   const [structureOptions, setStructureOptions] = useState(templeStructures.map(s => s.name));
 
-  const filtered = assignments.filter(a => {
+  // Add form state
+  const [addFreelancerName, setAddFreelancerName] = useState("");
+  const [addFreelancerId, setAddFreelancerId] = useState("");
+  const [addEventId, setAddEventId] = useState<string>("none");
+  const [addEventName, setAddEventName] = useState<string>("");
+  const [addStructure, setAddStructure] = useState("");
+  const [addDate, setAddDate] = useState("");
+  const [addDuration, setAddDuration] = useState("");
+  const [addPayment, setAddPayment] = useState("");
+
+  const filtered = allAssignments.filter(a => {
     if (search && !a.freelancerName.toLowerCase().includes(search.toLowerCase()) && !a.eventName.toLowerCase().includes(search.toLowerCase()) && !a.id.toLowerCase().includes(search.toLowerCase())) return false;
     if (filterStatus !== "all" && a.status !== filterStatus) return false;
     if (filterEvent !== "all" && a.eventId !== filterEvent) return false;
     return true;
   });
 
-  const totalPages = Math.ceil(filtered.length / perPage);
+  const totalPages = Math.ceil(filtered.length / perPage) || 1;
   const paged = filtered.slice((page - 1) * perPage, page * perPage);
+
+  const [viewing, setViewing] = useState<AssignmentRow | null>(null);
+  const navigate = useNavigate();
+
+  if (viewing) {
+    return (
+      <div className="p-6 space-y-6">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => setViewing(null)}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-semibold tracking-tight">{viewing.id} · {viewing.eventName || "Assignment"}</h1>
+                <p className="text-muted-foreground text-sm">{viewing.freelancerName} • {viewing.linkedStructure}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant={viewing.status === "Completed" ? "default" : viewing.status === "Confirmed" ? "default" : "secondary"} className="text-[11px]">{viewing.status}</Badge>
+              <Button size="sm" variant="outline" onClick={() => {
+                if (viewing.taskId) navigate(`/temple/tasks?taskId=${viewing.taskId}`);
+                else navigate("/temple/tasks");
+              }}>
+                View Task
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2 p-3 bg-muted/50 rounded-lg">
+              <p className="text-xs text-muted-foreground">Freelancer</p>
+              <p className="font-medium">{viewing.freelancerName} <span className="text-xs text-muted-foreground ml-2">{viewing.freelancerId}</span></p>
+              <p className="text-xs text-muted-foreground">Event</p>
+              {viewing.eventId ? (
+                <button className="text-sm text-primary underline" onClick={() => navigate(`/temple/events/${viewing.eventId}`)}>{viewing.eventName} · {viewing.eventId}</button>
+              ) : <p className="text-sm">{viewing.eventName}</p>}
+              <p className="text-xs text-muted-foreground">Structure</p>
+              <p className="text-sm font-medium">{viewing.linkedStructure}</p>
+              <p className="text-xs text-muted-foreground">Date / Duration</p>
+              <p className="text-sm">{viewing.date} · {viewing.duration}</p>
+            </div>
+            <div className="space-y-2 p-3 bg-muted/50 rounded-lg">
+              <p className="text-xs text-muted-foreground">Agreed Payment</p>
+              <p className="text-xl font-bold">₹{viewing.agreedPayment.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground">Task ID</p>
+              <p className="text-sm font-medium">{viewing.taskId || "—"}</p>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  const resetAddForm = () => {
+    setAddFreelancerName("");
+    setAddFreelancerId("");
+    setAddEventId("none");
+    setAddEventName("");
+    setAddStructure("");
+    setAddDate("");
+    setAddDuration("");
+    setAddPayment("");
+  };
+
+  const handleSaveAssignment = () => {
+    if (!addFreelancerName || !addStructure || !addDate || !addDuration || !addPayment) {
+      toast.error("Freelancer, Structure, Date, Duration and Payment are required");
+      return;
+    }
+
+    const amount = Number(addPayment);
+    if (Number.isNaN(amount) || amount <= 0) {
+      toast.error("Please enter a valid payment amount");
+      return;
+    }
+
+    const nextNum =
+      allAssignments
+        .map(a => Number(a.id.replace("ASN-", "")) || 0)
+        .reduce((max, n) => Math.max(max, n), 0) + 1;
+    const newId = `ASN-${String(nextNum).padStart(3, "0")}`;
+
+    const maxTaskNum = [...allAssignments.map(a => a.taskId)]
+      .filter(id => !!id)
+      .map(id => Number(id.replace("TSK-", "")) || 0)
+      .concat(autoTasks.map(t => Number(t.id.replace("TSK-", "")) || 0))
+      .reduce((max, n) => Math.max(max, n), 0);
+    const newTaskId = `TSK-${String(maxTaskNum + 1).padStart(3, "0")}`;
+
+    const eventId = addEventId === "none" ? "" : addEventId;
+    const eventName =
+      addEventId === "none"
+        ? addEventName || "Non-event assignment"
+        : eventRefs.find(e => e.id === addEventId)?.name || addEventName || "";
+
+    const freelancerId =
+      addFreelancerId ||
+      freelancerRefs.find(f => f.businessName === addFreelancerName)?.id ||
+      "";
+
+    const newAssignment: AssignmentRow = {
+      id: newId,
+      freelancerId: freelancerId || "FRL-NEW",
+      freelancerName: addFreelancerName,
+      eventId,
+      eventName,
+      linkedStructure: addStructure,
+      date: addDate,
+      duration: addDuration,
+      agreedPayment: amount,
+      status: "Assigned",
+      taskId: newTaskId,
+      paymentId: "", // Payment record will be auto-created when assignment is completed
+    };
+    // Create corresponding auto-task in the shared autoTasks store
+    autoTasks.push({
+      id: newTaskId,
+      title: `Freelancer Assignment – ${eventName || addFreelancerName}`,
+      category: "Event",
+      linkedModule: "Freelancer",
+      linkedEntityId: freelancerId || "FRL-NEW",
+      linkedEntityName: addFreelancerName,
+      priority: "Medium",
+      dueDate: addDate,
+      assignee: addFreelancerName,
+      assigneeType: "Freelancer",
+      status: "Assigned",
+      notes: "Auto-generated from assignment",
+      autoGenerated: true,
+      sourceType: "Event-Freelancer",
+    });
+
+    setAllAssignments(prev => [newAssignment, ...prev]);
+    toast.success("Assignment created & task auto-generated");
+    setShowAdd(false);
+    resetAddForm();
+  };
+
+
+  // Details page view
+  if (selectedAssignment) {
+    const a = selectedAssignment;
+
+    return (
+      <div className="p-6 space-y-6">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          {/* Header */}
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => setSelectedAssignment(null)}><ArrowLeft className="h-4 w-4" /></Button>
+              <div>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl font-semibold tracking-tight">{a.id}</h1>
+                  <Badge variant={a.status === "Completed" ? "default" : a.status === "Confirmed" ? "default" : a.status === "Cancelled" ? "destructive" : "secondary"}>{a.status}</Badge>
+                </div>
+                <p className="text-muted-foreground text-sm">{a.eventName} • {a.freelancerName}</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" className="gap-2"><Edit className="h-4 w-4" />Edit</Button>
+              <Button variant="outline" onClick={() => {
+                const newStatus = a.status === "Cancelled" ? "Assigned" : a.status === "Completed" ? "Cancelled" : "Completed";
+                let updatedAssignment = { ...a, status: newStatus };
+
+                // Auto-generate payment record when marking as Completed
+                if (newStatus === "Completed" && !a.paymentId) {
+                  const paymentId = `PAY-${String(Math.floor(Math.random() * 900) + 100).padStart(3, '0')}`;
+                  updatedAssignment = { ...updatedAssignment, paymentId };
+
+                  // Here we would normally add to a shared payments data store
+                  // For now, just show success message
+                  toast.success(`Assignment completed & payment record ${paymentId} created (Pending)`);
+                } else {
+                  toast.success(`Assignment marked as ${newStatus}`);
+                }
+
+                setAllAssignments(prev => prev.map(asn => asn.id === a.id ? updatedAssignment : asn));
+                setSelectedAssignment(updatedAssignment);
+              }}>
+                {a.status === "Cancelled" ? "Reactivate" : a.status === "Completed" ? "Cancel" : "Mark Completed"}
+              </Button>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <Tabs defaultValue="details" className="space-y-4">
+            <div className="border-b border-border">
+              <TabsList className="w-full justify-start border-b-0 rounded-none h-auto p-0 bg-transparent gap-0">
+                <TabsTrigger
+                  value="details"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground data-[state=active]:text-foreground"
+                >
+                  Assignment Details
+                </TabsTrigger>
+                <TabsTrigger
+                  value="freelancer"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground data-[state=active]:text-foreground"
+                >
+                  Freelancer Info
+                </TabsTrigger>
+                <TabsTrigger
+                  value="task"
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground data-[state=active]:text-foreground"
+                >
+                  Task Info
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent value="details" className="space-y-6">
+              {/* Basic Information */}
+              <div>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Basic Information</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-8 text-sm">
+                  <div><span className="text-muted-foreground">Assignment ID:</span> <span className="ml-2 font-medium">{a.id}</span></div>
+                  <div><span className="text-muted-foreground">Status:</span> <span className="ml-2"><Badge variant={a.status === "Completed" ? "default" : a.status === "Confirmed" ? "default" : a.status === "Cancelled" ? "destructive" : "secondary"}>{a.status}</Badge></span></div>
+                  <div><span className="text-muted-foreground">Date:</span> <span className="ml-2 font-medium">{a.date}</span></div>
+                  <div><span className="text-muted-foreground">Duration:</span> <span className="ml-2 font-medium">{a.duration}</span></div>
+                  <div><span className="text-muted-foreground">Agreed Payment:</span> <span className="ml-2 font-medium">₹{a.agreedPayment.toLocaleString()}</span></div>
+                  <div>
+                    <span className="text-muted-foreground">Payment Status:</span>
+                    <span className="ml-2">
+                      {a.paymentId ? (
+                        <span className="font-medium font-mono text-xs text-green-600">{a.paymentId} (Pending)</span>
+                      ) : a.status === "Completed" ? (
+                        <span className="text-xs text-amber-600">Generating...</span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Not generated</span>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <hr className="border-border" />
+              {/* Event Details */}
+              <div>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Event Details</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-8 text-sm">
+                  <div><span className="text-muted-foreground">Event Name:</span> <span className="ml-2 font-medium">{a.eventName}</span></div>
+                  {a.eventId && <div><span className="text-muted-foreground">Event ID:</span> <span className="ml-2 font-medium font-mono text-xs">{a.eventId}</span></div>}
+                  <div><span className="text-muted-foreground">Linked Structure:</span> <span className="ml-2 font-medium">{a.linkedStructure}</span></div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="freelancer" className="space-y-6">
+              <div>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Freelancer Information</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-8 text-sm">
+                  <div><span className="text-muted-foreground">Business Name:</span> <span className="ml-2 font-medium">{a.freelancerName}</span></div>
+                  <div><span className="text-muted-foreground">Freelancer ID:</span> <span className="ml-2 font-medium font-mono text-xs">{a.freelancerId}</span></div>
+                </div>
+                <div className="mt-4">
+                  <Button variant="outline" size="sm">View Full Freelancer Profile</Button>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="task" className="space-y-6">
+              <div>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Task Information</h3>
+                {a.taskId ? (
+                  <>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-8 text-sm">
+                      <div><span className="text-muted-foreground">Task ID:</span> <span className="ml-2 font-medium font-mono text-xs flex items-center gap-1"><Zap className="h-3 w-3 text-purple-500" />{a.taskId}</span></div>
+                      <div><span className="text-muted-foreground">Status:</span> <span className="ml-2 font-medium">Auto-generated task</span></div>
+                    </div>
+                    <div className="mt-4">
+                      <Button variant="outline" size="sm">View Task Details</Button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <ClipboardList className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                    <p className="text-sm">No task linked to this assignment</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -102,7 +418,11 @@ const Assignments = () => {
               {paged.length === 0 ? (
                 <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">No assignments found</TableCell></TableRow>
               ) : paged.map(a => (
-                <TableRow key={a.id}>
+                <TableRow
+                  key={a.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => setSelectedAssignment(a)}
+                >
                   <TableCell className="font-medium text-primary">{a.id}</TableCell>
                   <TableCell>
                     <div>
@@ -154,35 +474,105 @@ const Assignments = () => {
       </motion.div>
 
       {/* Add Assignment Modal */}
-      <Dialog open={showAdd} onOpenChange={setShowAdd}>
+      <Dialog
+        open={showAdd}
+        onOpenChange={open => {
+          setShowAdd(open);
+          if (!open) resetAddForm();
+        }}
+      >
         <DialogContent className="max-w-lg bg-background">
           <DialogHeader><DialogTitle>Add Assignment</DialogTitle></DialogHeader>
           <div className="space-y-4 py-4">
-            <div><Label className="text-xs">Freelancer</Label><SelectWithAddNew value="" onValueChange={() => {}} placeholder="Select freelancer" options={freelancerOptions} onAddNew={v => setFreelancerOptions(p => [...p, v])} /></div>
+            <div>
+              <Label className="text-xs">Freelancer *</Label>
+              <SelectWithAddNew
+                value={addFreelancerName}
+                onValueChange={v => {
+                  setAddFreelancerName(v);
+                  const ref = freelancerRefs.find(f => f.businessName === v);
+                  setAddFreelancerId(ref?.id || "");
+                }}
+                placeholder="Select freelancer"
+                options={freelancerOptions}
+                onAddNew={v => {
+                  setFreelancerOptions(p => [...p, v]);
+                  setAddFreelancerName(v);
+                }}
+              />
+            </div>
             <div>
               <Label className="text-xs">Event (from Event Module)</Label>
-              <Select>
-                <SelectTrigger className="bg-background"><SelectValue placeholder="Select event" /></SelectTrigger>
+              <Select
+                value={addEventId}
+                onValueChange={v => {
+                  setAddEventId(v);
+                  if (v === "none") {
+                    setAddEventName("");
+                  } else {
+                    const ev = eventRefs.find(e => e.id === v);
+                    setAddEventName(ev?.name || "");
+                  }
+                }}
+              >
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Select event" />
+                </SelectTrigger>
                 <SelectContent className="bg-popover">
                   <SelectItem value="none">Non-event assignment</SelectItem>
-                  {eventRefs.map(e => <SelectItem key={e.id} value={e.id}>{e.id} — {e.name}</SelectItem>)}
+                  {eventRefs.map(e => (
+                    <SelectItem key={e.id} value={e.id}>
+                      {e.id} — {e.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-            <div><Label className="text-xs">Linked Structure</Label><SelectWithAddNew value="" onValueChange={() => {}} placeholder="Select structure" options={structureOptions.slice()} onAddNew={v => setStructureOptions(p => [...p, v])} /></div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><Label className="text-xs">Date</Label><Input type="date" /></div>
-              <div><Label className="text-xs">Duration</Label><Input placeholder="e.g., 2 days" /></div>
+            <div>
+              <Label className="text-xs">Linked Structure *</Label>
+              <SelectWithAddNew
+                value={addStructure}
+                onValueChange={setAddStructure}
+                placeholder="Select structure"
+                options={structureOptions.slice()}
+                onAddNew={v => setStructureOptions(p => [...p, v])}
+              />
             </div>
-            <div><Label className="text-xs">Agreed Payment (₹)</Label><Input type="number" placeholder="Enter amount" /></div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Date *</Label>
+                <Input type="date" value={addDate} onChange={e => setAddDate(e.target.value)} />
+              </div>
+              <div>
+                <Label className="text-xs">Duration *</Label>
+                <Input placeholder="e.g., 2 days" value={addDuration} onChange={e => setAddDuration(e.target.value)} />
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs">Agreed Payment (₹) *</Label>
+              <Input
+                type="number"
+                placeholder="Enter amount"
+                value={addPayment}
+                onChange={e => setAddPayment(e.target.value)}
+              />
+            </div>
             <div className="border rounded-lg p-3 bg-muted/30 text-xs text-muted-foreground">
               <Zap className="h-4 w-4 inline mr-1 text-purple-500" />
               A task will be auto-created in the Task module when this assignment is saved.
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAdd(false)}>Cancel</Button>
-            <Button onClick={() => { toast.success("Assignment created & task auto-generated"); setShowAdd(false); }}>Save</Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowAdd(false);
+                resetAddForm();
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleSaveAssignment}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

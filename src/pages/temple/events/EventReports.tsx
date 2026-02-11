@@ -3,10 +3,14 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Download, BarChart3 } from "lucide-react";
-import { templeEvents, eventExpenses, eventSevas, getEventTasks, getEventFreelancers, getEventVolunteers, getEventMaterials } from "@/data/eventData";
+import { eventExpenses, eventSevas, getEventTasks, getEventFreelancers, getEventVolunteers, getEventMaterials } from "@/data/eventData";
+import { useEvents } from "@/modules/events/hooks";
+import { useNavigate } from "react-router-dom";
 
 const EventReports = () => {
-  const activeEvents = templeEvents.filter(e => e.status !== "Archived");
+  const navigate = useNavigate();
+  const events = useEvents();
+  const activeEvents = events.filter(e => e.status !== "Archived");
 
   const eventSummaries = activeEvents.map(event => {
     const expenses = eventExpenses.filter(e => e.eventId === event.id);
@@ -64,7 +68,7 @@ const EventReports = () => {
             </TableHeader>
             <TableBody>
               {eventSummaries.map(e => (
-                <TableRow key={e.id}>
+                <TableRow key={e.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/temple/events/${e.id}`)}>
                   <TableCell className="font-medium">{e.name}</TableCell>
                   <TableCell><Badge variant="outline" className="text-xs">{e.type}</Badge></TableCell>
                   <TableCell><Badge className={`text-xs border-0 ${

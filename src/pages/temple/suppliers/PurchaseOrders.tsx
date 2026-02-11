@@ -34,6 +34,7 @@ const PurchaseOrders = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selected, setSelected] = useState<typeof purchaseOrders[0] | null>(null);
+  const [viewing, setViewing] = useState<typeof purchaseOrders[0] | null>(null);
   const [showNew, setShowNew] = useState(false);
 
   const filtered = purchaseOrders.filter(p => {
@@ -41,6 +42,45 @@ const PurchaseOrders = () => {
     const matchStatus = statusFilter === "all" || p.status === statusFilter;
     return matchSearch && matchStatus;
   });
+
+  if (viewing) {
+    const p = viewing;
+    return (
+      <div className="p-6 space-y-6">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight">{p.id}</h1>
+              <p className="text-muted-foreground text-sm">{p.supplier} · {p.structure}</p>
+            </div>
+            <div className="flex gap-2">
+              <Badge variant="outline" className={`text-xs ${statusColor(p.status)}`}>{p.status}</Badge>
+              <Button size="sm" onClick={() => setViewing(null)}>Back</Button>
+            </div>
+          </div>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">{p.id} · {p.supplier}</CardTitle>
+                <div className="text-sm text-muted-foreground">Expected: {p.expectedDate}</div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader><TableRow><TableHead>Material</TableHead><TableHead className="text-center">Qty</TableHead><TableHead>Unit</TableHead><TableHead className="text-right">Rate</TableHead><TableHead className="text-right">Total</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {p.materials.map((m, i) => (
+                    <TableRow key={i}><TableCell>{m.name}</TableCell><TableCell className="text-center">{m.qty}</TableCell><TableCell>{m.unit}</TableCell><TableCell className="text-right">₹{m.rate}</TableCell><TableCell className="text-right">₹{m.total}</TableCell></TableRow>
+                  ))}
+                  <TableRow><TableCell colSpan={4} className="text-right font-medium">Total</TableCell><TableCell className="text-right font-bold">₹{p.totalAmount.toLocaleString()}</TableCell></TableRow>
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -78,7 +118,6 @@ const PurchaseOrders = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>PO ID</TableHead>
                   <TableHead>Supplier</TableHead>
                   <TableHead>Structure</TableHead>
                   <TableHead>Items</TableHead>
@@ -89,8 +128,7 @@ const PurchaseOrders = () => {
               </TableHeader>
               <TableBody>
                 {filtered.map(p => (
-                  <TableRow key={p.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelected(p)}>
-                    <TableCell className="font-mono text-xs">{p.id}</TableCell>
+                  <TableRow key={p.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setViewing(p)}>
                     <TableCell className="font-medium text-sm">{p.supplier}</TableCell>
                     <TableCell className="text-sm">{p.structure}</TableCell>
                     <TableCell className="text-sm">{p.materials.length} items</TableCell>
@@ -112,7 +150,7 @@ const PurchaseOrders = () => {
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-3">
-                  <FileText className="h-5 w-5" />{selected.id}
+                  <FileText className="h-5 w-5" />Purchase Order
                   <Badge variant="outline" className={`text-xs ${statusColor(selected.status)}`}>{selected.status}</Badge>
                 </DialogTitle>
               </DialogHeader>

@@ -84,6 +84,8 @@ export interface StockTransaction {
   linkedKitchenRequest?: string;
   linkedFreelancer?: string;
   notes: string;
+  unitPrice?: number;
+  totalAmount?: number;
   createdBy: string;
 }
 

@@ -53,7 +53,7 @@ const Groups = () => {
   });
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4 w-full overflow-x-hidden max-w-[100vw]">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-start justify-between mb-6">
           <div>
@@ -212,7 +212,7 @@ const Groups = () => {
           <div className="space-y-4 mt-4">
             <div><Label className="text-xs">Segment Name</Label><Input placeholder="e.g. Frequent Visitors" className="mt-1" /></div>
             <div><Label className="text-xs">Description</Label><Textarea placeholder="Describe the purpose..." className="mt-1" /></div>
-            <div><Label className="text-xs">Segment Type</Label><SelectWithAddNew value="" onValueChange={() => {}} placeholder="Select type" options={segTypeOptions} onAddNew={v => setSegTypeOptions(p => [...p, v])} className="mt-1 bg-background" /></div>
+            <div><Label className="text-xs">Segment Type</Label><SelectWithAddNew value="" onValueChange={() => { }} placeholder="Select type" options={segTypeOptions} onAddNew={v => setSegTypeOptions(p => [...p, v])} className="mt-1 bg-background" /></div>
             <div><Label className="text-xs">Criteria / Rules</Label><Textarea placeholder="Define criteria e.g. Visits ≥ 10 in last 6 months" className="mt-1" /></div>
             <div>
               <Label className="text-xs">Add Members (Search)</Label>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Plus, Search, Filter, Download, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SelectWithAddNew from "@/components/SelectWithAddNew";
 import CustomFieldsSection, { CustomField } from "@/components/CustomFieldsSection";
 import { stockItems, StockItem, itemCategories, itemUnits, storageLocations, templeStructures } from "@/data/inventoryData";
+import { supplierRefs } from "@/data/templeData";
 
 const statusColor: Record<string, string> = {
   "In Stock": "bg-green-50 text-green-700 border-green-200",
@@ -33,7 +35,7 @@ const Items = () => {
   const [typeFilter, setTypeFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [showModal, setShowModal] = useState(false);
-  const [detailItem, setDetailItem] = useState<StockItem | null>(null);
+  const navigate = useNavigate();
   const [categories, setCategories] = useState(itemCategories);
   const [units, setUnits] = useState(itemUnits);
   const [locations, setLocations] = useState(storageLocations);
@@ -62,6 +64,9 @@ const Items = () => {
     setCustomFields([]);
     setShowModal(true);
   };
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+
+  // Item detail view handled by dedicated route `/temple/inventory/items/:id`
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
@@ -117,7 +122,7 @@ const Items = () => {
           </TableHeader>
           <TableBody>
             {filtered.map(item => (
-              <TableRow key={item.id} className="cursor-pointer" onClick={() => setDetailItem(item)}>
+              <TableRow key={item.id} className="cursor-pointer" onClick={() => navigate(`/temple/inventory/items/${item.id}`)}>
                 <TableCell>
                   <p className="font-medium text-sm">{item.name}</p>
                   <p className="text-xs text-muted-foreground">{item.code}</p>
@@ -187,8 +192,62 @@ const Items = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div><Label>Price Per Unit (₹)</Label><Input type="number" value={form.pricePerUnit} onChange={e => setForm({...form, pricePerUnit: e.target.value})} /></div>
-                <div><Label>Supplier</Label><Input value={form.supplier} onChange={e => setForm({...form, supplier: e.target.value})} /></div>
+                <div>
+                  <Label>Supplier</Label>
+                  <SelectWithAddNew
+                    value={form.supplier}
+                    onValueChange={(v) => {
+                      setForm({...form, supplier: v});
+                    }}
+                    placeholder="Select supplier"
+                    options={supplierRefs.map(s => s.name)}
+                    onAddNew={(v) => {
+                      // allow adding a new supplier name (does not create full supplier object here)
+                      setForm({...form, supplier: v});
+                    }}
+                    className="bg-background"
+                  />
+                </div>
               </div>
+
+              {/* Supplier quick view (tabs) */}
+              {form.supplier && (
+                <div className="mt-4">
+                  <p className="text-xs text-muted-foreground mb-2">Supplier preview</p>
+                  <Tabs defaultValue="overview">
+                    <div className="border-b border-border">
+                      <TabsList className="w-full justify-start border-b-0 rounded-none h-auto p-0 bg-transparent gap-0">
+                        <TabsTrigger value="overview" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 px-3 py-2 text-sm text-muted-foreground">Overview</TabsTrigger>
+                        <TabsTrigger value="contact" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 px-3 py-2 text-sm text-muted-foreground">Address & Contact</TabsTrigger>
+                        <TabsTrigger value="inventory" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 px-3 py-2 text-sm text-muted-foreground">Inventory Link</TabsTrigger>
+                        <TabsTrigger value="financial" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 px-3 py-2 text-sm text-muted-foreground">Financial</TabsTrigger>
+                      </TabsList>
+                    </div>
+                    <TabsContent value="overview" className="mt-3">
+                      <div className="p-3 bg-muted/50 rounded-lg text-sm">
+                        <p className="font-medium">{form.supplier}</p>
+                        <p className="text-xs text-muted-foreground">Quick supplier summary</p>
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="contact" className="mt-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div><Label className="text-xs">Phone</Label><p className="text-sm mt-1 text-muted-foreground">{(supplierRefs.find(s=>s.name===form.supplier)?.phone) || "—"}</p></div>
+                        <div><Label className="text-xs">Email</Label><p className="text-sm mt-1 text-muted-foreground">{(supplierRefs.find(s=>s.name===form.supplier)?.email) || "—"}</p></div>
+                        <div className="col-span-2"><Label className="text-xs">Address</Label><p className="text-sm mt-1 text-muted-foreground">{(supplierRefs.find(s=>s.name===form.supplier)?.address) || "—"}</p></div>
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="inventory" className="mt-3">
+                      <p className="text-xs text-muted-foreground">Items supplied by this supplier are visible in Supplier Registry.</p>
+                    </TabsContent>
+                    <TabsContent value="financial" className="mt-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div><Label className="text-xs">Bank</Label><p className="text-sm mt-1 text-muted-foreground">{(supplierRefs.find(s=>s.name===form.supplier)?.bankName) || "—"}</p></div>
+                        <div><Label className="text-xs">Last Order</Label><p className="text-sm mt-1 text-muted-foreground">{(supplierRefs.find(s=>s.name===form.supplier)?.lastOrder) || "—"}</p></div>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </div>
+              )}
             </TabsContent>
             <TabsContent value="stock" className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -246,69 +305,43 @@ const Items = () => {
               <CustomFieldsSection fields={customFields} onFieldsChange={setCustomFields} />
             </TabsContent>
           </Tabs>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
-            <Button onClick={() => setShowModal(false)}>Save Item</Button>
+            <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowModal(false); setEditingItemId(null); }}>Cancel</Button>
+            <Button onClick={() => {
+              // save item via stockService
+              import("@/services/stockService").then(svc => {
+                const created = svc.createOrUpdateItem({
+                  id: editingItemId || undefined,
+                  name: form.name,
+                  code: form.code,
+                  itemType: form.itemType,
+                  category: form.category,
+                  unit: form.unit,
+                  defaultStructure: form.defaultStructure,
+                  reorderLevel: Number(form.reorderLevel) || 0,
+                  minimumLevel: Number(form.minimumLevel) || 0,
+                  storageLocation: form.storageLocation,
+                  ritualUse: form.ritualUse,
+                  expiryApplicable: form.expiryApplicable,
+                  batchNumber: form.batchNumber,
+                  expiryDate: form.expiryDate,
+                  serialNumber: form.serialNumber,
+                  condition: form.condition,
+                  assignedLocation: form.assignedLocation,
+                  pricePerUnit: Number(form.pricePerUnit) || 0,
+                  supplier: form.supplier,
+                } as any);
+                if (created) {
+                  setShowModal(false);
+                  setEditingItemId(null);
+                }
+              });
+            }}>Save Item</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Item Detail Modal */}
-      <Dialog open={!!detailItem} onOpenChange={() => setDetailItem(null)}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-          {detailItem && (
-            <>
-              <DialogHeader>
-                <DialogTitle>{detailItem.name}</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="flex gap-2">
-                  <Badge variant="outline" className={typeColor[detailItem.itemType]}>{detailItem.itemType}</Badge>
-                  <Badge variant="outline" className={statusColor[detailItem.status]}>{detailItem.status}</Badge>
-                  {detailItem.ritualUse && <Badge variant="outline" className="bg-violet-50 text-violet-700 border-violet-200">🪔 Ritual Use</Badge>}
-                </div>
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><span className="text-muted-foreground">Code:</span> <span className="font-medium">{detailItem.code}</span></div>
-                  <div><span className="text-muted-foreground">Category:</span> <span className="font-medium">{detailItem.category}</span></div>
-                  <div><span className="text-muted-foreground">Unit:</span> <span className="font-medium">{detailItem.unit}</span></div>
-                  <div><span className="text-muted-foreground">Current Stock:</span> <span className="font-medium">{detailItem.currentStock} {detailItem.unit}</span></div>
-                  <div><span className="text-muted-foreground">Reorder Level:</span> <span className="font-medium">{detailItem.reorderLevel} {detailItem.unit}</span></div>
-                  <div><span className="text-muted-foreground">Minimum Level:</span> <span className="font-medium">{detailItem.minimumLevel} {detailItem.unit}</span></div>
-                  <div><span className="text-muted-foreground">Structure:</span> <span className="font-medium">{detailItem.defaultStructure}</span></div>
-                  <div><span className="text-muted-foreground">Storage:</span> <span className="font-medium">{detailItem.storageLocation}</span></div>
-                  <div><span className="text-muted-foreground">Price/Unit:</span> <span className="font-medium">₹{detailItem.pricePerUnit}</span></div>
-                  <div><span className="text-muted-foreground">Supplier:</span> <span className="font-medium">{detailItem.supplier}</span></div>
-                  <div><span className="text-muted-foreground">Last Restocked:</span> <span className="font-medium">{detailItem.lastRestocked}</span></div>
-                  <div><span className="text-muted-foreground">Temple ID:</span> <span className="font-medium">{detailItem.templeId}</span></div>
-                </div>
-                {detailItem.batchNumber && (
-                  <div className="p-3 bg-orange-50 rounded-lg border border-orange-200 text-sm">
-                    <p className="font-medium text-orange-700 mb-1">Perishable Info</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div><span className="text-muted-foreground">Batch:</span> {detailItem.batchNumber}</div>
-                      <div><span className="text-muted-foreground">Expiry:</span> {detailItem.expiryDate}</div>
-                    </div>
-                  </div>
-                )}
-                {detailItem.serialNumber && (
-                  <div className="p-3 bg-purple-50 rounded-lg border border-purple-200 text-sm">
-                    <p className="font-medium text-purple-700 mb-1">Asset Info</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div><span className="text-muted-foreground">Serial:</span> {detailItem.serialNumber}</div>
-                      <div><span className="text-muted-foreground">Condition:</span> {detailItem.condition}</div>
-                      <div><span className="text-muted-foreground">Location:</span> {detailItem.assignedLocation}</div>
-                    </div>
-                  </div>
-                )}
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setDetailItem(null)}>Close</Button>
-                <Button>Edit Item</Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Item detail is shown via dedicated route `/temple/inventory/items/:id` */}
     </motion.div>
   );
 };

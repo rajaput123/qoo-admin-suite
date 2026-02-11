@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Search, ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight, RotateCcw, Trash2, Gift } from "lucide-react";
+import { Plus, Search, ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight, RotateCcw, Trash2, Gift, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import SelectWithAddNew from "@/components/SelectWithAddNew";
 import CustomFieldsSection, { CustomField } from "@/components/CustomFieldsSection";
 import { stockTransactions, StockTransaction, TransactionType, stockItems, templeStructures, eventRefs, freelancerRefs, storageLocations } from "@/data/inventoryData";
+import { updateStock } from "@/services/stockService";
 
 const txnTypeConfig: Record<TransactionType, { icon: any; color: string }> = {
   "Purchase In": { icon: ArrowDownToLine, color: "bg-green-50 text-green-700 border-green-200" },
@@ -26,12 +28,33 @@ const Transactions = () => {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
   const [locations, setLocations] = useState(storageLocations);
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [form, setForm] = useState({
     itemId: "", transactionType: "Usage Out" as TransactionType, quantity: "", storeLocation: "", structureId: "",
     linkedEvent: "", linkedSeva: "", linkedDarshan: "", linkedKitchenRequest: "", linkedFreelancer: "", notes: "",
   });
+  const handleSaveTransaction = () => {
+    const qty = Number(form.quantity || 0);
+    if (!form.itemId || qty <= 0) {
+      setShowModal(false);
+      return;
+    }
+    // use centralized service to update stock and create transaction
+    updateStock(form.itemId, (form.transactionType === "Purchase In" || form.transactionType === "Donation In" || form.transactionType === "Return") ? qty : -qty, {
+      transactionType: form.transactionType,
+      storeLocation: form.storeLocation,
+      structureId: form.structureId,
+      structureName: form.structureId,
+      linkedEvent: form.linkedEvent || undefined,
+      linkedKitchenRequest: form.linkedKitchenRequest || undefined,
+      linkedFreelancer: form.linkedFreelancer || undefined,
+      notes: form.notes,
+      createdBy: "Store Manager",
+    });
+    setShowModal(false);
+  };
 
   const filtered = stockTransactions.filter(t => {
     const matchSearch = !search || t.itemName.toLowerCase().includes(search.toLowerCase()) || t.id.toLowerCase().includes(search.toLowerCase());
@@ -67,7 +90,6 @@ const Transactions = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
               <TableHead>Date / Time</TableHead>
               <TableHead>Item</TableHead>
               <TableHead>Type</TableHead>
@@ -79,12 +101,11 @@ const Transactions = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map(txn => {
+          {filtered.map(txn => {
               const config = txnTypeConfig[txn.transactionType];
               const linked = txn.linkedEvent || txn.linkedSeva || txn.linkedDarshan || txn.linkedKitchenRequest || txn.linkedFreelancer;
               return (
-                <TableRow key={txn.id}>
-                  <TableCell className="font-mono text-xs">{txn.id}</TableCell>
+                <TableRow key={txn.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/temple/inventory/transactions/${txn.id}`)}>
                   <TableCell>
                     <p className="text-sm">{txn.date}</p>
                     <p className="text-xs text-muted-foreground">{txn.time}</p>
@@ -102,6 +123,7 @@ const Transactions = () => {
           </TableBody>
         </Table>
       </div>
+      {/* Detail view moved to dedicated route /temple/inventory/transactions/:id */}
       <p className="text-xs text-muted-foreground">Showing {filtered.length} of {stockTransactions.length} transactions</p>
 
       {/* Record Transaction Modal */}
@@ -176,7 +198,7 @@ const Transactions = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
-            <Button onClick={() => setShowModal(false)}>Save Transaction</Button>
+            <Button onClick={handleSaveTransaction}>Save Transaction</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

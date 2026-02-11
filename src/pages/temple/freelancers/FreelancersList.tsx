@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Plus, Download, Upload, Phone, Mail, MapPin, ChevronLeft, ChevronRight, Star, Edit, FileText, Eye, ArrowLeft, Trash2, Replace } from "lucide-react";
 import { toast } from "sonner";
 import SelectWithAddNew from "@/components/SelectWithAddNew";
@@ -174,6 +175,22 @@ const FreelancersList = () => {
   const [allFreelancers, setAllFreelancers] = useState(freelancers);
 
   // Add form state
+  const [addBusinessName, setAddBusinessName] = useState("");
+  const [addContactPerson, setAddContactPerson] = useState("");
+  const [addMobile, setAddMobile] = useState("");
+  const [addEmail, setAddEmail] = useState("");
+  const [addGstNumber, setAddGstNumber] = useState("");
+  const [addPanNumber, setAddPanNumber] = useState("");
+  const [addAddress, setAddAddress] = useState("");
+  const [addCity, setAddCity] = useState("");
+  const [addState, setAddState] = useState("");
+  const [addCountry, setAddCountry] = useState("");
+  const [addPincode, setAddPincode] = useState("");
+  const [addServiceCategories, setAddServiceCategories] = useState<string[]>([]);
+  const [addAvailability, setAddAvailability] = useState("");
+  const [addPricingModel, setAddPricingModel] = useState("");
+  const [addEquipment, setAddEquipment] = useState("");
+  const [addSkillsDescription, setAddSkillsDescription] = useState("");
   const [addCustomFields, setAddCustomFields] = useState<CustomField[]>([]);
   const [cityOptions, setCityOptions] = useState(["Bangalore", "Chennai", "Hyderabad", "Mumbai", "Pune", "Kochi", "Mysore"]);
   const [stateOptions, setStateOptions] = useState(["Karnataka", "Tamil Nadu", "Telangana", "Maharashtra", "Kerala"]);
@@ -204,13 +221,134 @@ const FreelancersList = () => {
   const totalPages = Math.ceil(filtered.length / perPage);
   const paged = filtered.slice((page - 1) * perPage, page * perPage);
 
+  // Populate form when editing
+  useEffect(() => {
+    if (editing) {
+      setAddBusinessName(editing.businessName);
+      setAddContactPerson(editing.contactPerson);
+      setAddMobile(editing.mobile);
+      setAddEmail(editing.email);
+      setAddGstNumber(editing.gstNumber);
+      setAddPanNumber(editing.panNumber);
+      setAddAddress(editing.address);
+      setAddCity(editing.city);
+      setAddState(editing.state);
+      setAddCountry(editing.country);
+      setAddPincode(editing.pincode);
+      setAddServiceCategories(editing.serviceCategories);
+      setAddAvailability(editing.availability);
+      setAddPricingModel(editing.pricingModel);
+      setAddEquipment(editing.equipment);
+      setAddSkillsDescription(editing.skillsDescription);
+      // Custom fields would need to be converted from Record<string, string> to CustomField[]
+      setAddCustomFields([]);
+    } else {
+      resetAddForm();
+    }
+  }, [editing]);
+
+  const resetAddForm = () => {
+    setAddBusinessName("");
+    setAddContactPerson("");
+    setAddMobile("");
+    setAddEmail("");
+    setAddGstNumber("");
+    setAddPanNumber("");
+    setAddAddress("");
+    setAddCity("");
+    setAddState("");
+    setAddCountry("");
+    setAddPincode("");
+    setAddServiceCategories([]);
+    setAddAvailability("");
+    setAddPricingModel("");
+    setAddEquipment("");
+    setAddSkillsDescription("");
+    setAddCustomFields([]);
+  };
+
   const handleSave = (saveAnother: boolean) => {
-    toast.success("Freelancer saved successfully");
+    if (!addBusinessName || !addContactPerson || !addMobile) {
+      toast.error("Business Name, Contact Person, and Mobile are required");
+      return;
+    }
+    if (editing) {
+      // Update existing freelancer
+      const updatedFreelancer: Freelancer = {
+        ...editing,
+        businessName: addBusinessName,
+        contactPerson: addContactPerson,
+        mobile: addMobile,
+        email: addEmail,
+        gstNumber: addGstNumber,
+        panNumber: addPanNumber,
+        address: addAddress,
+        city: addCity,
+        state: addState,
+        country: addCountry,
+        pincode: addPincode,
+        serviceCategories: addServiceCategories,
+        availability: addAvailability,
+        pricingModel: addPricingModel,
+        equipment: addEquipment,
+        skillsDescription: addSkillsDescription,
+        customFields: addCustomFields.reduce((acc, field) => {
+          acc[field.name] = field.value;
+          return acc;
+        }, {} as Record<string, string>),
+      };
+      setAllFreelancers(prev => prev.map(f => f.id === editing.id ? updatedFreelancer : f));
+      toast.success(`${addBusinessName} updated successfully`);
+      if (viewing && viewing.id === editing.id) {
+        // Update viewing if it's the same freelancer
+        setViewing(updatedFreelancer);
+      }
+    } else {
+      // Create new freelancer
+      if (allFreelancers.some(f => f.mobile === addMobile)) {
+        toast.error("Mobile number already exists");
+        return;
+      }
+      const newId = `FRL-${String(allFreelancers.length + 1).padStart(4, "0")}`;
+      const newFreelancer: Freelancer = {
+        id: newId,
+        businessName: addBusinessName,
+        contactPerson: addContactPerson,
+        mobile: addMobile,
+        email: addEmail,
+        gstNumber: addGstNumber,
+        panNumber: addPanNumber,
+        address: addAddress,
+        city: addCity,
+        state: addState,
+        country: addCountry,
+        pincode: addPincode,
+        serviceCategories: addServiceCategories,
+        skillsDescription: addSkillsDescription,
+        equipment: addEquipment,
+        availability: addAvailability,
+        pricingModel: addPricingModel,
+        totalAssignments: 0,
+        totalPaid: 0,
+        rating: 0,
+        status: "Active",
+        documents: [],
+        assignments: [],
+        payments: [],
+        performance: [],
+        customFields: addCustomFields.reduce((acc, field) => {
+          acc[field.name] = field.value;
+          return acc;
+        }, {} as Record<string, string>),
+      };
+      setAllFreelancers(prev => [...prev, newFreelancer]);
+      toast.success(`${addBusinessName} added successfully`);
+    }
     if (!saveAnother) {
       setShowAdd(false);
       setEditing(null);
     }
-    setAddCustomFields([]);
+    resetAddForm();
   };
 
   const handleExport = () => {
@@ -258,7 +396,10 @@ const FreelancersList = () => {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => { setEditing(f); setShowAdd(true); }} className="gap-2"><Edit className="h-4 w-4" />Edit</Button>
+              <Button variant="outline" onClick={() => { 
+                setEditing(f);
+                setShowAdd(true);
+              }} className="gap-2"><Edit className="h-4 w-4" />Edit</Button>
               <Button variant="outline" onClick={() => {
                 setAllFreelancers(prev => prev.map(fr => fr.id === f.id ? { ...fr, status: fr.status === "Active" ? "Inactive" : "Active" } : fr));
                 setViewing({ ...f, status: f.status === "Active" ? "Inactive" : "Active" });
@@ -271,13 +412,40 @@ const FreelancersList = () => {
 
           {/* Tabs */}
           <Tabs defaultValue="overview" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="assignments">Assignments</TabsTrigger>
-              <TabsTrigger value="payments">Payments</TabsTrigger>
-              <TabsTrigger value="performance">Performance</TabsTrigger>
-              <TabsTrigger value="documents">Documents</TabsTrigger>
-            </TabsList>
+            <div className="border-b border-border">
+              <TabsList className="w-full justify-start border-b-0 rounded-none h-auto p-0 bg-transparent gap-0">
+                <TabsTrigger 
+                  value="overview" 
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground data-[state=active]:text-foreground"
+                >
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="assignments" 
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground data-[state=active]:text-foreground"
+                >
+                  Assignments
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="payments" 
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground data-[state=active]:text-foreground"
+                >
+                  Payments
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="performance" 
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground data-[state=active]:text-foreground"
+                >
+                  Performance
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="documents" 
+                  className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground data-[state=active]:text-foreground"
+                >
+                  Documents
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
             <TabsContent value="overview" className="space-y-6">
               {/* Basic Information */}
@@ -473,7 +641,11 @@ const FreelancersList = () => {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowExport(true)} className="gap-2"><Download className="h-4 w-4" />Export</Button>
-            <Button onClick={() => { setEditing(null); setShowAdd(true); }} className="gap-2"><Plus className="h-4 w-4" />Add Freelancer</Button>
+            <Button onClick={() => { 
+              setEditing(null);
+              resetAddForm();
+              setShowAdd(true);
+            }} className="gap-2"><Plus className="h-4 w-4" />Add Freelancer</Button>
           </div>
         </div>
 
@@ -569,7 +741,13 @@ const FreelancersList = () => {
       </motion.div>
 
       {/* Add / Edit Freelancer Modal */}
-      <Dialog open={showAdd} onOpenChange={v => { setShowAdd(v); if (!v) setEditing(null); }}>
+      <Dialog open={showAdd} onOpenChange={v => { 
+        setShowAdd(v); 
+        if (!v) {
+          setEditing(null);
+          resetAddForm();
+        }
+      }}>
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader className="sticky top-0 bg-background z-10 pb-4 border-b">
             <DialogTitle>{editing ? "Edit Freelancer" : "Add Freelancer"}</DialogTitle>
@@ -579,12 +757,12 @@ const FreelancersList = () => {
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Basic Information</p>
               <div className="grid grid-cols-2 gap-3">
-                <div><Label className="text-xs">Business Name / Freelancer Name</Label><Input defaultValue={editing?.businessName} placeholder="Enter business name" /></div>
-                <div><Label className="text-xs">Contact Person Name</Label><Input defaultValue={editing?.contactPerson} placeholder="Enter contact name" /></div>
-                <div><Label className="text-xs">Mobile</Label><Input defaultValue={editing?.mobile} placeholder="+91 XXXXX XXXXX" /></div>
-                <div><Label className="text-xs">Email</Label><Input defaultValue={editing?.email} placeholder="email@example.com" /></div>
-                <div><Label className="text-xs">GST Number</Label><Input defaultValue={editing?.gstNumber} placeholder="Optional" /></div>
-                <div><Label className="text-xs">PAN Number</Label><Input defaultValue={editing?.panNumber} placeholder="Optional" /></div>
+                <div><Label className="text-xs">Business Name / Freelancer Name *</Label><Input value={addBusinessName} onChange={e => setAddBusinessName(e.target.value)} placeholder="Enter business name" /></div>
+                <div><Label className="text-xs">Contact Person Name *</Label><Input value={addContactPerson} onChange={e => setAddContactPerson(e.target.value)} placeholder="Enter contact name" /></div>
+                <div><Label className="text-xs">Mobile *</Label><Input value={addMobile} onChange={e => setAddMobile(e.target.value)} placeholder="+91 XXXXX XXXXX" /></div>
+                <div><Label className="text-xs">Email</Label><Input value={addEmail} onChange={e => setAddEmail(e.target.value)} placeholder="email@example.com" /></div>
+                <div><Label className="text-xs">GST Number</Label><Input value={addGstNumber} onChange={e => setAddGstNumber(e.target.value)} placeholder="Optional" /></div>
+                <div><Label className="text-xs">PAN Number</Label><Input value={addPanNumber} onChange={e => setAddPanNumber(e.target.value)} placeholder="Optional" /></div>
               </div>
             </div>
 
@@ -592,11 +770,11 @@ const FreelancersList = () => {
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Address</p>
               <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2"><Label className="text-xs">Address Line</Label><Input defaultValue={editing?.address} placeholder="Enter address" /></div>
-                <div><Label className="text-xs">City</Label><SelectWithAddNew value={editing?.city || ""} onValueChange={() => {}} placeholder="Select city" options={cityOptions} onAddNew={v => setCityOptions(p => [...p, v])} /></div>
-                <div><Label className="text-xs">State</Label><SelectWithAddNew value={editing?.state || ""} onValueChange={() => {}} placeholder="Select state" options={stateOptions} onAddNew={v => setStateOptions(p => [...p, v])} /></div>
-                <div><Label className="text-xs">Country</Label><SelectWithAddNew value={editing?.country || ""} onValueChange={() => {}} placeholder="Select country" options={countryOptions} onAddNew={v => setCountryOptions(p => [...p, v])} /></div>
-                <div><Label className="text-xs">Pincode</Label><Input defaultValue={editing?.pincode} placeholder="Enter pincode" /></div>
+                <div className="col-span-2"><Label className="text-xs">Address Line</Label><Input value={addAddress} onChange={e => setAddAddress(e.target.value)} placeholder="Enter address" /></div>
+                <div><Label className="text-xs">City</Label><SelectWithAddNew value={addCity} onValueChange={setAddCity} placeholder="Select city" options={cityOptions} onAddNew={v => setCityOptions(p => [...p, v])} className="bg-background" /></div>
+                <div><Label className="text-xs">State</Label><SelectWithAddNew value={addState} onValueChange={setAddState} placeholder="Select state" options={stateOptions} onAddNew={v => setStateOptions(p => [...p, v])} className="bg-background" /></div>
+                <div><Label className="text-xs">Country</Label><SelectWithAddNew value={addCountry} onValueChange={setAddCountry} placeholder="Select country" options={countryOptions} onAddNew={v => setCountryOptions(p => [...p, v])} className="bg-background" /></div>
+                <div><Label className="text-xs">Pincode</Label><Input value={addPincode} onChange={e => setAddPincode(e.target.value)} placeholder="Enter pincode" /></div>
               </div>
             </div>
 
@@ -604,11 +782,47 @@ const FreelancersList = () => {
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Service Details</p>
               <div className="grid grid-cols-2 gap-3">
-                <div><Label className="text-xs">Service Category</Label><SelectWithAddNew value="" onValueChange={() => {}} placeholder="Select category" options={categoryOptions} onAddNew={v => setCategoryOptions(p => [...p, v])} /></div>
-                <div><Label className="text-xs">Availability</Label><SelectWithAddNew value={editing?.availability || ""} onValueChange={() => {}} placeholder="Select availability" options={availabilityOptions} onAddNew={v => setAvailabilityOptions(p => [...p, v])} /></div>
-                <div><Label className="text-xs">Pricing Model</Label><SelectWithAddNew value={editing?.pricingModel || ""} onValueChange={() => {}} placeholder="Select pricing" options={pricingOptions} onAddNew={v => setPricingOptions(p => [...p, v])} /></div>
-                <div><Label className="text-xs">Equipment Provided</Label><Input defaultValue={editing?.equipment} placeholder="Equipment details" /></div>
-                <div className="col-span-2"><Label className="text-xs">Skills / Services Description</Label><Textarea defaultValue={editing?.skillsDescription} placeholder="Describe skills and services" rows={2} /></div>
+                <div className="col-span-2">
+                  <Label className="text-xs">Service Categories</Label>
+                  <div className="flex flex-wrap gap-3 mt-1.5">
+                    {categoryOptions.map(cat => (
+                      <div key={cat} className="flex items-center gap-2">
+                        <Checkbox 
+                          id={`cat-${cat}`} 
+                          checked={addServiceCategories.includes(cat)} 
+                          onCheckedChange={checked => {
+                            if (checked) setAddServiceCategories([...addServiceCategories, cat]);
+                            else setAddServiceCategories(addServiceCategories.filter(c => c !== cat));
+                          }} 
+                        />
+                        <Label htmlFor={`cat-${cat}`} className="text-sm">{cat}</Label>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-2">
+                    <SelectWithAddNew 
+                      value="" 
+                      onValueChange={(v) => {
+                        if (v && !addServiceCategories.includes(v)) {
+                          setAddServiceCategories([...addServiceCategories, v]);
+                        }
+                      }} 
+                      placeholder="Add new category" 
+                      options={[]} 
+                      onAddNew={v => {
+                        setCategoryOptions(p => [...p, v]);
+                        if (!addServiceCategories.includes(v)) {
+                          setAddServiceCategories([...addServiceCategories, v]);
+                        }
+                      }} 
+                      className="bg-background"
+                    />
+                  </div>
+                </div>
+                <div><Label className="text-xs">Availability</Label><SelectWithAddNew value={addAvailability} onValueChange={setAddAvailability} placeholder="Select availability" options={availabilityOptions} onAddNew={v => setAvailabilityOptions(p => [...p, v])} className="bg-background" /></div>
+                <div><Label className="text-xs">Pricing Model</Label><SelectWithAddNew value={addPricingModel} onValueChange={setAddPricingModel} placeholder="Select pricing" options={pricingOptions} onAddNew={v => setPricingOptions(p => [...p, v])} className="bg-background" /></div>
+                <div><Label className="text-xs">Equipment Provided</Label><Input value={addEquipment} onChange={e => setAddEquipment(e.target.value)} placeholder="Equipment details" /></div>
+                <div className="col-span-2"><Label className="text-xs">Skills / Services Description</Label><Textarea value={addSkillsDescription} onChange={e => setAddSkillsDescription(e.target.value)} placeholder="Describe skills and services" rows={2} /></div>
               </div>
             </div>
 
@@ -629,8 +843,14 @@ const FreelancersList = () => {
             <CustomFieldsSection fields={addCustomFields} onFieldsChange={setAddCustomFields} />
           </div>
           <DialogFooter className="sticky bottom-0 bg-background pt-4 border-t gap-2">
-            <Button variant="outline" onClick={() => { setShowAdd(false); setEditing(null); }}>Cancel</Button>
-            <Button variant="outline" onClick={() => handleSave(true)}>Save & Add Another</Button>
+            <Button variant="outline" onClick={() => { 
+              setShowAdd(false); 
+              setEditing(null);
+              resetAddForm();
+            }}>Cancel</Button>
+            {!editing && (
+              <Button variant="outline" onClick={() => handleSave(true)}>Save & Add Another</Button>
+            )}
             <Button onClick={() => handleSave(false)}>Save</Button>
           </DialogFooter>
         </DialogContent>

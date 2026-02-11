@@ -1,11 +1,14 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, IndianRupee } from "lucide-react";
-import { eventExpenses, templeEvents } from "@/data/eventData";
+import { Search, IndianRupee, Eye } from "lucide-react";
+import { eventExpenses } from "@/data/eventData";
 import SelectWithAddNew from "@/components/SelectWithAddNew";
+import { useEvents } from "@/modules/events/hooks";
+import { Button } from "@/components/ui/button";
 
 const statusColors: Record<string, string> = {
   Paid: "bg-green-100 text-green-700",
@@ -15,6 +18,8 @@ const statusColors: Record<string, string> = {
 };
 
 const EventExpenses = () => {
+  const navigate = useNavigate();
+  const events = useEvents();
   const [search, setSearch] = useState("");
   const [eventFilter, setEventFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -30,7 +35,7 @@ const EventExpenses = () => {
   const totalPending = filtered.filter(e => e.status === "Pending" || e.status === "Approved").reduce((a, e) => a + e.amount, 0);
   const totalAll = filtered.reduce((a, e) => a + e.amount, 0);
 
-  const eventOptions = ["All Events", ...templeEvents.map(e => e.id)];
+  const eventOptions = ["All Events", ...events.map(e => e.id)];
   const categoryOptions = ["All Categories", "Freelancer Payment", "Material Cost", "Kitchen Cost", "Decoration", "Sound & Lighting", "Transportation", "Miscellaneous"];
 
   return (
@@ -64,7 +69,6 @@ const EventExpenses = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
                 <TableHead>Event</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Description</TableHead>
@@ -72,12 +76,12 @@ const EventExpenses = () => {
                 <TableHead className="text-right">Amount</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-right">View</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map(e => (
                 <TableRow key={e.id}>
-                  <TableCell className="font-mono text-xs">{e.id}</TableCell>
                   <TableCell className="text-sm font-medium">{e.eventName}</TableCell>
                   <TableCell><Badge variant="outline" className="text-xs">{e.category}</Badge></TableCell>
                   <TableCell className="text-sm max-w-[200px] truncate">{e.description}</TableCell>
@@ -85,6 +89,11 @@ const EventExpenses = () => {
                   <TableCell className="text-right font-medium">₹{e.amount.toLocaleString()}</TableCell>
                   <TableCell className="text-sm">{e.date}</TableCell>
                   <TableCell><Badge className={`text-xs border-0 ${statusColors[e.status]}`}>{e.status}</Badge></TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => navigate(`/temple/events/${e.eventId}`)}>
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

@@ -5,23 +5,27 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { templeEvents } from "@/data/eventData";
+import { useEvents } from "@/modules/events/hooks";
 
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const statusColors: Record<string, string> = {
-  Planning: "bg-muted text-muted-foreground",
+  Draft: "bg-gray-100 text-gray-700",
   Scheduled: "bg-blue-100 text-blue-700",
-  "In Progress": "bg-green-100 text-green-700",
+  Ongoing: "bg-green-100 text-green-700",
   Completed: "bg-amber-100 text-amber-700",
+  Cancelled: "bg-red-100 text-red-700",
   Archived: "bg-gray-200 text-gray-600",
 };
 
 const CalendarView = () => {
   const navigate = useNavigate();
+  const events = useEvents();
   const [currentMonth, setCurrentMonth] = useState(1); // Feb 2026
   const [currentYear] = useState(2026);
+  const [structureFilter, setStructureFilter] = useState("All Structures");
+  const [eventTypeFilter, setEventTypeFilter] = useState("All Types");
 
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const firstDay = new Date(currentYear, currentMonth, 1).getDay();
@@ -30,8 +34,12 @@ const CalendarView = () => {
 
   const getEventsForDay = (day: number) => {
     const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    return templeEvents.filter(e => {
-      return dateStr >= e.startDate && dateStr <= e.endDate;
+    return events.filter(e => {
+      if (dateStr < e.startDate || dateStr > e.endDate) return false;
+      if (structureFilter !== "All Structures" && e.structureName !== structureFilter) return false;
+      if (eventTypeFilter !== "All Types" && e.type !== eventTypeFilter) return false;
+      if (e.status === "Archived" || e.status === "Cancelled") return false;
+      return true;
     });
   };
 
@@ -49,6 +57,31 @@ const CalendarView = () => {
           <Button variant="outline" size="icon" onClick={() => setCurrentMonth(p => p > 0 ? p - 1 : 11)}><ChevronLeft className="h-4 w-4" /></Button>
           <h2 className="text-lg font-semibold min-w-[180px] text-center">{months[currentMonth]} {currentYear}</h2>
           <Button variant="outline" size="icon" onClick={() => setCurrentMonth(p => p < 11 ? p + 1 : 0)}><ChevronRight className="h-4 w-4" /></Button>
+        </div>
+        <div className="flex items-center gap-2">
+          <Select value={structureFilter} onValueChange={setStructureFilter}>
+            <SelectTrigger className="h-9 w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All Structures">All Structures</SelectItem>
+              <SelectItem value="Main Temple">Main Temple</SelectItem>
+              <SelectItem value="Annadanam Hall">Annadanam Hall</SelectItem>
+              <SelectItem value="Cultural Hall">Cultural Hall</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={eventTypeFilter} onValueChange={setEventTypeFilter}>
+            <SelectTrigger className="h-9 w-36">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All Types">All Types</SelectItem>
+              <SelectItem value="Festival">Festival</SelectItem>
+              <SelectItem value="Special Ritual">Special Ritual</SelectItem>
+              <SelectItem value="Annadanam">Annadanam</SelectItem>
+              <SelectItem value="Cultural">Cultural</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

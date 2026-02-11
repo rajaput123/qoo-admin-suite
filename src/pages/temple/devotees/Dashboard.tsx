@@ -52,7 +52,7 @@ const Dashboard = () => {
   const [period, setPeriod] = useState("month");
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4 w-full overflow-x-hidden max-w-[100vw]">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center justify-between mb-6">
           <div>

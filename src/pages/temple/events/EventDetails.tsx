@@ -13,10 +13,11 @@ import { ArrowLeft, Plus, AlertTriangle, CheckCircle2, Clock, Link2, Star, Packa
 import { toast } from "sonner";
 import SelectWithAddNew from "@/components/SelectWithAddNew";
 import {
-  getEventById, getEventExpenses, getEventSevas, getEventMaterials, getEventFreelancers,
+  getEventExpenses, getEventSevas, getEventMaterials, getEventFreelancers,
   getEventVolunteers, getEventKitchenLinks, getEventBatches, getEventTasks,
-  templeEvents, inventoryItems, freelancerRefs, structures, expenseCategories,
+  inventoryItems, freelancerRefs, structures, expenseCategories,
 } from "@/data/eventData";
+import { useEventById } from "@/modules/events/hooks";
 
 const statusColors: Record<string, string> = {
   Planning: "bg-muted text-muted-foreground",
@@ -36,7 +37,7 @@ const priorityColors: Record<string, string> = {
 const EventDetails = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
-  const event = getEventById(eventId || "");
+  const event = useEventById(eventId || "");
   const [showSevaDialog, setShowSevaDialog] = useState(false);
   const [showFreelancerDialog, setShowFreelancerDialog] = useState(false);
   const [showVolunteerDialog, setShowVolunteerDialog] = useState(false);
@@ -99,16 +100,16 @@ const EventDetails = () => {
 
       {/* Tabs */}
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="flex-wrap h-auto gap-1 p-1">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="sevas">Seva & Darshan</TabsTrigger>
-          <TabsTrigger value="freelancers">Freelancers</TabsTrigger>
-          <TabsTrigger value="volunteers">Volunteers</TabsTrigger>
-          <TabsTrigger value="materials">Materials</TabsTrigger>
-          <TabsTrigger value="kitchen">Kitchen / Annadanam</TabsTrigger>
-          <TabsTrigger value="tasks">Tasks</TabsTrigger>
-          <TabsTrigger value="expenses">Expenses</TabsTrigger>
-          <TabsTrigger value="summary">Reports</TabsTrigger>
+        <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent flex-wrap">
+          <TabsTrigger value="overview" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground">Overview</TabsTrigger>
+          <TabsTrigger value="sevas" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground">Seva & Darshan</TabsTrigger>
+          <TabsTrigger value="freelancers" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground">Freelancers</TabsTrigger>
+          <TabsTrigger value="volunteers" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground">Volunteers</TabsTrigger>
+          <TabsTrigger value="materials" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground">Materials</TabsTrigger>
+          <TabsTrigger value="kitchen" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground">Kitchen / Annadanam</TabsTrigger>
+          <TabsTrigger value="tasks" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground">Tasks</TabsTrigger>
+          <TabsTrigger value="expenses" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground">Expenses</TabsTrigger>
+          <TabsTrigger value="summary" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground">Reports</TabsTrigger>
         </TabsList>
 
         {/* ===== OVERVIEW ===== */}
@@ -118,9 +119,7 @@ const EventDetails = () => {
               <div className="border rounded-lg p-4 space-y-3">
                 <h3 className="font-semibold text-sm">Basic Information</h3>
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div><p className="text-muted-foreground text-xs">Event ID</p><p className="font-mono">{event.id}</p></div>
                   <div><p className="text-muted-foreground text-xs">Type</p><p>{event.type}</p></div>
-                  <div><p className="text-muted-foreground text-xs">Temple ID</p><p className="font-mono">{event.templeId}</p></div>
                   <div><p className="text-muted-foreground text-xs">Structure</p><p>{event.structureName}</p></div>
                   <div><p className="text-muted-foreground text-xs">Start Date</p><p>{event.startDate}</p></div>
                   <div><p className="text-muted-foreground text-xs">End Date</p><p>{event.endDate}</p></div>
@@ -229,7 +228,6 @@ const EventDetails = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Freelancer ID</TableHead>
                     <TableHead>Business Name</TableHead>
                     <TableHead>Role</TableHead>
                     <TableHead>Dates</TableHead>
@@ -241,12 +239,11 @@ const EventDetails = () => {
                 </TableHeader>
                 <TableBody>
                   {freelancers.length === 0 ? (
-                    <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No freelancers assigned</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No freelancers assigned</TableCell></TableRow>
                   ) : freelancers.map((f, i) => {
                     const ref = freelancerRefs.find(r => r.id === f.freelancerId);
                     return (
                       <TableRow key={i}>
-                        <TableCell className="font-mono text-xs text-primary">{f.freelancerId}</TableCell>
                         <TableCell className="font-medium">{f.freelancerName}</TableCell>
                         <TableCell className="text-sm">{f.role}</TableCell>
                         <TableCell className="text-sm">{f.dates}</TableCell>
@@ -318,7 +315,6 @@ const EventDetails = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Inventory ID</TableHead>
                     <TableHead>Material</TableHead>
                     <TableHead className="text-right">Required</TableHead>
                     <TableHead className="text-right">In Stock</TableHead>
@@ -330,13 +326,12 @@ const EventDetails = () => {
                 </TableHeader>
                 <TableBody>
                   {materials.length === 0 ? (
-                    <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No materials allocated</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No materials allocated</TableCell></TableRow>
                   ) : materials.map((m, i) => {
                     const inv = inventoryItems.find(inv => inv.id === m.inventoryId);
                     const deficit = m.requiredQty - m.allocatedQty;
                     return (
                       <TableRow key={i} className={deficit > 0 ? "bg-amber-50/50" : ""}>
-                        <TableCell className="font-mono text-xs text-primary">{m.inventoryId}</TableCell>
                         <TableCell className="font-medium">{m.inventoryName}</TableCell>
                         <TableCell className="text-right">{m.requiredQty.toLocaleString()} {m.unit}</TableCell>
                         <TableCell className="text-right text-muted-foreground">{inv?.currentStock.toLocaleString() ?? "—"} {m.unit}</TableCell>
@@ -382,7 +377,6 @@ const EventDetails = () => {
                   <div key={k.id} className="grid grid-cols-2 gap-3 text-sm">
                     <div><p className="text-muted-foreground text-xs">Est. Beneficiaries</p><p className="font-medium">{k.estimatedBeneficiaries.toLocaleString()}</p></div>
                     <div><p className="text-muted-foreground text-xs">Menu</p><p>{k.menu}</p></div>
-                    <div><p className="text-muted-foreground text-xs">Annadanam ID</p><p className="font-mono">{k.annadanamId || "—"}</p></div>
                     <div><p className="text-muted-foreground text-xs">Ingredient Request</p><Badge variant={k.ingredientRequestStatus === "Fulfilled" ? "default" : "secondary"} className="text-xs">{k.ingredientRequestStatus}</Badge></div>
                   </div>
                 ))}
@@ -393,7 +387,6 @@ const EventDetails = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Batch ID</TableHead>
                       <TableHead>Prasadam</TableHead>
                       <TableHead>Date/Time</TableHead>
                       <TableHead className="text-right">Qty</TableHead>
@@ -404,7 +397,6 @@ const EventDetails = () => {
                   <TableBody>
                     {batches.map(b => (
                       <TableRow key={b.id}>
-                        <TableCell className="font-mono text-xs text-primary">{b.id}</TableCell>
                         <TableCell className="font-medium">{b.prasadam}</TableCell>
                         <TableCell className="text-sm">{b.date} {b.time}</TableCell>
                         <TableCell className="text-right">{b.qty.toLocaleString()}</TableCell>
@@ -437,7 +429,6 @@ const EventDetails = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Task ID</TableHead>
                     <TableHead>Title</TableHead>
                     <TableHead>Source</TableHead>
                     <TableHead>Assigned To</TableHead>
@@ -448,10 +439,9 @@ const EventDetails = () => {
                 </TableHeader>
                 <TableBody>
                   {tasks.length === 0 ? (
-                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No tasks linked</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No tasks linked</TableCell></TableRow>
                   ) : tasks.map(t => (
                     <TableRow key={t.id}>
-                      <TableCell className="font-mono text-xs text-primary">{t.id}</TableCell>
                       <TableCell className="font-medium text-sm">{t.title}</TableCell>
                       <TableCell><Badge variant="outline" className="text-[10px]">{t.sourceModule}</Badge></TableCell>
                       <TableCell className="text-sm">{t.assignedTo}</TableCell>
@@ -500,7 +490,6 @@ const EventDetails = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead>Description</TableHead>
                     <TableHead>Vendor</TableHead>
@@ -511,10 +500,9 @@ const EventDetails = () => {
                 </TableHeader>
                 <TableBody>
                   {expenses.length === 0 ? (
-                    <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No expenses recorded</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No expenses recorded</TableCell></TableRow>
                   ) : expenses.map(e => (
                     <TableRow key={e.id}>
-                      <TableCell className="font-mono text-xs">{e.id}</TableCell>
                       <TableCell><Badge variant="outline" className="text-xs">{e.category}</Badge></TableCell>
                       <TableCell className="text-sm">{e.description}</TableCell>
                       <TableCell className="text-sm">{e.vendor}</TableCell>

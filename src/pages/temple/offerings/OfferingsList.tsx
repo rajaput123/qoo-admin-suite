@@ -295,7 +295,7 @@ const OfferingsList = () => {
           <Tabs defaultValue="overview" className="mt-4">
             <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
               {["overview", "schedule", "pricing", "settings", "gallery", "history"].map(t => (
-                <TabsTrigger key={t} value={t} className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent capitalize">{t}</TabsTrigger>
+                <TabsTrigger key={t} value={t} className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground capitalize">{t}</TabsTrigger>
               ))}
             </TabsList>
             <TabsContent value="overview" className="mt-4 space-y-4">

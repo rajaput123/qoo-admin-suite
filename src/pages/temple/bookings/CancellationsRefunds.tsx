@@ -83,7 +83,6 @@ const CancellationsRefunds = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Booking ID</TableHead>
                   <TableHead>Source</TableHead>
                   <TableHead>Offering</TableHead>
                   <TableHead>Structure</TableHead>
@@ -97,7 +96,6 @@ const CancellationsRefunds = () => {
               <TableBody>
                 {paginated.map(c => (
                   <TableRow key={c.id} className="hover:bg-muted/50">
-                    <TableCell className="font-mono text-xs font-medium">{c.bookingId}</TableCell>
                     <TableCell className="text-sm">{c.source === "Online" ? "🌐" : "🏪"} {c.source}</TableCell>
                     <TableCell className="font-medium">{c.offering}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{c.structure}</TableCell>

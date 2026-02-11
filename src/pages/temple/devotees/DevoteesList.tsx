@@ -12,70 +12,45 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Plus, Download, Upload, Users, UserCheck, IndianRupee, Calendar, Phone, Mail, MapPin, ChevronLeft, ChevronRight, Heart, BookOpen, HandHelping, StickyNote, Eye, MessageSquare, Star, Edit, FileText, AlertTriangle } from "lucide-react";
+import { Search, Plus, Download, Upload, Users, UserCheck, IndianRupee, Calendar, Phone, Mail, MapPin, ChevronLeft, ChevronRight, Heart, BookOpen, HandHelping, StickyNote, Eye, MessageSquare, Star, Edit, FileText, AlertTriangle, Crown, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import SelectWithAddNew from "@/components/SelectWithAddNew";
 import CustomFieldsSection, { CustomField } from "@/components/CustomFieldsSection";
-
-type Devotee = {
-  id: string;
-  name: string;
-  phone: string;
-  email: string;
-  city: string;
-  state: string;
-  country: string;
-  dob: string;
-  gender: string;
-  preferredLanguage: string;
-  pincode: string;
-  address: string;
-  tags: string[];
-  source: string;
-  notes: string;
-  totalBookings: number;
-  totalDonations: number;
-  isVolunteer: boolean;
-  volunteerStatus: string;
-  lastVisit: string;
-  status: string;
-  bookings: { id: string; offering: string; type: string; date: string; status: string; amount: number }[];
-  donations: { date: string; amount: number; structure: string; purpose: string; receipt: string }[];
-  visits: { date: string; type: string; duration: string }[];
-  experiencePosts: { date: string; content: string; rating: number; status: string }[];
-  commLogs: { date: string; channel: string; subject: string; status: string }[];
-  volunteerData?: { skills: string[]; events: number; hours: number; availability: string; department: string };
-  customFields: Record<string, string>;
-};
-
-const devotees: Devotee[] = [
-  { id: "DEV-0001", name: "Ramesh Kumar", phone: "+91 98765 43210", email: "ramesh@email.com", city: "Bangalore", state: "Karnataka", country: "India", dob: "1985-03-15", gender: "Male", preferredLanguage: "Kannada", pincode: "560001", address: "12, MG Road", tags: ["VIP", "Donor"], source: "Walk-in", notes: "Regular participant in major festivals", totalBookings: 28, totalDonations: 125000, isVolunteer: false, volunteerStatus: "Not Converted", lastVisit: "2026-02-09", status: "Active", bookings: [{ id: "BK-0001", offering: "Suprabhatam", type: "Ritual", date: "2026-02-09", status: "Confirmed", amount: 1000 }, { id: "BK-0021", offering: "VIP Darshan", type: "Darshan", date: "2026-02-05", status: "Completed", amount: 300 }], donations: [{ date: "2026-02-05", amount: 25000, structure: "Main Temple", purpose: "Annadanam", receipt: "RCP-2026-0045" }, { date: "2026-01-10", amount: 50000, structure: "Main Temple", purpose: "Temple Renovation", receipt: "RCP-2026-0012" }], visits: [{ date: "2026-02-09", type: "Darshan", duration: "1h 30m" }, { date: "2026-02-05", type: "Seva", duration: "2h" }], experiencePosts: [{ date: "2026-02-06", content: "Beautiful morning archana experience", rating: 5, status: "Approved" }], commLogs: [{ date: "2026-02-08", channel: "SMS", subject: "Festival reminder", status: "Delivered" }], customFields: {} },
-  { id: "DEV-0002", name: "Lakshmi Devi", phone: "+91 87654 32109", email: "lakshmi@email.com", city: "Chennai", state: "Tamil Nadu", country: "India", dob: "1978-08-22", gender: "Female", preferredLanguage: "Tamil", pincode: "600001", address: "45, Anna Salai", tags: ["VIP", "Donor", "Festival Participant"], source: "Online", notes: "Very dedicated volunteer", totalBookings: 42, totalDonations: 85000, isVolunteer: true, volunteerStatus: "Active", lastVisit: "2026-02-08", status: "Active", bookings: [{ id: "BK-0002", offering: "Archana", type: "Ritual", date: "2026-02-08", status: "Completed", amount: 100 }], donations: [{ date: "2026-01-28", amount: 15000, structure: "Padmavathi Shrine", purpose: "Flower Donation", receipt: "RCP-2026-0038" }], visits: [{ date: "2026-02-08", type: "Volunteer Duty", duration: "6h" }], experiencePosts: [], commLogs: [{ date: "2026-02-07", channel: "WhatsApp", subject: "Volunteer schedule", status: "Read" }], volunteerData: { skills: ["Cooking", "Admin"], events: 12, hours: 96, availability: "Weekends", department: "Annadanam" }, customFields: {} },
-  { id: "DEV-0003", name: "Suresh Reddy", phone: "+91 76543 21098", email: "suresh@email.com", city: "Hyderabad", state: "Telangana", country: "India", dob: "1990-11-05", gender: "Male", preferredLanguage: "Telugu", pincode: "500001", address: "78, Banjara Hills", tags: ["Regular Devotee", "Donor"], source: "Festival", notes: "", totalBookings: 18, totalDonations: 65000, isVolunteer: false, volunteerStatus: "Not Converted", lastVisit: "2026-02-01", status: "Active", bookings: [{ id: "BK-0003", offering: "Abhishekam", type: "Ritual", date: "2026-02-01", status: "Completed", amount: 2000 }], donations: [{ date: "2026-02-01", amount: 10000, structure: "Main Temple", purpose: "General", receipt: "RCP-2026-0041" }], visits: [{ date: "2026-02-01", type: "Darshan", duration: "45m" }], experiencePosts: [], commLogs: [], customFields: {} },
-  { id: "DEV-0004", name: "Priya Sharma", phone: "+91 65432 10987", email: "priya@email.com", city: "Mumbai", state: "Maharashtra", country: "India", dob: "1995-01-20", gender: "Female", preferredLanguage: "Hindi", pincode: "400001", address: "23, Marine Drive", tags: ["Regular Devotee"], source: "Referral", notes: "", totalBookings: 12, totalDonations: 52000, isVolunteer: false, volunteerStatus: "Not Converted", lastVisit: "2026-01-15", status: "Active", bookings: [{ id: "BK-0004", offering: "Morning Darshan", type: "Darshan", date: "2026-01-15", status: "Completed", amount: 0 }], donations: [{ date: "2026-01-15", amount: 5000, structure: "Varadaraja Shrine", purpose: "Seva Sponsorship", receipt: "RCP-2026-0025" }], visits: [], experiencePosts: [], commLogs: [], customFields: {} },
-  { id: "DEV-0005", name: "Anand Verma", phone: "+91 54321 09876", email: "", city: "Pune", state: "Maharashtra", country: "India", dob: "1982-06-30", gender: "Male", preferredLanguage: "Marathi", pincode: "411001", address: "56, FC Road", tags: ["Donor", "Festival Participant"], source: "Festival", notes: "Helps during major festivals", totalBookings: 22, totalDonations: 48000, isVolunteer: true, volunteerStatus: "Active", lastVisit: "2026-02-08", status: "Active", bookings: [{ id: "BK-0005", offering: "VIP Darshan", type: "Darshan", date: "2026-02-08", status: "Confirmed", amount: 600 }], donations: [{ date: "2026-02-08", amount: 20000, structure: "Main Temple", purpose: "Festival Contribution", receipt: "RCP-2026-0052" }], visits: [{ date: "2026-02-08", type: "Festival", duration: "4h" }], experiencePosts: [{ date: "2026-02-09", content: "Amazing festival arrangement this year!", rating: 4, status: "Pending" }], commLogs: [{ date: "2026-02-06", channel: "Email", subject: "Festival invite", status: "Delivered" }], volunteerData: { skills: ["Crowd Control", "Ritual Support"], events: 8, hours: 64, availability: "Festival Only", department: "Operations" }, customFields: {} },
-  { id: "DEV-0006", name: "Meena Iyer", phone: "+91 43210 98765", email: "meena@email.com", city: "Bangalore", state: "Karnataka", country: "India", dob: "1988-12-10", gender: "Female", preferredLanguage: "Kannada", pincode: "560002", address: "90, Indiranagar", tags: ["Regular Devotee", "Festival Participant"], source: "Online", notes: "", totalBookings: 45, totalDonations: 32000, isVolunteer: false, volunteerStatus: "Not Converted", lastVisit: "2026-02-09", status: "Active", bookings: [{ id: "BK-0006", offering: "Sahasranama", type: "Ritual", date: "2026-02-09", status: "Pending Payment", amount: 1500 }], donations: [{ date: "2026-01-20", amount: 8000, structure: "Main Temple", purpose: "Education Fund", receipt: "RCP-2026-0030" }], visits: [{ date: "2026-02-09", type: "Darshan", duration: "1h" }], experiencePosts: [], commLogs: [], customFields: {} },
-  { id: "DEV-0007", name: "Vijay Nair", phone: "+91 32109 87654", email: "vijay@email.com", city: "Kochi", state: "Kerala", country: "India", dob: "1975-04-18", gender: "Male", preferredLanguage: "Malayalam", pincode: "682001", address: "34, MG Road Kochi", tags: ["Regular Devotee"], source: "Walk-in", notes: "Very reliable volunteer", totalBookings: 38, totalDonations: 18000, isVolunteer: true, volunteerStatus: "Active", lastVisit: "2026-02-08", status: "Active", bookings: [], donations: [{ date: "2026-01-05", amount: 5000, structure: "Main Temple", purpose: "General", receipt: "RCP-2026-0008" }], visits: [{ date: "2026-02-08", type: "Volunteer Duty", duration: "4h" }], experiencePosts: [], commLogs: [], volunteerData: { skills: ["Admin", "Crowd Control"], events: 15, hours: 120, availability: "Weekdays", department: "Administration" }, customFields: {} },
-  { id: "DEV-0008", name: "Kavita Rao", phone: "+91 21098 76543", email: "kavita@email.com", city: "Mysore", state: "Karnataka", country: "India", dob: "1992-07-25", gender: "Female", preferredLanguage: "Kannada", pincode: "570001", address: "67, Sayyaji Rao Road", tags: ["Regular Devotee"], source: "Walk-in", notes: "", totalBookings: 31, totalDonations: 12000, isVolunteer: false, volunteerStatus: "Not Converted", lastVisit: "2026-02-07", status: "Active", bookings: [], donations: [{ date: "2026-02-07", amount: 3000, structure: "Main Temple", purpose: "Annadanam", receipt: "RCP-2026-0048" }], visits: [{ date: "2026-02-07", type: "Darshan", duration: "30m" }], experiencePosts: [], commLogs: [], customFields: {} },
-  { id: "DEV-0009", name: "Ganesh Pillai", phone: "+91 10987 65432", email: "", city: "Trivandrum", state: "Kerala", country: "India", dob: "1980-09-12", gender: "Male", preferredLanguage: "Malayalam", pincode: "695001", address: "12, Statue Junction", tags: [], source: "Walk-in", notes: "", totalBookings: 5, totalDonations: 2000, isVolunteer: false, volunteerStatus: "Not Converted", lastVisit: "2025-12-20", status: "Inactive", bookings: [], donations: [], visits: [], experiencePosts: [], commLogs: [], customFields: {} },
-  { id: "DEV-0010", name: "Arjun Menon", phone: "+91 09876 54321", email: "arjun@email.com", city: "Calicut", state: "Kerala", country: "India", dob: "1998-02-28", gender: "Male", preferredLanguage: "Malayalam", pincode: "673001", address: "89, Beach Road", tags: [], source: "Online", notes: "", totalBookings: 2, totalDonations: 1000, isVolunteer: false, volunteerStatus: "Not Converted", lastVisit: "2025-10-05", status: "Inactive", bookings: [], donations: [], visits: [], experiencePosts: [], commLogs: [], customFields: {} },
-];
+import { Devotee, devoteesData } from "@/data/devotees";
 
 const DevoteesList = () => {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [filterTag, setFilterTag] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterVolunteer, setFilterVolunteer] = useState("all");
   const [viewing, setViewing] = useState<Devotee | null>(null);
+  const [showAddVip, setShowAddVip] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showExport, setShowExport] = useState(false);
   const [showConvert, setShowConvert] = useState<Devotee | null>(null);
+  const [showVolunteerForm, setShowVolunteerForm] = useState<Devotee | null>(null);
   const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(10);
-  const [allDevotees, setAllDevotees] = useState(devotees);
+  const [perPage, setPerPage] = useState(8);
+  const [allDevotees, setAllDevotees] = useState<Devotee[]>(devoteesData || []);
 
   // Add form state
+  const [addName, setAddName] = useState("");
+  const [addPhone, setAddPhone] = useState("");
+  const [addEmail, setAddEmail] = useState("");
+  const [addDob, setAddDob] = useState("");
+  const [addGender, setAddGender] = useState("");
+  const [addLanguage, setAddLanguage] = useState("");
+  const [addAddress, setAddAddress] = useState("");
+  const [addCity, setAddCity] = useState("");
+  const [addState, setAddState] = useState("");
+  const [addCountry, setAddCountry] = useState("");
+  const [addPincode, setAddPincode] = useState("");
+  const [addTags, setAddTags] = useState<string[]>([]);
+  const [addSource, setAddSource] = useState("");
+  const [addNotes, setAddNotes] = useState("");
   const [addCustomFields, setAddCustomFields] = useState<CustomField[]>([]);
   const [genderOptions, setGenderOptions] = useState(["Male", "Female", "Other"]);
   const [langOptions, setLangOptions] = useState(["Kannada", "Tamil", "Telugu", "Hindi", "Malayalam", "Marathi", "English"]);
@@ -84,6 +59,50 @@ const DevoteesList = () => {
   const [countryOptions, setCountryOptions] = useState(["India", "USA", "UK", "Singapore", "UAE"]);
   const [tagOptions, setTagOptions] = useState(["VIP", "Donor", "Regular Devotee", "Festival Participant", "New"]);
   const [sourceOptions, setSourceOptions] = useState(["Walk-in", "Online", "Festival", "Referral"]);
+
+  // Volunteer form state
+  const [volunteerSkills, setVolunteerSkills] = useState<string[]>([]);
+  const [volunteerDept, setVolunteerDept] = useState("");
+  const [volunteerAvailability, setVolunteerAvailability] = useState("");
+  const [volunteerEmergencyContact, setVolunteerEmergencyContact] = useState("");
+  const [volunteerDeptOptions, setVolunteerDeptOptions] = useState([
+    "Annadanam",
+    "Operations",
+    "Administration",
+    "Security",
+    "Front Desk",
+  ]);
+  const [volunteerAvailabilityOptions, setVolunteerAvailabilityOptions] = useState([
+    "Weekdays",
+    "Weekends",
+    "Festival Only",
+    "Flexible",
+  ]);
+
+  // VIP form state
+  const [vipCategory, setVipCategory] = useState("");
+  const [vipLevel, setVipLevel] = useState("");
+  const [vipValidFrom, setVipValidFrom] = useState("");
+  const [vipValidTill, setVipValidTill] = useState("");
+  const [vipApprovalAuthority, setVipApprovalAuthority] = useState("");
+  const [vipSensitive, setVipSensitive] = useState(false);
+  const [vipNotes, setVipNotes] = useState("");
+  const [vipCategoryOptions, setVipCategoryOptions] = useState([
+    "High Donor",
+    "Volunteer Donor",
+    "Festival Patron",
+    "Trustee Family",
+  ]);
+  const [vipLevelOptions, setVipLevelOptions] = useState([
+    "Platinum",
+    "Gold",
+    "Silver",
+  ]);
+  const [vipApprovalOptions, setVipApprovalOptions] = useState([
+    "Temple Admin",
+    "Trustee Board",
+    "Chairperson",
+  ]);
 
   // Export state
   const [exportType, setExportType] = useState("all");
@@ -102,9 +121,141 @@ const DevoteesList = () => {
   const paged = filtered.slice((page - 1) * perPage, page * perPage);
 
   const handleConvertToVolunteer = (devotee: Devotee) => {
-    setAllDevotees(prev => prev.map(d => d.id === devotee.id ? { ...d, isVolunteer: true, volunteerStatus: "Active", volunteerData: { skills: [], events: 0, hours: 0, availability: "Weekends", department: "" } } : d));
     setShowConvert(null);
-    toast.success(`${devotee.name} converted to volunteer`);
+    setShowVolunteerForm(devotee);
+  };
+
+  const handleSaveVolunteer = () => {
+    if (!showVolunteerForm) return;
+    if (!volunteerDept || !volunteerAvailability) {
+      toast.error("Please fill department and availability");
+      return;
+    }
+    setAllDevotees(prev => prev.map(d => d.id === showVolunteerForm.id ? {
+      ...d,
+      isVolunteer: true,
+      volunteerStatus: "Active",
+      volunteerData: {
+        skills: volunteerSkills,
+        events: 0,
+        hours: 0,
+        availability: volunteerAvailability,
+        department: volunteerDept,
+      }
+    } : d));
+    setShowVolunteerForm(null);
+    setVolunteerSkills([]);
+    setVolunteerDept("");
+    setVolunteerAvailability("");
+    setVolunteerEmergencyContact("");
+    toast.success(`${showVolunteerForm.name} converted to volunteer`);
+  };
+
+  const handleSaveDevotee = (addAnother = false) => {
+    if (!addName || !addPhone) {
+      toast.error("Name and Mobile are required");
+      return;
+    }
+    if (allDevotees.some(d => d.phone === addPhone)) {
+      toast.error("Mobile number already exists");
+      return;
+    }
+    const newId = `DEV-${String(allDevotees.length + 1).padStart(4, "0")}`;
+    const newDevotee: Devotee = {
+      id: newId,
+      name: addName,
+      phone: addPhone,
+      email: addEmail,
+      city: addCity,
+      state: addState,
+      country: addCountry,
+      dob: addDob,
+      gender: addGender,
+      preferredLanguage: addLanguage,
+      pincode: addPincode,
+      address: addAddress,
+      tags: addTags,
+      source: addSource,
+      notes: addNotes,
+      totalBookings: 0,
+      totalDonations: 0,
+      isVolunteer: false,
+      volunteerStatus: "Not Converted",
+      lastVisit: new Date().toISOString().split("T")[0],
+      status: "Active",
+      bookings: [],
+      donations: [],
+      visits: [],
+      experiencePosts: [],
+      commLogs: [],
+      customFields: addCustomFields.reduce((acc, f) => ({ ...acc, [f.name]: f.value }), {}),
+    };
+    setAllDevotees(prev => [...prev, newDevotee]);
+    if (!addAnother) {
+      setShowAdd(false);
+      resetAddForm();
+    } else {
+      resetAddForm();
+    }
+    toast.success(`Devotee ${addAnother ? "saved. Form ready for next entry." : "added successfully"}`);
+  };
+
+  const resetAddForm = () => {
+    setAddName("");
+    setAddPhone("");
+    setAddEmail("");
+    setAddDob("");
+    setAddGender("");
+    setAddLanguage("");
+    setAddAddress("");
+    setAddCity("");
+    setAddState("");
+    setAddCountry("");
+    setAddPincode("");
+    setAddTags([]);
+    setAddSource("");
+    setAddNotes("");
+    setAddCustomFields([]);
+  };
+
+  const [vipDialogDevotee, setVipDialogDevotee] = useState<Devotee | null>(null);
+
+  const handleMarkAsVip = () => {
+    if (!vipDialogDevotee) return;
+    if (!vipCategory || !vipLevel || !vipValidFrom || !vipValidTill) {
+      toast.error("Please fill all required VIP fields");
+      return;
+    }
+    setAllDevotees(prev => prev.map(d => d.id === vipDialogDevotee.id ? {
+      ...d,
+      vip: {
+        status: "Active",
+        category: vipCategory,
+        level: vipLevel,
+        validFrom: vipValidFrom,
+        validTill: vipValidTill,
+        sensitive: vipSensitive,
+        approvedBy: vipApprovalAuthority,
+        notes: vipNotes,
+      },
+      tags: d.tags.includes("VIP") ? d.tags : [...d.tags, "VIP"],
+    } : d));
+    const devoteeId = vipDialogDevotee.id;
+    setVipDialogDevotee(null);
+    setShowAddVip(false);
+    resetVipForm();
+    toast.success(`${vipDialogDevotee.name} added as VIP`);
+    navigate(`/temple/vip/devotees?devoteeId=${devoteeId}`);
+  };
+
+  const resetVipForm = () => {
+    setVipCategory("");
+    setVipLevel("");
+    setVipValidFrom("");
+    setVipValidTill("");
+    setVipApprovalAuthority("");
+    setVipSensitive(false);
+    setVipNotes("");
   };
 
   const handleExport = () => {
@@ -119,9 +270,487 @@ const DevoteesList = () => {
     toast.success("Devotees exported");
   };
 
+  // Inline 360° detail view when a devotee row is clicked
+  if (viewing) {
+    return (
+      <div className="p-4 space-y-4 w-full overflow-x-hidden max-w-[100vw]">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-full"
+        >
+          <Button
+            variant="ghost"
+            onClick={() => setViewing(null)}
+            className="mb-4 gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to All Devotees
+          </Button>
+
+          <Card className="overflow-hidden">
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg flex items-center gap-2">
+                    {viewing.name}
+                    {viewing.vip && (
+                      <Badge
+                        variant="secondary"
+                        className="text-[10px] gap-1"
+                      >
+                        <Crown className="h-3 w-3" />
+                        VIP
+                      </Badge>
+                    )}
+                    {viewing.isVolunteer && (
+                      <Badge
+                        variant="default"
+                        className="text-[10px] gap-1"
+                      >
+                        <HandHelping className="h-3 w-3" />
+                        Volunteer
+                      </Badge>
+                    )}
+                  </h2>
+                  <p className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                    <Phone className="h-3 w-3" />
+                    {viewing.phone}
+                    {viewing.email && (
+                      <>
+                        <span>·</span>
+                        <Mail className="h-3 w-3" />
+                        {viewing.email}
+                      </>
+                    )}
+                  </p>
+                </div>
+                <div className="flex gap-1.5 items-center">
+                  {viewing.tags.map((t) => (
+                    <Badge
+                      key={t}
+                      variant="outline"
+                      className="text-[10px]"
+                    >
+                      {t}
+                    </Badge>
+                  ))}
+                  <Badge
+                    variant={viewing.status === "Active" ? "default" : "outline"}
+                    className="text-[10px]"
+                  >
+                    {viewing.status}
+                  </Badge>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 gap-1 ml-2"
+                  >
+                    <Edit className="h-3 w-3" />
+                    Edit
+                  </Button>
+                </div>
+              </div>
+
+              <Tabs defaultValue="overview" className="mt-4">
+                <div className="border-b border-border">
+                  <TabsList className="w-full justify-start border-b-0 rounded-none h-auto p-0 bg-transparent flex-wrap gap-0">
+                    {[
+                      { value: "overview", icon: Users, label: "Overview" },
+                      { value: "bookings", icon: BookOpen, label: "Bookings" },
+                      { value: "donations", icon: IndianRupee, label: "Donations" },
+                      { value: "visits", icon: Eye, label: "Visits" },
+                      { value: "experience", icon: Star, label: "Experience" },
+                      { value: "commlogs", icon: MessageSquare, label: "Comm Logs" },
+                      ...(viewing.isVolunteer
+                        ? [{ value: "volunteer", icon: HandHelping, label: "Volunteer" }]
+                        : []),
+                    ].map((t) => (
+                      <TabsTrigger
+                        key={t.value}
+                        value={t.value}
+                        className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground data-[state=active]:text-foreground gap-1.5"
+                      >
+                        <t.icon className="h-3.5 w-3.5" />
+                        {t.label}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
+
+                <TabsContent value="overview" className="mt-4 space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      ["Full Name", viewing.name],
+                      ["Mobile", viewing.phone],
+                      ["Email", viewing.email || "—"],
+                      ["Date of Birth", viewing.dob || "—"],
+                      ["Gender", viewing.gender || "—"],
+                      ["Language", viewing.preferredLanguage || "—"],
+                      ["Address", viewing.address || "—"],
+                      ["City", `${viewing.city}, ${viewing.state}`],
+                      ["Country", viewing.country || "—"],
+                      ["Pincode", viewing.pincode || "—"],
+                      ["Source", viewing.source || "—"],
+                      ["Devotee ID", viewing.id],
+                    ].map(([label, value]) => (
+                      <div
+                        key={label as string}
+                        className="p-3 bg-muted/50 rounded-lg"
+                      >
+                        <p className="text-xs text-muted-foreground">
+                          {label as string}
+                        </p>
+                        <p className="font-medium text-sm">{String(value)}</p>
+                      </div>
+                    ))}
+                  </div>
+                  {viewing.tags && viewing.tags.length > 0 && (
+                    <div className="p-3 bg-muted/50 rounded-lg">
+                      <p className="text-xs text-muted-foreground mb-1.5">
+                        Tags
+                      </p>
+                      <div className="flex gap-1.5 flex-wrap">
+                        {viewing.tags.map((t) => (
+                          <Badge
+                            key={t}
+                            variant="secondary"
+                            className="text-xs"
+                          >
+                            {t}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {viewing.notes && (
+                    <div className="p-3 bg-muted/50 rounded-lg">
+                      <p className="text-xs text-muted-foreground">Notes</p>
+                      <p className="text-sm mt-1">
+                        {viewing.notes || "No notes"}
+                      </p>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-4 gap-3">
+                    <div className="p-3 bg-muted/50 rounded-lg text-center">
+                      <p className="text-xl font-bold">{viewing.totalBookings}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        Bookings
+                      </p>
+                    </div>
+                    <div className="p-3 bg-muted/50 rounded-lg text-center">
+                      <p className="text-xl font-bold">
+                        ₹{viewing.totalDonations.toLocaleString()}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        Donations
+                      </p>
+                    </div>
+                    <div className="p-3 bg-muted/50 rounded-lg text-center">
+                      <p className="text-xl font-bold">
+                        {viewing.visits.length}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        Visits
+                      </p>
+                    </div>
+                    <div className="p-3 bg-muted/50 rounded-lg text-center">
+                      <p className="text-xl font-bold">{viewing.lastVisit}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        Last Visit
+                      </p>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="bookings" className="mt-4">
+                  {viewing.bookings && viewing.bookings.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Offering</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Amount</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {viewing.bookings.map((b) => (
+                          <TableRow key={b.id}>
+                            <TableCell className="font-medium text-sm">
+                              {b.offering}
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={
+                                  b.type === "Ritual" ? "default" : "secondary"
+                                }
+                                className="text-[10px]"
+                              >
+                                {b.type}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {b.date}
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className="text-[10px]"
+                              >
+                                {b.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right font-medium text-sm">
+                              {b.amount > 0 ? `₹${b.amount}` : "Free"}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No bookings found
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="donations" className="mt-4">
+                  {viewing.donations && viewing.donations.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>#</TableHead>
+                          <TableHead>Receipt</TableHead>
+                          <TableHead>Purpose</TableHead>
+                          <TableHead>Mode</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead className="text-right">Amount</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {viewing.donations.map((d, i) => (
+                          <TableRow key={d.receipt}>
+                            <TableCell className="text-xs text-muted-foreground">
+                              {i + 1}
+                            </TableCell>
+                            <TableCell className="font-mono text-xs">
+                              {d.receipt}
+                            </TableCell>
+                            <TableCell className="text-sm">{d.purpose}</TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className="text-[10px]"
+                              >
+                                {d.mode}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {d.date}
+                            </TableCell>
+                            <TableCell className="text-right font-medium text-sm">
+                              ₹{d.amount.toLocaleString()}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No donations found
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="visits" className="mt-4">
+                  {viewing.visits && viewing.visits.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Occasion</TableHead>
+                          <TableHead>With Family</TableHead>
+                          <TableHead>Notes</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {viewing.visits.map((v, i) => (
+                          <TableRow key={i}>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {v.date}
+                            </TableCell>
+                            <TableCell className="text-sm">{v.occasion}</TableCell>
+                            <TableCell className="text-sm">
+                              {v.withFamily ? "Yes" : "No"}
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                              {v.notes || "—"}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No visit history found
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="experience" className="mt-4">
+                  {viewing.experiencePosts &&
+                  viewing.experiencePosts.length > 0 ? (
+                    <div className="space-y-3">
+                      {viewing.experiencePosts.map((p, i) => (
+                        <Card key={i} className="bg-muted/40">
+                          <CardContent className="p-3">
+                            <div className="flex items-center justify-between mb-1">
+                              <div className="flex items-center gap-1.5">
+                                <Star className="h-3 w-3 text-yellow-500" />
+                                <span className="text-xs font-medium">
+                                  {p.title}
+                                </span>
+                              </div>
+                              <span className="text-[11px] text-muted-foreground">
+                                {p.date}
+                              </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {p.summary}
+                            </p>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No experience posts recorded
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="commlogs" className="mt-4">
+                  {viewing.commLogs && viewing.commLogs.length > 0 ? (
+                    <div className="space-y-3">
+                      {viewing.commLogs.map((c, i) => (
+                        <Card key={i} className="bg-muted/40">
+                          <CardContent className="p-3 flex items-start gap-2">
+                            <MessageSquare className="h-3.5 w-3.5 mt-0.5 text-muted-foreground" />
+                            <div className="space-y-0.5">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-medium">
+                                  {c.channel}
+                                </span>
+                                <span className="text-[11px] text-muted-foreground">
+                                  {c.date}
+                                </span>
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                {c.summary}
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No communication logs found
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="volunteer" className="mt-4">
+                  {viewing.isVolunteer && (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          ["Status", viewing.volunteerStatus],
+                          [
+                            "Department",
+                            viewing.volunteerData?.department || "—",
+                          ],
+                          [
+                            "Availability",
+                            viewing.volunteerData?.availability || "—",
+                          ],
+                          ["Emergency Contact", volunteerEmergencyContact || "—"],
+                        ].map(([label, value]) => (
+                          <div
+                            key={label as string}
+                            className="p-3 bg-muted/50 rounded-lg"
+                          >
+                            <p className="text-xs text-muted-foreground">
+                              {label as string}
+                            </p>
+                            <p className="font-medium text-sm">{String(value)}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="p-3 bg-muted/50 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-1.5">
+                          Skills
+                        </p>
+                        <div className="flex gap-1.5 flex-wrap">
+                          {viewing.volunteerData?.skills.length ? (
+                            viewing.volunteerData.skills.map((s) => (
+                              <Badge
+                                key={s}
+                                variant="secondary"
+                                className="text-xs"
+                              >
+                                {s}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-xs text-muted-foreground">
+                              No skills listed
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="p-3 bg-muted/50 rounded-lg text-center">
+                          <p className="text-xl font-bold">
+                            {viewing.volunteerData?.events}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            Events
+                          </p>
+                        </div>
+                        <div className="p-3 bg-muted/50 rounded-lg text-center">
+                          <p className="text-xl font-bold">
+                            {viewing.volunteerData?.hours}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            Hours
+                          </p>
+                        </div>
+                        <div className="p-3 bg-muted/50 rounded-lg text-center">
+                          <p className="text-xl font-bold">
+                            {viewing.totalDonations.toLocaleString()}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">
+                            Lifetime Donation
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 space-y-6">
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+    <div className="p-4 space-y-4 w-full overflow-x-hidden max-w-[100vw]">
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="max-w-full">
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">All Devotees</h1>
@@ -130,6 +759,7 @@ const DevoteesList = () => {
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setShowImport(true)} className="gap-2"><Upload className="h-4 w-4" />Import</Button>
             <Button variant="outline" onClick={() => setShowExport(true)} className="gap-2"><Download className="h-4 w-4" />Export</Button>
+            <Button variant="outline" onClick={() => setShowAddVip(true)} className="gap-2"><Crown className="h-4 w-4" />Add VIP Devotee</Button>
             <Button onClick={() => setShowAdd(true)} className="gap-2"><Plus className="h-4 w-4" />Add Devotee</Button>
           </div>
         </div>
@@ -187,60 +817,99 @@ const DevoteesList = () => {
         </div>
 
         {/* Table */}
-        <Card>
+        <Card className="overflow-hidden w-full">
           <CardContent className="p-0">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Devotee ID</TableHead>
-                  <TableHead>Full Name</TableHead>
+                  <TableHead>Devotee</TableHead>
                   <TableHead>Mobile</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>City</TableHead>
                   <TableHead>Tags</TableHead>
-                  <TableHead className="text-center">Bookings</TableHead>
                   <TableHead className="text-right">Donations</TableHead>
-                  <TableHead>Volunteer</TableHead>
-                  <TableHead>Last Visit</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-center">Action</TableHead>
+                  <TableHead className="text-center w-[80px]">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paged.map(d => (
-                  <TableRow key={d.id} className="cursor-pointer hover:bg-muted/50">
-                    <TableCell className="font-mono text-xs text-muted-foreground" onClick={() => setViewing(d)}>{d.id}</TableCell>
-                    <TableCell className="font-medium text-sm" onClick={() => setViewing(d)}>{d.name}</TableCell>
-                    <TableCell className="text-sm" onClick={() => setViewing(d)}>{d.phone}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground" onClick={() => setViewing(d)}>{d.email || "—"}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground" onClick={() => setViewing(d)}>{d.city}</TableCell>
-                    <TableCell onClick={() => setViewing(d)}>
-                      <div className="flex gap-1 flex-wrap">{d.tags.length > 0 ? d.tags.map(t => <Badge key={t} variant="outline" className="text-[9px] px-1 py-0">{t}</Badge>) : <span className="text-xs text-muted-foreground">—</span>}</div>
+                  <TableRow key={d.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setViewing(d)}>
+                    <TableCell>
+                      <p className="font-medium text-sm">{d.name}</p>
                     </TableCell>
-                    <TableCell className="text-center text-sm" onClick={() => setViewing(d)}>{d.totalBookings}</TableCell>
-                    <TableCell className="text-right font-medium text-sm" onClick={() => setViewing(d)}>₹{d.totalDonations.toLocaleString()}</TableCell>
-                    <TableCell onClick={() => setViewing(d)}>
-                      {d.isVolunteer ? <Badge variant="default" className="text-[10px]">Volunteer</Badge> : <span className="text-xs text-muted-foreground">—</span>}
+                    <TableCell className="text-sm">{d.phone}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-1 flex-wrap max-w-[200px]">
+                        {d.tags.length > 0 ? (
+                          <>
+                            {d.tags.slice(0, 2).map(t => <Badge key={t} variant="outline" className="text-[9px] px-1.5 py-0">{t}</Badge>)}
+                            {d.tags.length > 2 && <Badge variant="outline" className="text-[9px] px-1.5 py-0">+{d.tags.length - 2}</Badge>}
+                          </>
+                        ) : <span className="text-xs text-muted-foreground">—</span>}
+                      </div>
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground" onClick={() => setViewing(d)}>{d.lastVisit}</TableCell>
-                    <TableCell onClick={() => setViewing(d)}>
+                    <TableCell className="text-right font-medium text-sm">₹{d.totalDonations.toLocaleString()}</TableCell>
+                    <TableCell>
                       <Badge variant={d.status === "Active" ? "default" : "outline"} className="text-[10px]">{d.status}</Badge>
                     </TableCell>
-                    <TableCell className="text-center">
-                      {d.isVolunteer ? (
-                        <div className="flex items-center justify-center">
-                          <Badge variant="secondary" className="text-[9px] gap-1"><HandHelping className="h-3 w-3" />Volunteer</Badge>
-                        </div>
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-1.5">
+                      {/* VIP Badge or Mark as VIP */}
+                      {d.tags.includes("VIP") ? (
+                        <Badge
+                          variant="secondary"
+                          className="text-[9px] gap-1 px-1.5 py-0.5"
+                        >
+                          <Crown className="h-3 w-3" />
+                          VIP
+                        </Badge>
                       ) : (
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={(e) => { e.stopPropagation(); setShowConvert(d); }} title="Convert to Volunteer">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-amber-600"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setVipDialogDevotee(d);
+                          }}
+                          title="Mark as VIP"
+                        >
+                          <Crown className="h-4 w-4" />
+                        </Button>
+                      )}
+
+                      {/* Volunteer Action */}
+                      {d.tags.includes("Volunteer") ? (
+                        <Badge
+                          variant="default"
+                          className="text-[9px] gap-1 px-1.5 py-0.5 cursor-pointer hover:bg-primary/80"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowConvert(d);
+                          }}
+                        >
+                          <HandHelping className="h-3 w-3" />
+                          Vol
+                        </Badge>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-primary"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowConvert(d);
+                          }}
+                          title="Convert to Volunteer"
+                        >
                           <HandHelping className="h-4 w-4" />
                         </Button>
                       )}
-                    </TableCell>
+                    </div>
+                  </TableCell>
                   </TableRow>
                 ))}
                 {paged.length === 0 && (
-                  <TableRow><TableCell colSpan={12} className="text-center py-8 text-muted-foreground">No devotees match filters</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No devotees match filters</TableCell></TableRow>
                 )}
               </TableBody>
             </Table>
@@ -272,7 +941,7 @@ const DevoteesList = () => {
       </motion.div>
 
       {/* Convert to Volunteer Confirmation */}
-      <Dialog open={!!showConvert} onOpenChange={() => setShowConvert(null)}>
+      <Dialog open={!!showConvert} onOpenChange={() => { setShowConvert(null); setShowVolunteerForm(null); }}>
         <DialogContent className="sm:max-w-[420px] bg-background">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><HandHelping className="h-5 w-5 text-primary" />Convert to Volunteer</DialogTitle>
@@ -284,8 +953,66 @@ const DevoteesList = () => {
           </div>
           <p className="text-sm text-muted-foreground">This will create a volunteer record linked to the same Devotee ID. A Volunteer tab will appear in their profile.</p>
           <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setShowConvert(null)}>Cancel</Button>
-            <Button onClick={() => showConvert && handleConvertToVolunteer(showConvert)} className="gap-2"><HandHelping className="h-4 w-4" />Convert</Button>
+            <Button variant="outline" onClick={() => { setShowConvert(null); setShowVolunteerForm(null); }}>Cancel</Button>
+            <Button onClick={() => showConvert && handleConvertToVolunteer(showConvert)} className="gap-2"><HandHelping className="h-4 w-4" />Add Volunteer Details</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Volunteer Details Form */}
+      <Dialog open={!!showVolunteerForm} onOpenChange={() => { setShowVolunteerForm(null); setVolunteerSkills([]); setVolunteerDept(""); setVolunteerAvailability(""); setVolunteerEmergencyContact(""); }}>
+        <DialogContent className="sm:max-w-[550px] max-h-[85vh] overflow-y-auto bg-background">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><HandHelping className="h-5 w-5 text-primary" />Add Volunteer Details</DialogTitle>
+            <DialogDescription>{showVolunteerForm?.name} · {showVolunteerForm?.id}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div>
+              <Label className="text-xs mb-2 block">Skills *</Label>
+              <div className="flex flex-wrap gap-3">
+                {["Cooking", "Crowd Control", "Ritual Support", "Admin", "Security", "Front Desk"].map(skill => (
+                  <div key={skill} className="flex items-center gap-2">
+                    <Checkbox id={`vol-skill-${skill}`} checked={volunteerSkills.includes(skill)} onCheckedChange={checked => {
+                      if (checked) setVolunteerSkills([...volunteerSkills, skill]);
+                      else setVolunteerSkills(volunteerSkills.filter(s => s !== skill));
+                    }} />
+                    <Label htmlFor={`vol-skill-${skill}`} className="text-sm">{skill}</Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Preferred Department *</Label>
+                <SelectWithAddNew
+                  value={volunteerDept}
+                  onValueChange={setVolunteerDept}
+                  placeholder="Select department"
+                  options={volunteerDeptOptions}
+                  onAddNew={(v) => setVolunteerDeptOptions((prev) => [...prev, v])}
+                  className="mt-1 bg-background"
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Availability *</Label>
+                <SelectWithAddNew
+                  value={volunteerAvailability}
+                  onValueChange={setVolunteerAvailability}
+                  placeholder="Select availability"
+                  options={volunteerAvailabilityOptions}
+                  onAddNew={(v) => setVolunteerAvailabilityOptions((prev) => [...prev, v])}
+                  className="mt-1 bg-background"
+                />
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs">Emergency Contact</Label>
+              <Input placeholder="+91 XXXXX XXXXX" className="mt-1" value={volunteerEmergencyContact} onChange={e => setVolunteerEmergencyContact(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter className="mt-6">
+            <Button variant="outline" onClick={() => { setShowVolunteerForm(null); setVolunteerSkills([]); setVolunteerDept(""); setVolunteerAvailability(""); setVolunteerEmergencyContact(""); }}>Cancel</Button>
+            <Button onClick={handleSaveVolunteer} className="gap-2"><HandHelping className="h-4 w-4" />Save Volunteer</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -298,6 +1025,7 @@ const DevoteesList = () => {
               <div>
                 <DialogTitle className="text-lg flex items-center gap-2">
                   {viewing?.name}
+                  {viewing?.vip && <Badge variant="secondary" className="text-[10px] gap-1"><Crown className="h-3 w-3" />VIP</Badge>}
                   {viewing?.isVolunteer && <Badge variant="default" className="text-[10px] gap-1"><HandHelping className="h-3 w-3" />Volunteer</Badge>}
                 </DialogTitle>
                 <DialogDescription className="flex items-center gap-2 mt-1">
@@ -322,8 +1050,8 @@ const DevoteesList = () => {
                 { value: "experience", icon: Star, label: "Experience" },
                 { value: "commlogs", icon: MessageSquare, label: "Comm Logs" },
                 ...(viewing?.isVolunteer ? [{ value: "volunteer", icon: HandHelping, label: "Volunteer" }] : []),
-              ].map(t => (
-                <TabsTrigger key={t.value} value={t.value} className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent gap-1.5 text-sm">
+                ].map(t => (
+                <TabsTrigger key={t.value} value={t.value} className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground">
                   <t.icon className="h-3.5 w-3.5" />{t.label}
                 </TabsTrigger>
               ))}
@@ -361,11 +1089,10 @@ const DevoteesList = () => {
             <TabsContent value="bookings" className="mt-4">
               {viewing?.bookings && viewing.bookings.length > 0 ? (
                 <Table>
-                  <TableHeader><TableRow><TableHead>ID</TableHead><TableHead>Offering</TableHead><TableHead>Type</TableHead><TableHead>Date</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Amount</TableHead></TableRow></TableHeader>
+                  <TableHeader><TableRow><TableHead>Offering</TableHead><TableHead>Type</TableHead><TableHead>Date</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Amount</TableHead></TableRow></TableHeader>
                   <TableBody>
                     {viewing.bookings.map(b => (
                       <TableRow key={b.id}>
-                        <TableCell className="font-mono text-xs">{b.id}</TableCell>
                         <TableCell className="font-medium text-sm">{b.offering}</TableCell>
                         <TableCell><Badge variant={b.type === "Ritual" ? "default" : "secondary"} className="text-[10px]">{b.type}</Badge></TableCell>
                         <TableCell className="text-sm text-muted-foreground">{b.date}</TableCell>
@@ -484,22 +1211,22 @@ const DevoteesList = () => {
             <div>
               <h3 className="text-sm font-semibold mb-3 text-primary">Basic Info</h3>
               <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2"><Label className="text-xs">Full Name</Label><Input placeholder="Enter full name" className="mt-1" /></div>
-                <div><Label className="text-xs">Mobile (Unique)</Label><Input placeholder="+91 XXXXX XXXXX" className="mt-1" /></div>
-                <div><Label className="text-xs">Email</Label><Input placeholder="email@example.com" className="mt-1" /></div>
-                <div><Label className="text-xs">Date of Birth</Label><Input type="date" className="mt-1" /></div>
-                <div><Label className="text-xs">Gender</Label><SelectWithAddNew value="" onValueChange={() => {}} placeholder="Select gender" options={genderOptions} onAddNew={v => setGenderOptions(p => [...p, v])} className="mt-1 bg-background" /></div>
-                <div><Label className="text-xs">Preferred Language</Label><SelectWithAddNew value="" onValueChange={() => {}} placeholder="Select language" options={langOptions} onAddNew={v => setLangOptions(p => [...p, v])} className="mt-1 bg-background" /></div>
+                <div className="col-span-2"><Label className="text-xs">Full Name *</Label><Input placeholder="Enter full name" className="mt-1" value={addName} onChange={e => setAddName(e.target.value)} /></div>
+                <div><Label className="text-xs">Mobile (Unique) *</Label><Input placeholder="+91 XXXXX XXXXX" className="mt-1" value={addPhone} onChange={e => setAddPhone(e.target.value)} /></div>
+                <div><Label className="text-xs">Email</Label><Input placeholder="email@example.com" className="mt-1" value={addEmail} onChange={e => setAddEmail(e.target.value)} /></div>
+                <div><Label className="text-xs">Date of Birth</Label><Input type="date" className="mt-1" value={addDob} onChange={e => setAddDob(e.target.value)} /></div>
+                <div><Label className="text-xs">Gender</Label><SelectWithAddNew value={addGender} onValueChange={setAddGender} placeholder="Select gender" options={genderOptions} onAddNew={v => setGenderOptions(p => [...p, v])} className="mt-1 bg-background" /></div>
+                <div><Label className="text-xs">Preferred Language</Label><SelectWithAddNew value={addLanguage} onValueChange={setAddLanguage} placeholder="Select language" options={langOptions} onAddNew={v => setLangOptions(p => [...p, v])} className="mt-1 bg-background" /></div>
               </div>
             </div>
             <div>
               <h3 className="text-sm font-semibold mb-3 text-primary">Address</h3>
               <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2"><Label className="text-xs">Address</Label><Input placeholder="Street address" className="mt-1" /></div>
-                <div><Label className="text-xs">City</Label><SelectWithAddNew value="" onValueChange={() => {}} placeholder="Select city" options={cityOptions} onAddNew={v => setCityOptions(p => [...p, v])} className="mt-1 bg-background" /></div>
-                <div><Label className="text-xs">State</Label><SelectWithAddNew value="" onValueChange={() => {}} placeholder="Select state" options={stateOptions} onAddNew={v => setStateOptions(p => [...p, v])} className="mt-1 bg-background" /></div>
-                <div><Label className="text-xs">Country</Label><SelectWithAddNew value="" onValueChange={() => {}} placeholder="Select country" options={countryOptions} onAddNew={v => setCountryOptions(p => [...p, v])} className="mt-1 bg-background" /></div>
-                <div><Label className="text-xs">Pincode</Label><Input placeholder="Pincode" className="mt-1" /></div>
+                <div className="col-span-2"><Label className="text-xs">Address</Label><Input placeholder="Street address" className="mt-1" value={addAddress} onChange={e => setAddAddress(e.target.value)} /></div>
+                <div><Label className="text-xs">City</Label><SelectWithAddNew value={addCity} onValueChange={setAddCity} placeholder="Select city" options={cityOptions} onAddNew={v => setCityOptions(p => [...p, v])} className="mt-1 bg-background" /></div>
+                <div><Label className="text-xs">State</Label><SelectWithAddNew value={addState} onValueChange={setAddState} placeholder="Select state" options={stateOptions} onAddNew={v => setStateOptions(p => [...p, v])} className="mt-1 bg-background" /></div>
+                <div><Label className="text-xs">Country</Label><SelectWithAddNew value={addCountry} onValueChange={setAddCountry} placeholder="Select country" options={countryOptions} onAddNew={v => setCountryOptions(p => [...p, v])} className="mt-1 bg-background" /></div>
+                <div><Label className="text-xs">Pincode</Label><Input placeholder="Pincode" className="mt-1" value={addPincode} onChange={e => setAddPincode(e.target.value)} /></div>
               </div>
             </div>
             <div>
@@ -509,23 +1236,29 @@ const DevoteesList = () => {
                   <Label className="text-xs">Tags (Multi-select)</Label>
                   <div className="flex flex-wrap gap-3 mt-1.5">
                     {tagOptions.map(tag => (
-                      <div key={tag} className="flex items-center gap-2"><Checkbox id={`tag-${tag}`} /><Label htmlFor={`tag-${tag}`} className="text-sm">{tag}</Label></div>
+                      <div key={tag} className="flex items-center gap-2">
+                        <Checkbox id={`tag-${tag}`} checked={addTags.includes(tag)} onCheckedChange={checked => {
+                          if (checked) setAddTags([...addTags, tag]);
+                          else setAddTags(addTags.filter(t => t !== tag));
+                        }} />
+                        <Label htmlFor={`tag-${tag}`} className="text-sm">{tag}</Label>
+                      </div>
                     ))}
                   </div>
                 </div>
-                <div><Label className="text-xs">Source</Label><SelectWithAddNew value="" onValueChange={() => {}} placeholder="Select source" options={sourceOptions} onAddNew={v => setSourceOptions(p => [...p, v])} className="mt-1 bg-background" /></div>
+                <div><Label className="text-xs">Source</Label><SelectWithAddNew value={addSource} onValueChange={setAddSource} placeholder="Select source" options={sourceOptions} onAddNew={v => setSourceOptions(p => [...p, v])} className="mt-1 bg-background" /></div>
               </div>
             </div>
             <div>
               <Label className="text-xs">Notes</Label>
-              <Textarea placeholder="Any additional notes..." className="mt-1" />
+              <Textarea placeholder="Any additional notes..." className="mt-1" value={addNotes} onChange={e => setAddNotes(e.target.value)} />
             </div>
             <CustomFieldsSection fields={addCustomFields} onFieldsChange={setAddCustomFields} />
           </div>
           <DialogFooter className="mt-6 gap-2">
-            <Button variant="outline" onClick={() => setShowAdd(false)}>Cancel</Button>
-            <Button variant="secondary" onClick={() => toast.success("Devotee saved. Form ready for next entry.")}>Save & Add Another</Button>
-            <Button onClick={() => { setShowAdd(false); toast.success("Devotee added successfully"); }}>Save</Button>
+            <Button variant="outline" onClick={() => { setShowAdd(false); resetAddForm(); }}>Cancel</Button>
+            <Button variant="secondary" onClick={() => handleSaveDevotee(true)}>Save & Add Another</Button>
+            <Button onClick={() => handleSaveDevotee(false)}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -611,6 +1344,166 @@ const DevoteesList = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Add VIP Devotee Dialog - Select Devotee First */}
+      {showAddVip && !vipDialogDevotee && (
+        <Dialog open={true} onOpenChange={(open) => {
+          if (!open) {
+            setShowAddVip(false);
+            setVipDialogDevotee(null);
+          }
+        }}>
+          <DialogContent className="max-w-lg bg-background">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Crown className="h-5 w-5 text-amber-600" />
+                Add VIP Devotee
+              </DialogTitle>
+              <DialogDescription>
+                Select an existing devotee to mark as VIP
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Select Devotee *</Label>
+                <Select 
+                  value={vipDialogDevotee?.id || ""} 
+                  onValueChange={(id) => {
+                    const devotee = allDevotees.find(d => d.id === id);
+                    if (devotee) {
+                      setVipDialogDevotee(devotee);
+                      setShowAddVip(false);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-9 bg-background">
+                    <SelectValue placeholder="Search and select devotee" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover">
+                    {allDevotees.filter(d => !d.vip).map((d) => (
+                      <SelectItem key={d.id} value={d.id}>
+                        {d.name} ({d.phone}) · {d.id}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {allDevotees.filter(d => !d.vip).length === 0 && (
+                  <p className="text-[11px] text-muted-foreground">
+                    All devotees are already VIPs
+                  </p>
+                )}
+              </div>
+            </div>
+            <DialogFooter className="mt-4">
+              <Button variant="outline" onClick={() => { setShowAddVip(false); setVipDialogDevotee(null); }}>Cancel</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Mark as VIP Dialog - Shows after devotee is selected */}
+      {vipDialogDevotee && !showAddVip && (
+        <Dialog open={true} onOpenChange={(open) => {
+          if (!open) {
+            setVipDialogDevotee(null);
+            resetVipForm();
+          }
+        }}>
+        <DialogContent className="max-w-lg bg-background">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Crown className="h-5 w-5 text-amber-600" />
+              Mark as VIP
+            </DialogTitle>
+            <DialogDescription>
+              {vipDialogDevotee?.name} · {vipDialogDevotee?.id}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="rounded-md border bg-muted/40 p-3 text-[11px] text-muted-foreground">
+              Assign VIP classification and privileges on top of the existing Devotee profile. After saving, you will be redirected to VIP Management.
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">VIP Category *</Label>
+                <SelectWithAddNew
+                  value={vipCategory}
+                  onValueChange={setVipCategory}
+                  placeholder="Select category"
+                  options={vipCategoryOptions}
+                  onAddNew={(v) => setVipCategoryOptions((prev) => [...prev, v])}
+                  className="h-9 bg-background"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">VIP Level *</Label>
+                <SelectWithAddNew
+                  value={vipLevel}
+                  onValueChange={setVipLevel}
+                  placeholder="Select level"
+                  options={vipLevelOptions}
+                  onAddNew={(v) => setVipLevelOptions((prev) => [...prev, v])}
+                  className="h-9 bg-background"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Valid From *</Label>
+                <Input type="date" className="h-9" value={vipValidFrom} onChange={e => setVipValidFrom(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Valid Till *</Label>
+                <Input type="date" className="h-9" value={vipValidTill} onChange={e => setVipValidTill(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Approval Authority</Label>
+                <SelectWithAddNew
+                  value={vipApprovalAuthority}
+                  onValueChange={setVipApprovalAuthority}
+                  placeholder="Select approver"
+                  options={vipApprovalOptions}
+                  onAddNew={(v) => setVipApprovalOptions((prev) => [...prev, v])}
+                  className="h-9 bg-background"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs flex items-center justify-between">
+                  <span>Sensitive Flag</span>
+                  <span className="text-[11px] text-muted-foreground">
+                    Restricts who can view this record
+                  </span>
+                </Label>
+                <div className="flex items-center justify-between rounded-md border bg-muted/40 px-3 py-2">
+                  <span className="text-xs">Mark as sensitive</span>
+                  <Switch checked={vipSensitive} onCheckedChange={setVipSensitive} />
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Notes / Reason</Label>
+              <Textarea
+                rows={3}
+                placeholder="Reason for VIP classification, context on privileges, etc."
+                value={vipNotes}
+                onChange={e => setVipNotes(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter className="mt-2 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+              <AlertTriangle className="h-3 w-3" />
+              On save, system will activate privileges and redirect to VIP Management.
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => { setVipDialogDevotee(null); resetVipForm(); }}>Cancel</Button>
+              <Button size="sm" className="gap-1" onClick={handleMarkAsVip}>
+                <Crown className="h-3 w-3" />
+                Mark as VIP
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      )}
     </div>
   );
 };

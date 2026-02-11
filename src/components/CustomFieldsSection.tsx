@@ -12,6 +12,8 @@ import {
 export interface CustomField {
   label: string;
   type: string;
+  name?: string;
+  value?: string;
 }
 
 interface CustomFieldsSectionProps {

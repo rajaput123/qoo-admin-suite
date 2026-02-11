@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Activity, TrendingUp, TrendingDown, Users, Heart, IndianRupee, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Activity, TrendingUp, TrendingDown, Users, Heart, IndianRupee, Calendar, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 type DevoteeEngagement = {
@@ -59,7 +59,7 @@ const levelColor = (level: string) => {
   return "text-muted-foreground border-border bg-muted";
 };
 
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 8;
 
 const Engagement = () => {
   const [search, setSearch] = useState("");
@@ -77,7 +77,7 @@ const Engagement = () => {
   const paged = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4 w-full overflow-x-hidden max-w-[100vw]">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="mb-6">
           <h1 className="text-2xl font-semibold tracking-tight">Engagement Tracking</h1>
@@ -175,13 +175,10 @@ const Engagement = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Devotee</TableHead>
-                  <TableHead className="text-center">Sevas</TableHead>
-                  <TableHead className="text-center">Darshans</TableHead>
+                  <TableHead className="text-center">Activity</TableHead>
                   <TableHead className="text-right">Donations</TableHead>
-                  <TableHead className="text-center">Vol. Hours</TableHead>
-                  <TableHead>Last Visit</TableHead>
                   <TableHead>Level</TableHead>
-                  <TableHead>Trend</TableHead>
+                  <TableHead className="text-center w-[80px]">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -191,14 +188,24 @@ const Engagement = () => {
                       <p className="font-medium text-sm">{d.name}</p>
                       <p className="text-xs text-muted-foreground">{d.id}</p>
                     </TableCell>
-                    <TableCell className="text-center font-medium text-sm">{d.totalSevas}</TableCell>
-                    <TableCell className="text-center font-medium text-sm">{d.totalDarshans}</TableCell>
+                    <TableCell className="text-center">
+                      <p className="font-medium text-sm">{d.totalSevas + d.totalDarshans}</p>
+                      <p className="text-[10px] text-muted-foreground">{d.totalSevas}S + {d.totalDarshans}D</p>
+                    </TableCell>
                     <TableCell className="text-right font-medium text-sm">₹{d.totalDonations.toLocaleString()}</TableCell>
-                    <TableCell className="text-center text-sm">{d.volunteerHours > 0 ? `${d.volunteerHours}h` : "—"}</TableCell>
-                    <TableCell className="text-sm text-muted-foreground">{d.lastVisit}</TableCell>
                     <TableCell><Badge variant="outline" className={`text-[10px] ${levelColor(d.level)}`}>{d.level}</Badge></TableCell>
-                    <TableCell>
-                      {d.trend === "up" ? <TrendingUp className="h-4 w-4 text-green-600" /> : d.trend === "down" ? <TrendingDown className="h-4 w-4 text-red-500" /> : <span className="text-xs text-muted-foreground">—</span>}
+                    <TableCell className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setViewing(d);
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

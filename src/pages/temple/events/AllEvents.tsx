@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,20 +9,24 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Search, Eye } from "lucide-react";
-import { templeEvents, eventTypes, structures } from "@/data/eventData";
+import { eventTypes, structures } from "@/data/eventData";
 import SelectWithAddNew from "@/components/SelectWithAddNew";
 import CustomFieldsSection, { CustomField } from "@/components/CustomFieldsSection";
+import { eventActions, useEvents } from "@/modules/events/hooks";
+import { toast } from "sonner";
 
 const statusColors: Record<string, string> = {
-  Planning: "bg-muted text-muted-foreground",
+  Draft: "bg-gray-100 text-gray-700",
   Scheduled: "bg-blue-100 text-blue-700",
-  "In Progress": "bg-green-100 text-green-700",
+  Ongoing: "bg-green-100 text-green-700",
   Completed: "bg-amber-100 text-amber-700",
+  Cancelled: "bg-red-100 text-red-700",
   Archived: "bg-gray-200 text-gray-600",
 };
 
 const AllEvents = () => {
   const navigate = useNavigate();
+  const events = useEvents();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
@@ -32,8 +36,16 @@ const AllEvents = () => {
   const [structureOptions, setStructureOptions] = useState(structures.map(s => s.name));
   const [formType, setFormType] = useState("");
   const [formStructure, setFormStructure] = useState("");
+  const [formName, setFormName] = useState("");
+  const [formStartDate, setFormStartDate] = useState("");
+  const [formEndDate, setFormEndDate] = useState("");
+  const [formBudget, setFormBudget] = useState("");
+  const [formFootfall, setFormFootfall] = useState("");
+  const [formOrganizer, setFormOrganizer] = useState("");
+  const [formCapacity, setFormCapacity] = useState("");
+  const [formDescription, setFormDescription] = useState("");
 
-  const filtered = templeEvents.filter(e => {
+  const filtered = events.filter(e => {
     if (e.status === "Archived") return false;
     if (search && !e.name.toLowerCase().includes(search.toLowerCase()) && !e.id.toLowerCase().includes(search.toLowerCase())) return false;
     if (typeFilter && e.type !== typeFilter) return false;
@@ -42,11 +54,72 @@ const AllEvents = () => {
   });
 
   const stats = [
-    { label: "Total Events", value: templeEvents.filter(e => e.status !== "Archived").length.toString(), sub: "This year" },
-    { label: "In Progress", value: templeEvents.filter(e => e.status === "In Progress").length.toString(), sub: "Currently active" },
-    { label: "Scheduled", value: templeEvents.filter(e => e.status === "Scheduled").length.toString(), sub: "Upcoming" },
-    { label: "Total Budget", value: `₹${(templeEvents.reduce((a, e) => a + e.estimatedBudget, 0) / 100000).toFixed(1)}L`, sub: "All events" },
+    { label: "Total Events", value: events.filter(e => e.status !== "Archived").length.toString(), sub: "This year" },
+    { label: "Ongoing", value: events.filter(e => e.status === "Ongoing").length.toString(), sub: "Currently active" },
+    { label: "Scheduled", value: events.filter(e => e.status === "Scheduled").length.toString(), sub: "Upcoming" },
+    { label: "Total Budget", value: `₹${(events.reduce((a, e) => a + e.estimatedBudget, 0) / 100000).toFixed(1)}L`, sub: "All events" },
   ];
+
+  const structureId = useMemo(() => {
+    const s = structures.find((x) => x.name === formStructure);
+    return s?.id ?? "STR-001";
+  }, [formStructure]);
+
+  function resetForm() {
+    setFormName("");
+    setFormType("");
+    setFormStructure("");
+    setFormStartDate("");
+    setFormEndDate("");
+    setFormBudget("");
+    setFormFootfall("");
+    setFormOrganizer("");
+    setFormCapacity("");
+    setFormDescription("");
+    setCustomFields([]);
+  }
+
+  function onCreateEvent() {
+    if (!formName.trim()) {
+      toast.error("Event name is required");
+      return;
+    }
+    if (!formType) {
+      toast.error("Event type is required");
+      return;
+    }
+    if (!formStructure) {
+      toast.error("Structure is required");
+      return;
+    }
+    if (!formStartDate) {
+      toast.error("Start date is required");
+      return;
+    }
+
+    const ev = eventActions.createEvent({
+      name: formName.trim(),
+      type: formType as any,
+      templeId: "TMP-001",
+      structureId,
+      structureName: formStructure,
+      startDate: formStartDate,
+      endDate: formEndDate || formStartDate,
+      estimatedBudget: Number(formBudget || 0),
+      actualSpend: 0,
+      estimatedFootfall: formFootfall || "—",
+      description: formDescription || "",
+      status: "Draft",
+      organizer: formOrganizer || "—",
+      capacity: Number(formCapacity || 0),
+      linkedSeva: [],
+    });
+
+    setDialogOpen(false);
+    resetForm();
+    toast.success("Event created");
+    navigate(`/temple/events/${ev.id}`);
+  }
 
   return (
     <div className="space-y-6">
@@ -66,7 +139,7 @@ const AllEvents = () => {
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div className="space-y-2">
                 <Label>Event Name</Label>
-                <Input placeholder="e.g. Brahmotsavam 2026" />
+                <Input placeholder="e.g. Brahmotsavam 2026" value={formName} onChange={(e) => setFormName(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Event Type</Label>
@@ -82,31 +155,39 @@ const AllEvents = () => {
               </div>
               <div className="space-y-2">
                 <Label>Start Date</Label>
-                <Input type="date" />
+                <Input type="date" value={formStartDate} onChange={(e) => setFormStartDate(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>End Date</Label>
-                <Input type="date" />
+                <Input type="date" value={formEndDate} onChange={(e) => setFormEndDate(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Estimated Budget (₹)</Label>
-                <Input type="number" placeholder="e.g. 500000" />
+                <Input type="number" placeholder="e.g. 500000" value={formBudget} onChange={(e) => setFormBudget(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Estimated Daily Footfall</Label>
-                <Input type="number" placeholder="e.g. 50000" />
+                <Input type="number" placeholder="e.g. 50000" value={formFootfall} onChange={(e) => setFormFootfall(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Organizer</Label>
+                <Input placeholder="e.g. Festival Committee" value={formOrganizer} onChange={(e) => setFormOrganizer(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Capacity</Label>
+                <Input type="number" placeholder="e.g. 100000" value={formCapacity} onChange={(e) => setFormCapacity(e.target.value)} />
               </div>
               <div className="col-span-2 space-y-2">
                 <Label>Description</Label>
-                <Textarea placeholder="Event description and objectives..." rows={3} />
+                <Textarea placeholder="Event description and objectives..." rows={3} value={formDescription} onChange={(e) => setFormDescription(e.target.value)} />
               </div>
               <div className="col-span-2">
                 <CustomFieldsSection fields={customFields} onFieldsChange={setCustomFields} />
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-6">
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-              <Button onClick={() => setDialogOpen(false)}>Create Event</Button>
+              <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>Cancel</Button>
+              <Button onClick={onCreateEvent}>Create Event</Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -135,8 +216,8 @@ const AllEvents = () => {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input placeholder="Search events..." className="pl-9 h-9 w-64" value={search} onChange={e => setSearch(e.target.value)} />
               </div>
-              <SelectWithAddNew value={typeFilter} onValueChange={setTypeFilter} placeholder="All Types" options={["All Types", ...eventTypes]} onAddNew={() => {}} className="h-9 w-36" />
-              <SelectWithAddNew value={statusFilter} onValueChange={setStatusFilter} placeholder="All Status" options={["All Status", "Planning", "Scheduled", "In Progress", "Completed"]} onAddNew={() => {}} className="h-9 w-36" />
+              <SelectWithAddNew value={typeFilter} onValueChange={setTypeFilter} placeholder="All Types" options={["All Types", ...eventTypes]} onAddNew={() => { }} className="h-9 w-36" />
+              <SelectWithAddNew value={statusFilter} onValueChange={setStatusFilter} placeholder="All Status" options={["All Status", "Draft", "Scheduled", "Ongoing", "Completed", "Cancelled"]} onAddNew={() => { }} className="h-9 w-36" />
             </div>
           </div>
         </CardHeader>
@@ -144,7 +225,6 @@ const AllEvents = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Event ID</TableHead>
                 <TableHead>Event Name</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Structure</TableHead>
@@ -158,7 +238,6 @@ const AllEvents = () => {
             <TableBody>
               {filtered.map((event) => (
                 <TableRow key={event.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/temple/events/${event.id}`)}>
-                  <TableCell className="font-mono text-xs">{event.id}</TableCell>
                   <TableCell className="font-medium">{event.name}</TableCell>
                   <TableCell><Badge variant="outline" className="text-xs">{event.type}</Badge></TableCell>
                   <TableCell className="text-sm">{event.structureName}</TableCell>

@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import CustomFieldsSection, { CustomField } from "@/components/CustomFieldsSection";
 import { stockAdjustments, AdjustmentReason, adjustmentReasons, stockItems, templeStructures, storageLocations } from "@/data/inventoryData";
+import { updateStock } from "@/services/stockService";
 import SelectWithAddNew from "@/components/SelectWithAddNew";
 
 const reasonColor: Record<AdjustmentReason, string> = {
@@ -56,7 +57,6 @@ const Adjustments = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Item</TableHead>
               <TableHead className="text-right">System Qty</TableHead>
@@ -70,7 +70,6 @@ const Adjustments = () => {
           <TableBody>
             {filtered.map(adj => (
               <TableRow key={adj.id}>
-                <TableCell className="font-mono text-xs">{adj.id}</TableCell>
                 <TableCell className="text-sm">{adj.date}</TableCell>
                 <TableCell className="font-medium text-sm">{adj.itemName}</TableCell>
                 <TableCell className="text-right text-sm">{adj.systemQty}</TableCell>
@@ -139,7 +138,40 @@ const Adjustments = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
-            <Button onClick={() => setShowModal(false)}>Save Adjustment</Button>
+            <Button onClick={() => {
+              const item = stockItems.find(i => i.id === form.itemId);
+              if (!item) { setShowModal(false); return; }
+              const actual = Number(form.actualQty) || 0;
+              const systemQty = item.currentStock || 0;
+              const delta = actual - systemQty;
+              // choose transaction type: positive => Purchase In, negative => Damage / Waste
+              const txnType = delta >= 0 ? "Purchase In" : "Damage / Waste";
+              // update stock and create transaction
+              updateStock(form.itemId, delta, {
+                transactionType: txnType,
+                storeLocation: form.storeLocation,
+                structureId: form.structureName,
+                notes: form.notes,
+                createdBy: "Inventory Auditor",
+              });
+              // add adjustment record
+              const adjId = `ADJ-${String(stockAdjustments.length + 1).padStart(3, "0")}`;
+              stockAdjustments.unshift({
+                id: adjId,
+                date: new Date().toISOString().slice(0,10),
+                itemId: item.id,
+                itemName: item.name,
+                systemQty,
+                actualQty: actual,
+                difference: actual - systemQty,
+                reason: form.reason,
+                structureName: form.structureName,
+                storeLocation: form.storeLocation,
+                notes: form.notes,
+                adjustedBy: "Inventory Auditor",
+              });
+              setShowModal(false);
+            }}>Save Adjustment</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

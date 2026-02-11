@@ -25,7 +25,10 @@ export interface TempleEvent {
   actualSpend: number;
   estimatedFootfall: string;
   description: string;
-  status: "Planning" | "Scheduled" | "In Progress" | "Completed" | "Archived";
+  status: "Draft" | "Scheduled" | "Ongoing" | "Completed" | "Cancelled" | "Archived";
+  organizer: string;
+  capacity: number;
+  linkedSeva?: string[];
   createdBy: string;
   createdAt: string;
 }
@@ -35,49 +38,57 @@ export const templeEvents: TempleEvent[] = [
     id: "EVT-001", name: "Brahmotsavam 2026", type: "Festival", templeId: "TMP-001", structureId: "STR-001", structureName: "Main Temple",
     startDate: "2026-03-15", endDate: "2026-03-24", estimatedBudget: 5000000, actualSpend: 0, estimatedFootfall: "75,000",
     description: "10-day annual Brahmotsavam celebration with all major rituals, processions, and cultural programs.",
-    status: "Planning", createdBy: "Temple Admin", createdAt: "2026-01-15",
+    status: "Draft", organizer: "Sri Venkateshwara Temple Trust", capacity: 100000, linkedSeva: ["ES-005", "ES-006"],
+    createdBy: "Temple Admin", createdAt: "2026-01-15",
   },
   {
     id: "EVT-002", name: "Vaikuntha Ekadasi", type: "Special Ritual", templeId: "TMP-001", structureId: "STR-001", structureName: "Main Temple",
     startDate: "2026-01-10", endDate: "2026-01-10", estimatedBudget: 800000, actualSpend: 785000, estimatedFootfall: "1,00,000",
     description: "Vaikuntha Dwara Darshanam – one of the most sacred days of the year.",
-    status: "Completed", createdBy: "Temple Admin", createdAt: "2025-12-01",
+    status: "Completed", organizer: "Chief Priest Office", capacity: 150000, linkedSeva: [],
+    createdBy: "Temple Admin", createdAt: "2025-12-01",
   },
   {
     id: "EVT-003", name: "Ugadi Festival", type: "Festival", templeId: "TMP-001", structureId: "STR-001", structureName: "Main Temple",
     startDate: "2026-03-28", endDate: "2026-03-30", estimatedBudget: 1200000, actualSpend: 0, estimatedFootfall: "50,000",
     description: "Telugu New Year celebrations with special puja, cultural events, and prasadam distribution.",
-    status: "Planning", createdBy: "Temple Admin", createdAt: "2026-02-01",
+    status: "Draft", organizer: "Cultural Committee", capacity: 75000, linkedSeva: [],
+    createdBy: "Temple Admin", createdAt: "2026-02-01",
   },
   {
     id: "EVT-004", name: "Maha Shivaratri", type: "Special Ritual", templeId: "TMP-001", structureId: "STR-001", structureName: "Main Temple",
     startDate: "2026-02-15", endDate: "2026-02-15", estimatedBudget: 2500000, actualSpend: 1150000, estimatedFootfall: "80,000",
     description: "Night-long Shiva worship with Rudra Abhishekam, Maha Nyasa Purva, and all-night darshan.",
-    status: "Scheduled", createdBy: "Temple Admin", createdAt: "2026-01-20",
+    status: "Scheduled", organizer: "Ritual Department", capacity: 120000, linkedSeva: ["ES-001", "ES-002", "ES-003", "ES-004"],
+    createdBy: "Temple Admin", createdAt: "2026-01-20",
   },
   {
     id: "EVT-005", name: "Ratha Yatra", type: "Festival", templeId: "TMP-001", structureId: "STR-001", structureName: "Main Temple",
     startDate: "2026-04-10", endDate: "2026-04-10", estimatedBudget: 1500000, actualSpend: 0, estimatedFootfall: "60,000",
     description: "Grand chariot procession through the temple complex and surrounding streets.",
-    status: "Planning", createdBy: "Temple Admin", createdAt: "2026-02-05",
+    status: "Draft", organizer: "Festival Committee", capacity: 80000, linkedSeva: [],
+    createdBy: "Temple Admin", createdAt: "2026-02-05",
   },
   {
     id: "EVT-006", name: "Annual Annadanam Drive", type: "Annadanam", templeId: "TMP-001", structureId: "STR-005", structureName: "Annadanam Hall",
     startDate: "2026-04-01", endDate: "2026-04-03", estimatedBudget: 600000, actualSpend: 0, estimatedFootfall: "50,000",
     description: "3-day mass feeding program serving 50,000+ devotees.",
-    status: "Planning", createdBy: "Temple Admin", createdAt: "2026-02-08",
+    status: "Draft", organizer: "Annadanam Team", capacity: 15000, linkedSeva: [],
+    createdBy: "Temple Admin", createdAt: "2026-02-08",
   },
   {
     id: "EVT-007", name: "Classical Music Festival", type: "Cultural", templeId: "TMP-001", structureId: "STR-006", structureName: "Cultural Hall",
     startDate: "2026-05-01", endDate: "2026-05-03", estimatedBudget: 300000, actualSpend: 0, estimatedFootfall: "5,000",
     description: "3-evening Carnatic music festival featuring renowned artists.",
-    status: "Planning", createdBy: "Temple Admin", createdAt: "2026-02-10",
+    status: "Draft", organizer: "Cultural Affairs", capacity: 2000, linkedSeva: [],
+    createdBy: "Temple Admin", createdAt: "2026-02-10",
   },
   {
     id: "EVT-008", name: "New Year Special Abhishekam", type: "Special Ritual", templeId: "TMP-001", structureId: "STR-001", structureName: "Main Temple",
     startDate: "2026-01-01", endDate: "2026-01-01", estimatedBudget: 200000, actualSpend: 195000, estimatedFootfall: "30,000",
     description: "New Year sunrise special Abhishekam with prasadam distribution.",
-    status: "Archived", createdBy: "Temple Admin", createdAt: "2025-12-15",
+    status: "Archived", organizer: "Chief Priest Office", capacity: 50000, linkedSeva: [],
+    createdBy: "Temple Admin", createdAt: "2025-12-15",
   },
 ];
 
@@ -170,6 +181,9 @@ export interface EventTemplate {
   defaultSevas: string[];
   defaultRoles: string[];
   defaultMaterials: string[];
+  defaultTasks: string[];
+  defaultPriestAssignment?: string;
+  conflictCheckEnabled: boolean;
   usageCount: number;
 }
 
@@ -180,6 +194,9 @@ export const eventTemplates: EventTemplate[] = [
     defaultSevas: ["Suprabhatam", "Abhishekam", "Kalyanotsavam", "Special Darshan"],
     defaultRoles: ["Photography", "Decoration", "Sound System", "Lighting"],
     defaultMaterials: ["Rose Petals", "Jasmine Garlands", "Camphor", "Ghee"],
+    defaultTasks: ["Setup main mandap", "Arrange flower decorations", "Test sound system", "Brief volunteer teams", "Stock prasadam materials"],
+    defaultPriestAssignment: "Sri Ramachandra Sharma",
+    conflictCheckEnabled: true,
     usageCount: 3,
   },
   {
@@ -188,6 +205,9 @@ export const eventTemplates: EventTemplate[] = [
     defaultSevas: ["Abhishekam", "Special Darshan"],
     defaultRoles: ["Photography", "Sound System"],
     defaultMaterials: ["Camphor", "Kumkum", "Coconut", "Milk"],
+    defaultTasks: ["Prepare abhishekam materials", "Arrange prasadam distribution", "Coordinate with volunteers"],
+    defaultPriestAssignment: "Sri Venkateshwara Dikshitar",
+    conflictCheckEnabled: true,
     usageCount: 5,
   },
   {
@@ -196,6 +216,9 @@ export const eventTemplates: EventTemplate[] = [
     defaultSevas: [],
     defaultRoles: ["Kitchen Assistants", "Crowd Control"],
     defaultMaterials: ["Rice", "Toor Dal", "Ghee", "Sesame Oil"],
+    defaultTasks: ["Procure ingredients", "Arrange seating area", "Setup serving counters", "Coordinate kitchen staff"],
+    defaultPriestAssignment: undefined,
+    conflictCheckEnabled: false,
     usageCount: 4,
   },
   {
@@ -204,13 +227,16 @@ export const eventTemplates: EventTemplate[] = [
     defaultSevas: [],
     defaultRoles: ["Sound System", "Lighting", "Photography"],
     defaultMaterials: [],
+    defaultTasks: ["Book artists", "Setup stage", "Test audio equipment", "Arrange seating"],
+    defaultPriestAssignment: undefined,
+    conflictCheckEnabled: true,
     usageCount: 2,
   },
 ];
 
 // ---- DROPDOWN OPTIONS ----
 export const eventTypes: TempleEvent["type"][] = ["Festival", "Annadanam", "Cultural", "VIP", "Public", "Special Ritual"];
-export const eventStatuses: TempleEvent["status"][] = ["Planning", "Scheduled", "In Progress", "Completed", "Archived"];
+export const eventStatuses: TempleEvent["status"][] = ["Draft", "Scheduled", "Ongoing", "Completed", "Cancelled", "Archived"];
 export const expenseCategories: EventExpense["category"][] = ["Freelancer Payment", "Material Cost", "Kitchen Cost", "Miscellaneous", "Decoration", "Sound & Lighting", "Transportation", "Donations Refund"];
 
 // ---- HELPER FUNCTIONS ----
@@ -222,3 +248,170 @@ export const getEventFreelancers = (eventId: string) => eventFreelancerAllocatio
 export const getEventVolunteers = (eventId: string) => eventVolunteerAllocations.filter(v => v.eventId === eventId);
 export const getEventKitchenLinks = (eventId: string) => eventKitchenLinks.filter(k => k.eventId === eventId);
 export const getEventBatches = (eventId: string) => kitchenBatches.filter(b => b.eventId === eventId);
+
+// ==========================================
+// EVENT RESOURCES - NEW MODULE
+// ==========================================
+
+// ---- EVENT RESOURCE ALLOCATION ----
+export interface EventResource {
+  id: string;
+  eventId: string;
+  resourceType: "Material" | "Personnel" | "Infrastructure";
+  resourceName: string;
+  requiredQuantity: number;
+  allocatedQuantity: number;
+  unit: string;
+  status: "Available" | "Partial" | "Conflict" | "Pending";
+  linkedModule?: "Inventory" | "Freelancer" | "Volunteer" | "Infrastructure";
+  linkedId?: string;
+  notes?: string;
+}
+
+export const eventResources: EventResource[] = [
+  // Maha Shivaratri Resources
+  { id: "RES-001", eventId: "EVT-004", resourceType: "Material", resourceName: "Jasmine Flowers", requiredQuantity: 500, allocatedQuantity: 500, unit: "kg", status: "Available", linkedModule: "Inventory", linkedId: "INV-101" },
+  { id: "RES-002", eventId: "EVT-004", resourceType: "Material", resourceName: "Ghee", requiredQuantity: 200, allocatedQuantity: 200, unit: "L", status: "Available", linkedModule: "Inventory", linkedId: "PO-2026-010" },
+  { id: "RES-003", eventId: "EVT-004", resourceType: "Personnel", resourceName: "Photographer", requiredQuantity: 2, allocatedQuantity: 2, unit: "persons", status: "Available", linkedModule: "Freelancer", linkedId: "FRL-0001" },
+  { id: "RES-004", eventId: "EVT-004", resourceType: "Infrastructure", resourceName: "Sound System", requiredQuantity: 1, allocatedQuantity: 1, unit: "set", status: "Available", linkedModule: "Infrastructure", linkedId: "INFRA-SS-01" },
+  { id: "RES-005", eventId: "EVT-004", resourceType: "Personnel", resourceName: "Volunteers", requiredQuantity: 100, allocatedQuantity: 85, unit: "persons", status: "Partial", linkedModule: "Volunteer" },
+
+  // Brahmotsavam Resources
+  { id: "RES-006", eventId: "EVT-001", resourceType: "Material", resourceName: "Rose Petals", requiredQuantity: 1000, allocatedQuantity: 600, unit: "kg", status: "Partial", linkedModule: "Inventory" },
+  { id: "RES-007", eventId: "EVT-001", resourceType: "Infrastructure", resourceName: "Lighting Equipment", requiredQuantity: 3, allocatedQuantity: 3, unit: "sets", status: "Available", linkedModule: "Infrastructure", linkedId: "INFRA-LT-01" },
+  { id: "RES-008", eventId: "EVT-001", resourceType: "Personnel", resourceName: "Decorators", requiredQuantity: 10, allocatedQuantity: 10, unit: "persons", status: "Available", linkedModule: "Freelancer", linkedId: "FRL-0002" },
+
+  // Calendar Conflict - Same sound system booked
+  { id: "RES-009", eventId: "EVT-007", resourceType: "Infrastructure", resourceName: "Sound System", requiredQuantity: 1, allocatedQuantity: 0, unit: "set", status: "Conflict", linkedModule: "Infrastructure", linkedId: "INFRA-SS-01", notes: "Already booked for another event" },
+];
+
+// ---- RESOURCE CONFLICTS ----
+export interface ResourceConflict {
+  id: string;
+  conflictType: "Structure" | "Resource" | "Personnel" | "Infrastructure";
+  eventId1: string;
+  eventId2: string;
+  resourceId?: string;
+  structureId?: string;
+  conflictDescription: string;
+  severity: "High" | "Medium" | "Low";
+  resolved: boolean;
+}
+
+export const resourceConflicts: ResourceConflict[] = [
+  {
+    id: "CONF-001",
+    conflictType: "Infrastructure",
+    eventId1: "EVT-004",
+    eventId2: "EVT-007",
+    resourceId: "INFRA-SS-01",
+    conflictDescription: "Sound System INFRA-SS-01 double-booked between Maha Shivaratri and Classical Music Festival",
+    severity: "High",
+    resolved: false,
+  },
+];
+
+// ---- CAPACITY ALERTS ----
+export interface CapacityAlert {
+  eventId: string;
+  eventName: string;
+  capacity: number;
+  estimatedAttendance: number;
+  utilizationPercent: number;
+  alertLevel: "Normal" | "Warning" | "Critical";
+  message: string;
+}
+
+// ---- CONFLICT DETECTION HELPERS ----
+
+/**
+ * Check if a structure has conflicting events for given date range
+ */
+export const checkStructureConflict = (
+  structureId: string,
+  startDate: string,
+  endDate: string,
+  excludeEventId?: string
+): boolean => {
+  const conflicts = templeEvents.filter(event => {
+    if (excludeEventId && event.id === excludeEventId) return false;
+    if (event.structureId !== structureId) return false;
+    // Check date overlap
+    return !(endDate < event.startDate || startDate > event.endDate);
+  });
+  return conflicts.length > 0;
+};
+
+/**
+ * Get list of conflicting events for a given structure and date range
+ */
+export const getConflictingEvents = (
+  structureId: string,
+  startDate: string,
+  endDate: string,
+  excludeEventId?: string
+): TempleEvent[] => {
+  return templeEvents.filter(event => {
+    if (excludeEventId && event.id === excludeEventId) return false;
+    if (event.structureId !== structureId) return false;
+    if (event.status === "Cancelled" || event.status === "Archived") return false;
+    // Check date overlap
+    return !(endDate < event.startDate || startDate > event.endDate);
+  });
+};
+
+/**
+ * Get capacity alerts for events
+ */
+export const getCapacityAlerts = (eventId?: string): CapacityAlert[] => {
+  const eventsToCheck = eventId ? templeEvents.filter(e => e.id === eventId) : templeEvents;
+
+  return eventsToCheck.map(event => {
+    const estimatedAttendance = parseInt(event.estimatedFootfall.replace(/,/g, '')) || 0;
+    const utilizationPercent = event.capacity > 0 ? (estimatedAttendance / event.capacity) * 100 : 0;
+
+    let alertLevel: CapacityAlert["alertLevel"] = "Normal";
+    let message = "Capacity within normal limits";
+
+    if (utilizationPercent >= 100) {
+      alertLevel = "Critical";
+      message = `Capacity exceeded! Expected ${estimatedAttendance.toLocaleString()} attendees but capacity is ${event.capacity.toLocaleString()}`;
+    } else if (utilizationPercent >= 80) {
+      alertLevel = "Warning";
+      message = `Nearing capacity (${utilizationPercent.toFixed(0)}% full)`;
+    }
+
+    return {
+      eventId: event.id,
+      eventName: event.name,
+      capacity: event.capacity,
+      estimatedAttendance,
+      utilizationPercent,
+      alertLevel,
+      message,
+    };
+  }).filter(alert => alert.alertLevel !== "Normal");
+};
+
+/**
+ * Get resource allocation for specific event
+ */
+export const getResourceAllocation = (eventId: string): EventResource[] => {
+  return eventResources.filter(r => r.eventId === eventId);
+};
+
+/**
+ * Detect resource conflicts for specific event
+ */
+export const detectResourceConflicts = (eventId: string): ResourceConflict[] => {
+  return resourceConflicts.filter(c =>
+    (c.eventId1 === eventId || c.eventId2 === eventId) && !c.resolved
+  );
+};
+
+/**
+ * Get all unresolved conflicts across all events
+ */
+export const getAllActiveConflicts = (): ResourceConflict[] => {
+  return resourceConflicts.filter(c => !c.resolved);
+};

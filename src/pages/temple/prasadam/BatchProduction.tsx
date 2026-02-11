@@ -43,6 +43,53 @@ const BatchProduction = () => {
     };
   }) ?? [];
 
+  if (showDetail) {
+    const b = showDetail;
+    return (
+      <div className="p-6 space-y-6">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => setShowDetail(null)}><ChevronLeft className="h-4 w-4" /></Button>
+              <div>
+                <h1 className="text-2xl font-semibold tracking-tight">{b.id} · {b.prasadam}</h1>
+                <p className="text-muted-foreground text-sm">{b.date} · {b.time}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant={b.status === "Active" ? "default" : b.status === "Expiring Soon" ? "secondary" : "destructive"} className="text-xs">{b.status}</Badge>
+            </div>
+          </div>
+          <Card>
+            <CardHeader><CardTitle className="text-sm">Inventory Deductions</CardTitle></CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Inventory ID</TableHead>
+                    <TableHead>Material</TableHead>
+                    <TableHead className="text-right">Consumed</TableHead>
+                    <TableHead>Unit</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {b.inventoryDeductions.map((d, i) => (
+                    <TableRow key={i}>
+                      <TableCell className="font-mono text-xs text-primary">{d.inventoryId}</TableCell>
+                      <TableCell className="font-medium">{d.inventoryName}</TableCell>
+                      <TableCell className="text-right font-mono">{d.qty}</TableCell>
+                      <TableCell>{d.unit}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -287,9 +334,48 @@ const BatchProduction = () => {
               </div>
             )}
           </div>
-          <DialogFooter>
+            <DialogFooter>
             <Button variant="outline" onClick={() => { setShowCreate(false); setSelectedPrasadam(""); setBatchQty(""); }}>Cancel</Button>
-            <Button onClick={() => { toast.success("Batch created — inventory auto-deducted"); setShowCreate(false); setSelectedPrasadam(""); setBatchQty(""); }}>
+            <Button onClick={() => {
+              // perform actual deductions by inventoryId using stockService
+              const qty = parseInt(batchQty) || 0;
+              if (selectedRecipe && qty > 0) {
+                import("@/services/stockService").then(svc => {
+                  selectedRecipe.items.forEach(item => {
+                    const needed = (item.qtyPerUnit * qty) / 1000;
+                    // find inventory item by id
+                    const inv = inventoryItems.find(i => i.id === item.inventoryId);
+                    if (inv) {
+                      svc.updateStock(inv.id, -needed, {
+                        transactionType: "Usage Out",
+                        linkedKitchenRequest: `BATCH-${Date.now()}`,
+                        notes: `Batch production ${selectedPrasadam}`,
+                        createdBy: "Kitchen",
+                      });
+                    }
+                  });
+                  // create a kitchen batch record (in-memory)
+                  const newBatch = {
+                    id: `BTH-${String(kitchenBatches.length + 1).padStart(6, "0")}`,
+                    prasadam: selectedPrasadam,
+                    date: new Date().toISOString().slice(0,10),
+                    time: new Date().toLocaleTimeString(),
+                    qty,
+                    allocated: 0,
+                    remaining: qty,
+                    team: "Team",
+                    expiry: "N/A",
+                    status: "Active",
+                    inventoryDeductions: selectedRecipe.items.map(it => ({ inventoryId: it.inventoryId, inventoryName: it.inventoryName, qty: (it.qtyPerUnit * qty) / 1000, unit: it.unit })),
+                  };
+                  kitchenBatches.push(newBatch as any);
+                  toast.success("Batch created — inventory auto-deducted");
+                  setShowCreate(false); setSelectedPrasadam(""); setBatchQty("");
+                });
+              } else {
+                toast.error("Invalid batch or quantity");
+              }
+            }}>
               Create Batch & Deduct Stock
             </Button>
           </DialogFooter>

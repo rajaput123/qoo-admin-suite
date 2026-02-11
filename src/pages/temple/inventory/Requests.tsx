@@ -40,6 +40,72 @@ const Requests = () => {
 
   const pendingCount = stockRequests.filter(r => r.status === "Pending").length;
 
+  if (detailRequest) {
+    const r = detailRequest;
+    return (
+      <div className="p-6 space-y-6">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight">Request {r.id}</h1>
+              <p className="text-muted-foreground text-sm">{r.sourceRefName} · {r.source}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className={`text-xs ${statusConfig[r.status]}`}>{r.status}</Badge>
+              <Button size="sm" variant="outline" onClick={() => setDetailRequest(null)}>Back</Button>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div><span className="text-muted-foreground">Source:</span> <Badge variant="outline" className={`text-xs ${sourceConfig[r.source].color}`}>{r.source}</Badge></div>
+              <div><span className="text-muted-foreground">Status:</span> <Badge variant="outline" className={`text-xs ${statusConfig[r.status]}`}>{r.status}</Badge></div>
+              <div><span className="text-muted-foreground">Reference:</span> <span className="font-medium">{r.sourceRefName}</span></div>
+              <div><span className="text-muted-foreground">Requested By:</span> <span className="font-medium">{r.requestedBy}</span></div>
+              <div><span className="text-muted-foreground">Date:</span> <span className="font-medium">{r.date}</span></div>
+              {r.issuedDate && <div><span className="text-muted-foreground">Issued:</span> <span className="font-medium">{r.issuedDate} by {r.issuedBy}</span></div>}
+            </div>
+            {r.notes && <div className="p-3 bg-muted/50 rounded-lg text-sm">{r.notes}</div>}
+            <div className="border rounded-lg">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Item</TableHead>
+                    <TableHead className="text-right">Requested</TableHead>
+                    <TableHead className="text-right">Available</TableHead>
+                    <TableHead className="text-right">Issued</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {r.items.map((item, idx) => {
+                    const shortage = item.requestedQty > item.available;
+                    return (
+                      <TableRow key={idx}>
+                        <TableCell className="font-medium text-sm">{item.itemName}</TableCell>
+                        <TableCell className="text-right text-sm">{item.requestedQty} {item.unit}</TableCell>
+                        <TableCell className={`text-right text-sm ${shortage ? 'text-destructive font-medium' : ''}`}>{item.available} {item.unit}</TableCell>
+                        <TableCell className="text-right text-sm">{item.issuedQty} {item.unit}</TableCell>
+                        <TableCell>
+                          {shortage ? (
+                            <Badge variant="destructive" className="text-[10px]">Shortage</Badge>
+                          ) : item.issuedQty >= item.requestedQty ? (
+                            <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700">Fulfilled</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-[10px] bg-amber-50 text-amber-700">Pending</Badge>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
       <div>
@@ -72,7 +138,6 @@ const Requests = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Request ID</TableHead>
               <TableHead>Date</TableHead>
               <TableHead>Source</TableHead>
               <TableHead>Reference</TableHead>
@@ -88,7 +153,6 @@ const Requests = () => {
               const hasShortage = req.items.some(i => i.requestedQty > i.available);
               return (
                 <TableRow key={req.id} className="cursor-pointer" onClick={() => setDetailRequest(req)}>
-                  <TableCell className="font-mono text-xs">{req.id}</TableCell>
                   <TableCell className="text-sm">{req.date}</TableCell>
                   <TableCell><Badge variant="outline" className={`text-xs ${sc.color}`}>{req.source}</Badge></TableCell>
                   <TableCell>

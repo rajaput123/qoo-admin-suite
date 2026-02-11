@@ -8,12 +8,21 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Plus, Copy, Eye, LayoutTemplate } from "lucide-react";
-import { eventTemplates } from "@/data/eventData";
+import { eventTemplates, structures } from "@/data/eventData";
 import SelectWithAddNew from "@/components/SelectWithAddNew";
 import CustomFieldsSection, { CustomField } from "@/components/CustomFieldsSection";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { eventActions } from "@/modules/events/hooks";
+
+function addDaysIso(startDate: string, days: number) {
+  const d = new Date(startDate);
+  d.setDate(d.getDate() + Math.max(0, days));
+  return d.toISOString().slice(0, 10);
+}
 
 const EventTemplates = () => {
+  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [detailTemplate, setDetailTemplate] = useState<string | null>(null);
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
@@ -21,6 +30,36 @@ const EventTemplates = () => {
   const [formType, setFormType] = useState("");
 
   const detail = eventTemplates.find(t => t.id === detailTemplate);
+
+  function createFromTemplate(tplId: string) {
+    const tpl = eventTemplates.find((t) => t.id === tplId);
+    if (!tpl) return;
+
+    const startDate = new Date().toISOString().slice(0, 10);
+    const endDate = addDaysIso(startDate, Math.max(0, tpl.defaultDuration - 1));
+    const defaultStructure = structures[0] ?? { id: "STR-001", name: "Main Temple" };
+
+    const ev = eventActions.createEvent({
+      name: `${tpl.name} (New)`,
+      type: tpl.type as any,
+      templeId: "TMP-001",
+      structureId: defaultStructure.id,
+      structureName: defaultStructure.name,
+      startDate,
+      endDate,
+      estimatedBudget: tpl.estimatedBudget,
+      actualSpend: 0,
+      estimatedFootfall: "—",
+      description: tpl.description,
+      status: "Draft",
+      organizer: "—",
+      capacity: 0,
+      linkedSeva: [],
+    });
+
+    toast.success("Event created from template");
+    navigate(`/temple/events/${ev.id}`);
+  }
 
   return (
     <div className="space-y-6">
@@ -37,7 +76,6 @@ const EventTemplates = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Template ID</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Duration</TableHead>
@@ -51,7 +89,6 @@ const EventTemplates = () => {
             <TableBody>
               {eventTemplates.map(t => (
                 <TableRow key={t.id}>
-                  <TableCell className="font-mono text-xs">{t.id}</TableCell>
                   <TableCell className="font-medium">{t.name}</TableCell>
                   <TableCell><Badge variant="outline" className="text-xs">{t.type}</Badge></TableCell>
                   <TableCell className="text-sm">{t.defaultDuration} day(s)</TableCell>
@@ -66,7 +103,7 @@ const EventTemplates = () => {
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setDetailTemplate(t.id)}><Eye className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toast.success("Event created from template")}><Copy className="h-4 w-4" /></Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => createFromTemplate(t.id)}><Copy className="h-4 w-4" /></Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -117,7 +154,7 @@ const EventTemplates = () => {
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setDetailTemplate(null)}>Close</Button>
-            <Button onClick={() => { toast.success("Event created from template"); setDetailTemplate(null); }}><Copy className="h-4 w-4 mr-2" />Use Template</Button>
+            <Button onClick={() => { if (detailTemplate) createFromTemplate(detailTemplate); setDetailTemplate(null); }}><Copy className="h-4 w-4 mr-2" />Use Template</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

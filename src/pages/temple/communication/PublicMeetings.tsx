@@ -284,7 +284,6 @@ const PublicMeetings = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
               <TableHead>Title</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Mode</TableHead>
@@ -296,11 +295,10 @@ const PublicMeetings = () => {
           </TableHeader>
           <TableBody>
             {filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">No meetings found</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">No meetings found</TableCell></TableRow>
             ) : (
               filtered.map(mtg => (
                 <TableRow key={mtg.id} className="cursor-pointer" onClick={() => setSelected(mtg)}>
-                  <TableCell className="font-mono text-xs">{mtg.id}</TableCell>
                   <TableCell className="font-medium">{mtg.title}</TableCell>
                   <TableCell><Badge variant="secondary" className="text-xs">{mtg.type}</Badge></TableCell>
                   <TableCell className="text-xs">
@@ -338,15 +336,15 @@ const PublicMeetings = () => {
               </div>
 
               <Tabs defaultValue="overview">
-                <TabsList className="w-full">
-                  <TabsTrigger value="overview" className="flex-1">Overview</TabsTrigger>
-                  <TabsTrigger value="participants" className="flex-1">Participants</TabsTrigger>
-                  <TabsTrigger value="agenda" className="flex-1">Agenda</TabsTrigger>
-                  {(selected.status === "ongoing" || selected.status === "completed" || selected.status === "archived") && (
-                    <TabsTrigger value="records" className="flex-1">Post-Meeting</TabsTrigger>
-                  )}
-                  <TabsTrigger value="custom" className="flex-1">Custom Fields</TabsTrigger>
-                </TabsList>
+              <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent flex-wrap">
+                <TabsTrigger value="overview" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground">Overview</TabsTrigger>
+                <TabsTrigger value="participants" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground">Participants</TabsTrigger>
+                <TabsTrigger value="agenda" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground">Agenda</TabsTrigger>
+                {(selected.status === "ongoing" || selected.status === "completed" || selected.status === "archived") && (
+                  <TabsTrigger value="records" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground">Post-Meeting</TabsTrigger>
+                )}
+                <TabsTrigger value="custom" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground">Custom Fields</TabsTrigger>
+              </TabsList>
 
                 <TabsContent value="overview" className="space-y-4 mt-4">
                   <div className="grid grid-cols-2 gap-4 text-sm">

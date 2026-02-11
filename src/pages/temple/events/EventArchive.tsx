@@ -4,11 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Eye, Archive, Lock } from "lucide-react";
-import { templeEvents, eventExpenses } from "@/data/eventData";
+import { eventExpenses } from "@/data/eventData";
+import { useEvents } from "@/modules/events/hooks";
 
 const EventArchive = () => {
   const navigate = useNavigate();
-  const archived = templeEvents.filter(e => e.status === "Archived" || e.status === "Completed");
+  const events = useEvents();
+  const archived = events.filter(e => e.status === "Archived" || e.status === "Completed");
 
   return (
     <div className="space-y-6">
@@ -27,7 +29,6 @@ const EventArchive = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Event ID</TableHead>
                 <TableHead>Event Name</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Structure</TableHead>
@@ -40,12 +41,11 @@ const EventArchive = () => {
             </TableHeader>
             <TableBody>
               {archived.length === 0 ? (
-                <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No archived events</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No archived events</TableCell></TableRow>
               ) : archived.map(event => {
                 const spend = eventExpenses.filter(e => e.eventId === event.id).reduce((a, e) => a + e.amount, 0);
                 return (
                   <TableRow key={event.id}>
-                    <TableCell className="font-mono text-xs">{event.id}</TableCell>
                     <TableCell className="font-medium">{event.name}</TableCell>
                     <TableCell><Badge variant="outline" className="text-xs">{event.type}</Badge></TableCell>
                     <TableCell className="text-sm">{event.structureName}</TableCell>

@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useTaskEngineBootstrap } from "@/modules/tasks/hooks";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import TempleRegister from "./pages/TempleRegister";
@@ -65,6 +66,11 @@ import InventoryTransactions from "./pages/temple/inventory/Transactions";
 import InventoryRequests from "./pages/temple/inventory/Requests";
 import InventoryAdjustments from "./pages/temple/inventory/Adjustments";
 import InventoryReports from "./pages/temple/inventory/Reports";
+import InventoryPurchases from "./pages/temple/inventory/Purchases";
+import TransactionDetail from "./pages/temple/inventory/TransactionDetail";
+import ItemDetail from "./pages/temple/inventory/ItemDetail";
+import PurchaseOrderDetail from "./pages/temple/inventory/purchases/PurchaseOrderDetail";
+import DeliveryDetail from "./pages/temple/inventory/purchases/DeliveryDetail";
 import SupplierDashboard from "./pages/temple/suppliers/Dashboard";
 import SupplierRegistry from "./pages/temple/suppliers/Registry";
 import SupplierOnboarding from "./pages/temple/suppliers/Onboarding";
@@ -104,6 +110,7 @@ import EventsLayout from "./pages/temple/EventsLayout";
 import AllEvents from "./pages/temple/events/AllEvents";
 import CalendarView from "./pages/temple/events/CalendarView";
 import EventTemplates from "./pages/temple/events/EventTemplates";
+import EventResources from "./pages/temple/events/EventResources";
 import EventDetails from "./pages/temple/events/EventDetails";
 import EventExpenses from "./pages/temple/events/EventExpenses";
 import EventReports from "./pages/temple/events/EventReports";
@@ -115,6 +122,7 @@ import AllTasks from "./pages/temple/tasks/AllTasks";
 import MyTasks from "./pages/temple/tasks/MyTasks";
 import OverdueTasks from "./pages/temple/tasks/OverdueTasks";
 import CompletedTasks from "./pages/temple/tasks/CompletedTasks";
+import ScheduledTemplates from "./pages/temple/tasks/ScheduledTemplates";
 // Branch Management Module
 import BranchLayout from "./pages/temple/BranchLayout";
 import AllBranches from "./pages/temple/branches/AllBranches";
@@ -183,25 +191,34 @@ import FreelancerAssignments from "./pages/temple/freelancers/Assignments";
 import FreelancerPayments from "./pages/temple/freelancers/Payments";
 import FreelancerPerformance from "./pages/temple/freelancers/Performance";
 import FreelancerInsights from "./pages/temple/freelancers/Insights";
+import VipLayout from "./pages/temple/VipLayout";
+import VipDashboard from "./pages/temple/vip/Dashboard";
+import VipDevotees from "./pages/temple/vip/Devotees";
+import VipLevels from "./pages/temple/vip/Levels";
+import VipActivity from "./pages/temple/vip/Activity";
+import VipReports from "./pages/temple/vip/Reports";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
+const App = () => {
+  useTaskEngineBootstrap();
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
           {/* Landing & Auth Routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/temple-register" element={<TempleRegister />} />
-          
+
           {/* Temple Admin Routes */}
           <Route path="/temple-hub" element={<TempleHub />} />
-          
+
           {/* Temple Info Module */}
           <Route path="/temple/info" element={<TempleInfoLayout />}>
             <Route index element={<BasicInfo />} />
@@ -210,7 +227,7 @@ const App = () => (
             <Route path="branches" element={<BasicInfo />} />
             <Route path="media" element={<BasicInfo />} />
           </Route>
-          
+
           {/* Temple Structure Module */}
           <Route path="/temple/structure" element={<TempleStructureLayout />}>
             <Route index element={<MainTemple />} />
@@ -221,7 +238,7 @@ const App = () => (
             <Route path="hierarchy" element={<HierarchyView />} />
             <Route path="virtual-tour" element={<VirtualTour />} />
           </Route>
-          
+
           {/* Supplier Management Module */}
           <Route path="/temple/suppliers" element={<SupplierLayout />}>
             <Route index element={<SupplierDashboard />} />
@@ -234,17 +251,22 @@ const App = () => (
             <Route path="performance" element={<SupplierPerformance />} />
             <Route path="reports" element={<SupplierReports />} />
           </Route>
-          
+
           {/* Stock & Inventory Module */}
           <Route path="/temple/inventory" element={<InventoryLayout />}>
             <Route index element={<InventoryDashboard />} />
             <Route path="items" element={<InventoryItems />} />
+            <Route path="items/:id" element={<ItemDetail />} />
             <Route path="transactions" element={<InventoryTransactions />} />
+            <Route path="transactions/:id" element={<TransactionDetail />} />
+            <Route path="purchases" element={<InventoryPurchases />} />
+            <Route path="purchases/:id" element={<PurchaseOrderDetail />} />
+            <Route path="purchases/deliveries/:id" element={<DeliveryDetail />} />
             <Route path="requests" element={<InventoryRequests />} />
             <Route path="adjustments" element={<InventoryAdjustments />} />
             <Route path="reports" element={<InventoryReports />} />
           </Route>
-          
+
           {/* Offerings Module */}
           <Route path="/temple/offerings" element={<OfferingsLayout />}>
             <Route index element={<OfferingsToday />} />
@@ -255,7 +277,7 @@ const App = () => (
             <Route path="priests" element={<PriestAssignment />} />
             <Route path="reports" element={<OfferingsReports />} />
           </Route>
-          
+
           {/* Bookings Module */}
           <Route path="/temple/bookings" element={<BookingsLayout />}>
             <Route index element={<BookingsToday />} />
@@ -265,7 +287,7 @@ const App = () => (
             <Route path="attendance" element={<Attendance />} />
             <Route path="reports" element={<BookingReports />} />
           </Route>
-          
+
           {/* Settings Module */}
           <Route path="/temple/settings" element={<SettingsLayout />}>
             <Route index element={<TempleProfile />} />
@@ -275,7 +297,7 @@ const App = () => (
             <Route path="notifications" element={<TempleProfile />} />
             <Route path="security" element={<TempleProfile />} />
           </Route>
-          
+
           {/* Prasadam Management Module */}
           <Route path="/temple/prasadam" element={<PrasadamLayout />}>
             <Route index element={<PrasadamDashboard />} />
@@ -304,7 +326,7 @@ const App = () => (
             <Route path="reports" element={<DonationReportsGovernance />} />
           </Route>
           <Route path="/temple/finance" element={<TempleHub />} />
-          
+
           {/* Freelancer Management Module */}
           <Route path="/temple/freelancer" element={<Navigate to="/temple/freelancers" replace />} />
           <Route path="/temple/freelancers" element={<FreelancerLayout />}>
@@ -314,9 +336,16 @@ const App = () => (
             <Route path="performance" element={<FreelancerPerformance />} />
             <Route path="insights" element={<FreelancerInsights />} />
           </Route>
-          
-          {/* VIP Management redirects to Devotees */}
-          <Route path="/temple/vip" element={<Navigate to="/temple/devotees" replace />} />
+
+          {/* VIP Devotee Management Module */}
+          <Route path="/temple/vip" element={<VipLayout />}>
+            <Route index element={<VipDashboard />} />
+            <Route path="devotees" element={<VipDevotees />} />
+            <Route path="levels" element={<VipLevels />} />
+            <Route path="activity" element={<VipActivity />} />
+            <Route path="reports" element={<VipReports />} />
+          </Route>
+
           {/* Devotee CRM Module */}
           <Route path="/temple/devotees" element={<DevoteesLayout />}>
             <Route index element={<DevoteesList />} />
@@ -328,11 +357,12 @@ const App = () => (
             <Route index element={<AllEvents />} />
             <Route path="calendar" element={<CalendarView />} />
             <Route path="templates" element={<EventTemplates />} />
+            <Route path="resources" element={<EventResources />} />
             <Route path="expenses" element={<EventExpenses />} />
             <Route path="reports" element={<EventReports />} />
             <Route path="archive" element={<EventArchive />} />
+            <Route path=":eventId" element={<EventDetails />} />
           </Route>
-          <Route path="/temple/events/:eventId" element={<EventDetails />} />
           {/* PR & Communication Module */}
           <Route path="/temple/communication" element={<CommunicationLayout />}>
             <Route index element={<ControlCenter />} />
@@ -357,7 +387,7 @@ const App = () => (
           </Route>
           <Route path="/temple/people" element={<TempleHub />} />
           <Route path="/temple/assets" element={<TempleHub />} />
-          
+
           {/* Task Management Module */}
           <Route path="/temple/tasks" element={<TasksLayout />}>
             <Route index element={<TaskDashboard />} />
@@ -365,9 +395,10 @@ const App = () => (
             <Route path="my" element={<MyTasks />} />
             <Route path="overdue" element={<OverdueTasks />} />
             <Route path="completed" element={<CompletedTasks />} />
+            <Route path="templates" element={<ScheduledTemplates />} />
           </Route>
           <Route path="/temple/reports" element={<TempleHub />} />
-          
+
           {/* Branch Management Module */}
           <Route path="/temple/branches" element={<BranchLayout />}>
             <Route index element={<AllBranches />} />
@@ -375,7 +406,7 @@ const App = () => (
             <Route path="settings" element={<BranchSettings />} />
           </Route>
           <Route path="/temple/branches/:branchId" element={<BranchDetails />} />
-          
+
           {/* Institution Management Module */}
           <Route path="/temple/institutions" element={<InstitutionLayout />}>
             <Route index element={<AllInstitutions />} />
@@ -393,7 +424,7 @@ const App = () => (
             <Route path="analytics" element={<FeedbackAnalytics />} />
             <Route path="config" element={<FeedbackConfiguration />} />
           </Route>
-          
+
           {/* Projects & Initiatives Module */}
           <Route path="/temple/projects" element={<ProjectsLayout />}>
             <Route index element={<PortfolioDashboard />} />
@@ -407,7 +438,7 @@ const App = () => (
             <Route path="analytics" element={<ProgressAnalytics />} />
             <Route path="reports" element={<ReportsGovernance />} />
           </Route>
-          
+
           {/* Super Admin Routes */}
           <Route path="/hub" element={<Hub />} />
           <Route path="/profile" element={<Profile />} />
@@ -442,10 +473,11 @@ const App = () => (
             <Route path="logs" element={<TenantLogs />} />
           </Route>
           <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

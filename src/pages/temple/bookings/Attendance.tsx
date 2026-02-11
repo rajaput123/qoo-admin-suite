@@ -116,7 +116,6 @@ const Attendance = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Booking ID</TableHead>
                   <TableHead>Offering</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Structure</TableHead>
@@ -129,7 +128,6 @@ const Attendance = () => {
               <TableBody>
                 {filtered.map(r => (
                   <TableRow key={r.id} className="hover:bg-muted/50">
-                    <TableCell className="font-mono text-xs font-medium">{r.bookingId}</TableCell>
                     <TableCell className="font-medium">{r.offering}</TableCell>
                     <TableCell><Badge variant={r.type === "Ritual" ? "default" : "secondary"}>{r.type}</Badge></TableCell>
                     <TableCell className="text-muted-foreground text-sm">{r.structure}</TableCell>

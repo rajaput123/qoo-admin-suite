@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Filter, Download, Star, Phone, Mail, MapPin, Building, IndianRupee, FileText, Truck, Clock, Package, Link2 } from "lucide-react";
+import { Search, Filter, Download, Star, Phone, Mail, MapPin, Building, IndianRupee, FileText, Truck, Clock, Package, Link2, ArrowLeft } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
@@ -57,6 +57,136 @@ const Registry = () => {
     return kitchenBatches.filter(b => b.inventoryDeductions.some(d => invIds.includes(d.inventoryId)));
   };
 
+  // Inline supplier detail view
+  if (selected) {
+    return (
+      <div className="p-6 space-y-6">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => setSelected(null)}><ArrowLeft className="h-4 w-4" /></Button>
+              <div>
+                <h1 className="text-2xl font-semibold tracking-tight">{selected.name}</h1>
+                <p className="text-muted-foreground text-sm">{selected.category} • {selected.city}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className={`text-xs ${statusColor(selected.status)}`}>{selected.status}</Badge>
+              <Button size="sm" onClick={() => setSelected(null)}>Back</Button>
+            </div>
+          </div>
+
+          <Tabs defaultValue="overview">
+            <TabsList className="grid grid-cols-5 w-full">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="inventory">Inventory Link</TabsTrigger>
+              <TabsTrigger value="kitchen">Kitchen Link</TabsTrigger>
+              <TabsTrigger value="events">Event Link</TabsTrigger>
+              <TabsTrigger value="financial">Financial</TabsTrigger>
+            </TabsList>
+            <TabsContent value="overview" className="space-y-4 mt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2 text-sm"><Building className="h-4 w-4 text-muted-foreground" /><span>{selected.businessType}</span></div>
+                <div className="flex items-center gap-2 text-sm"><Phone className="h-4 w-4 text-muted-foreground" /><span>{selected.phone}</span></div>
+                <div className="flex items-center gap-2 text-sm"><Mail className="h-4 w-4 text-muted-foreground" /><span>{selected.email}</span></div>
+                <div className="flex items-center gap-2 text-sm"><MapPin className="h-4 w-4 text-muted-foreground" /><span>{selected.city}, {selected.state}</span></div>
+              </div>
+              <div className="p-3 bg-muted/50 rounded-lg text-sm"><strong>Address:</strong> {selected.address}</div>
+            </TabsContent>
+            <TabsContent value="inventory" className="space-y-4 mt-4">
+              <p className="text-xs text-muted-foreground">Inventory items supplied by {selected.name}</p>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Item</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead className="text-right">Current Stock</TableHead>
+                    <TableHead className="text-right">Min Stock</TableHead>
+                    <TableHead>Structure</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {getLinkedInventory(selected.name).map(inv => (
+                    <TableRow key={inv.id}>
+                      <TableCell className="font-medium">{inv.name}</TableCell>
+                      <TableCell className="text-sm">{inv.category}</TableCell>
+                      <TableCell className="text-right font-mono">{inv.currentStock} {inv.unit}</TableCell>
+                      <TableCell className="text-right font-mono text-muted-foreground">{inv.minStock} {inv.unit}</TableCell>
+                      <TableCell className="text-sm">{inv.structureLinked}</TableCell>
+                      <TableCell>
+                        <Badge variant={inv.status === "In Stock" ? "default" : "secondary"} className="text-xs">{inv.status}</Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {getLinkedInventory(selected.name).length === 0 && (
+                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-4">No inventory items linked</TableCell></TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TabsContent>
+            <TabsContent value="kitchen" className="space-y-4 mt-4">
+              <p className="text-xs text-muted-foreground">Kitchen batches that consumed materials from {selected.name}</p>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Prasadam</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Materials Used</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {getLinkedBatches(selected.name).map(b => (
+                    <TableRow key={b.id}>
+                      <TableCell className="font-medium">{b.prasadam}</TableCell>
+                      <TableCell className="text-sm">{b.date}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {b.inventoryDeductions.filter(d => getLinkedInventory(selected.name).some(inv => inv.id === d.inventoryId)).map((d, i) => (
+                            <Badge key={i} variant="outline" className="text-[10px]">{d.inventoryName}: {d.qty}{d.unit}</Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell><Badge variant={b.status === "Active" ? "default" : "secondary"} className="text-xs">{b.status}</Badge></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TabsContent>
+            <TabsContent value="events" className="space-y-4 mt-4">
+              <p className="text-xs text-muted-foreground">Event allocations that used items from {selected.name}</p>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Event</TableHead>
+                    <TableHead>Inventory Item</TableHead>
+                    <TableHead>Qty</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {getLinkedEvents(selected.name).map((m, i) => (
+                    <TableRow key={i}>
+                      <TableCell>{eventRefs.find(e => e.id === m.eventId)?.name || m.eventId}</TableCell>
+                      <TableCell>{m.inventoryName}</TableCell>
+                      <TableCell className="text-sm">{m.qty}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TabsContent>
+            <TabsContent value="financial" className="space-y-4 mt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 bg-muted/50 rounded-lg"><p className="text-xs text-muted-foreground">Total Orders</p><p className="font-medium text-sm">{selected.totalOrders}</p></div>
+                <div className="p-3 bg-muted/50 rounded-lg"><p className="text-xs text-muted-foreground">Total Spend</p><p className="font-medium text-sm">₹{selected.totalSpend.toLocaleString()}</p></div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
@@ -90,7 +220,6 @@ const Registry = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Supplier ID</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Contact</TableHead>
@@ -105,7 +234,6 @@ const Registry = () => {
                   const linkedInv = getLinkedInventory(s.name);
                   return (
                     <TableRow key={s.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelected(s)}>
-                      <TableCell className="font-mono text-xs">{s.id}</TableCell>
                       <TableCell className="font-medium text-sm">{s.name}</TableCell>
                       <TableCell className="text-sm">{s.category}</TableCell>
                       <TableCell>
@@ -163,7 +291,6 @@ const Registry = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>ID</TableHead>
                         <TableHead>Item</TableHead>
                         <TableHead>Category</TableHead>
                         <TableHead className="text-right">Current Stock</TableHead>
@@ -175,7 +302,6 @@ const Registry = () => {
                     <TableBody>
                       {getLinkedInventory(selected.name).map(inv => (
                         <TableRow key={inv.id}>
-                          <TableCell className="font-mono text-xs text-primary">{inv.id}</TableCell>
                           <TableCell className="font-medium">{inv.name}</TableCell>
                           <TableCell className="text-sm">{inv.category}</TableCell>
                           <TableCell className="text-right font-mono">{inv.currentStock} {inv.unit}</TableCell>
@@ -187,7 +313,7 @@ const Registry = () => {
                         </TableRow>
                       ))}
                       {getLinkedInventory(selected.name).length === 0 && (
-                        <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-4">No inventory items linked</TableCell></TableRow>
+                        <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-4">No inventory items linked</TableCell></TableRow>
                       )}
                     </TableBody>
                   </Table>
@@ -197,7 +323,6 @@ const Registry = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Batch ID</TableHead>
                         <TableHead>Prasadam</TableHead>
                         <TableHead>Date</TableHead>
                         <TableHead>Materials Used</TableHead>
@@ -207,7 +332,6 @@ const Registry = () => {
                     <TableBody>
                       {getLinkedBatches(selected.name).map(b => (
                         <TableRow key={b.id}>
-                          <TableCell className="font-mono text-xs text-primary">{b.id}</TableCell>
                           <TableCell className="font-medium">{b.prasadam}</TableCell>
                           <TableCell className="text-sm">{b.date}</TableCell>
                           <TableCell>

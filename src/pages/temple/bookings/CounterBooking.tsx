@@ -93,7 +93,7 @@ const CounterBooking = () => {
                 <Check className="h-8 w-8 text-emerald-600" />
               </div>
               <h2 className="text-xl font-bold mb-1">Booking Confirmed!</h2>
-              <p className="text-muted-foreground mb-4">Booking ID: <span className="font-mono font-bold">{generatedId}</span></p>
+              <p className="text-muted-foreground mb-4">Booking created successfully.</p>
               <div className="text-left space-y-2 p-4 bg-muted/50 rounded-lg mb-6">
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Offering</span><span className="font-medium">{selectedOffering?.name}</span></div>
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Structure</span><span className="font-medium">{selectedOffering?.structure}</span></div>

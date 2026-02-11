@@ -43,7 +43,7 @@ const volunteers: Volunteer[] = [
   { id: "VOL-006", devoteeId: "DEV-0011", name: "Sunita Bai", phone: "+91 09876 54321", email: "", city: "Mysore", skills: ["Admin"], preferredDept: "Front Desk", availability: "Weekends", emergencyContact: "+91 44444 66666", backgroundStatus: "Verified", eventsParticipated: 6, sevasAssisted: 4, totalHours: 48, lastActive: "2026-02-02", status: "Inactive", events: [{ event: "Weekend Front Desk", date: "2026-02-02", role: "Admin", hours: 8 }], notes: ["On leave since Feb, returning March"] },
 ];
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 8;
 
 const Volunteers = () => {
   const [search, setSearch] = useState("");
@@ -80,7 +80,7 @@ const Volunteers = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 space-y-4 w-full overflow-x-hidden max-w-[100vw]">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-start justify-between mb-6">
           <div>
@@ -155,40 +155,47 @@ const Volunteers = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
                   <TableHead>Volunteer</TableHead>
                   <TableHead>Skills</TableHead>
-                  <TableHead>Availability</TableHead>
-                  <TableHead>Verification</TableHead>
-                  <TableHead className="text-center">Events</TableHead>
                   <TableHead className="text-center">Hours</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="text-center w-[80px]">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paged.map(v => (
                   <TableRow key={v.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setViewing(v)}>
-                    <TableCell className="font-mono text-xs text-muted-foreground">{v.id}</TableCell>
                     <TableCell>
                       <p className="font-medium text-sm">{v.name}</p>
-                      <p className="text-xs text-muted-foreground">{v.phone} · {v.city}</p>
+                      <p className="text-xs text-muted-foreground">{v.phone}</p>
                     </TableCell>
-                    <TableCell><div className="flex gap-1 flex-wrap">{v.skills.map(s => <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>)}</div></TableCell>
-                    <TableCell className="text-sm">{v.availability}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={`text-[10px] ${v.backgroundStatus === "Verified" ? "text-green-700 border-green-300 bg-green-50" : "text-amber-700 border-amber-300 bg-amber-50"}`}>
-                        {v.backgroundStatus}
-                      </Badge>
+                      <div className="flex gap-1 flex-wrap max-w-[180px]">
+                        {v.skills.slice(0, 2).map(s => <Badge key={s} variant="secondary" className="text-[10px] px-1.5 py-0">{s}</Badge>)}
+                        {v.skills.length > 2 && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">+{v.skills.length - 2}</Badge>}
+                      </div>
                     </TableCell>
-                    <TableCell className="text-center text-sm font-medium">{v.eventsParticipated}</TableCell>
-                    <TableCell className="text-center text-sm font-medium">{v.totalHours}h</TableCell>
+                    <TableCell className="text-center font-medium text-sm">{v.totalHours}h</TableCell>
                     <TableCell>
                       <Badge variant={v.status === "Active" ? "default" : "outline"} className="text-[10px]">{v.status}</Badge>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setViewing(v);
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
                 {paged.length === 0 && (
-                  <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No volunteers match filters</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No volunteers match filters</TableCell></TableRow>
                 )}
               </TableBody>
             </Table>
