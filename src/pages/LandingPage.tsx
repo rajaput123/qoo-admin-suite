@@ -216,7 +216,7 @@ const LandingPage = () => {
                     ))}
                   </ul>
                   <Button
-                    onClick={() => navigate(`/login?role=${card.role}`)}
+                    onClick={() => navigate(card.role === "super-admin" ? "/hub" : "/temple-hub")}
                     className="w-full gap-2"
                   >
                     {card.cta} <ChevronRight className="h-4 w-4" />
