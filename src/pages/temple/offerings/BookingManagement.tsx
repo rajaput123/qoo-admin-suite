@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BookOpen, Search, Download, ChevronLeft, ChevronRight, Image } from "lucide-react";
+import { BookOpen, Search, Download, ChevronLeft, ChevronRight, Image, FileText, Printer } from "lucide-react";
 import { toast } from "sonner";
 
 interface Booking {
@@ -195,7 +195,7 @@ const BookingManagement = () => {
           </DialogHeader>
           <Tabs defaultValue="details" className="mt-2">
             <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
-              {["details", "devotee", "payment", "gallery"].map(t => (
+              {["details", "devotee", "payment", "gallery", "receipt"].map(t => (
                 <TabsTrigger key={t} value={t} className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent capitalize">{t}</TabsTrigger>
               ))}
             </TabsList>
@@ -244,6 +244,182 @@ const BookingManagement = () => {
                   <p>No images attached</p>
                 </div>
               )}
+            </TabsContent>
+            <TabsContent value="receipt" className="mt-4">
+              <div id="receipt-content" className="bg-white p-6 rounded-lg border-2 border-dashed border-muted-foreground/20">
+                {/* Receipt Header */}
+                <div className="text-center mb-6 pb-4 border-b">
+                  <h2 className="text-2xl font-bold mb-1">Temple Receipt</h2>
+                  <p className="text-sm text-muted-foreground">Booking Confirmation</p>
+                </div>
+
+                {/* Receipt Details */}
+                <div className="space-y-4 mb-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Receipt Number</p>
+                      <p className="font-mono font-semibold">{viewing?.bookingId}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs text-muted-foreground mb-1">Date</p>
+                      <p className="font-medium">{viewing?.createdAt}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Offering</p>
+                      <p className="font-medium">{viewing?.offering}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Type</p>
+                      <Badge variant={viewing?.type === "Ritual" ? "default" : "secondary"}>{viewing?.type}</Badge>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Structure</p>
+                      <p className="font-medium">{viewing?.structure}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Scheduled Date & Time</p>
+                      <p className="font-medium">{viewing?.date} at {viewing?.time}</p>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t">
+                    <p className="text-xs text-muted-foreground mb-2">Devotee Details</p>
+                    <div className="bg-muted/30 p-3 rounded">
+                      <p className="font-medium">{viewing?.devotee}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{viewing?.devoteePhone}</p>
+                      <p className="text-sm text-muted-foreground">{viewing?.devoteeEmail}</p>
+                    </div>
+                  </div>
+
+                  {viewing?.type === "Ritual" && (viewing.gothram || viewing.nakshatra) && (
+                    <div className="pt-4 border-t">
+                      <p className="text-xs text-muted-foreground mb-2">Ritual Details</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        {viewing.gothram && (
+                          <div>
+                            <p className="text-xs text-muted-foreground">Gothram</p>
+                            <p className="font-medium">{viewing.gothram}</p>
+                          </div>
+                        )}
+                        {viewing.nakshatra && (
+                          <div>
+                            <p className="text-xs text-muted-foreground">Nakshatra</p>
+                            <p className="font-medium">{viewing.nakshatra}</p>
+                          </div>
+                        )}
+                        {viewing.priest && viewing.priest !== "—" && (
+                          <div>
+                            <p className="text-xs text-muted-foreground">Assigned Priest</p>
+                            <p className="font-medium">{viewing.priest}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="pt-4 border-t">
+                    <div className="flex justify-between items-center mb-2">
+                      <p className="text-sm font-medium">Quantity</p>
+                      <p className="font-medium">{viewing?.quantity}</p>
+                    </div>
+                    <div className="flex justify-between items-center mb-2">
+                      <p className="text-sm font-medium">Amount</p>
+                      <p className="font-medium">{viewing?.amount > 0 ? `₹${viewing.amount}` : "Free"}</p>
+                    </div>
+                    <div className="flex justify-between items-center pt-2 border-t mt-2">
+                      <p className="text-lg font-bold">Total Amount</p>
+                      <p className="text-lg font-bold">{viewing?.amount > 0 ? `₹${viewing.amount}` : "Free"}</p>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t">
+                    <div className="flex justify-between items-center mb-2">
+                      <p className="text-xs text-muted-foreground">Payment Status</p>
+                      <Badge variant={payColor(viewing?.paymentStatus || "") as any}>{viewing?.paymentStatus}</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <p className="text-xs text-muted-foreground">Booking Status</p>
+                      <Badge variant={bookColor(viewing?.bookingStatus || "") as any}>{viewing?.bookingStatus}</Badge>
+                    </div>
+                  </div>
+
+                  {viewing?.notes && (
+                    <div className="pt-4 border-t">
+                      <p className="text-xs text-muted-foreground mb-1">Notes</p>
+                      <p className="text-sm">{viewing.notes}</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Receipt Footer */}
+                <div className="pt-4 border-t text-center">
+                  <p className="text-xs text-muted-foreground">Thank you for your devotion</p>
+                  <p className="text-xs text-muted-foreground mt-1">This is a system-generated receipt</p>
+                </div>
+              </div>
+
+              {/* Receipt Actions */}
+              <div className="flex gap-2 mt-4">
+                <Button variant="outline" className="flex-1 gap-2" onClick={() => {
+                  const content = document.getElementById("receipt-content");
+                  if (content) {
+                    const printWindow = window.open("", "_blank");
+                    if (printWindow) {
+                      printWindow.document.write(`
+                        <html>
+                          <head>
+                            <title>Receipt - ${viewing?.bookingId}</title>
+                            <style>
+                              body { font-family: Arial, sans-serif; padding: 20px; }
+                              * { margin: 0; padding: 0; box-sizing: border-box; }
+                              .receipt { max-width: 600px; margin: 0 auto; }
+                            </style>
+                          </head>
+                          <body>
+                            <div class="receipt">${content.innerHTML}</div>
+                            <script>window.print();</script>
+                          </body>
+                        </html>
+                      `);
+                      printWindow.document.close();
+                    }
+                  }
+                }}>
+                  <Printer className="h-4 w-4" />
+                  Print Receipt
+                </Button>
+                <Button variant="outline" className="flex-1 gap-2" onClick={() => {
+                  const content = document.getElementById("receipt-content");
+                  if (content) {
+                    const printWindow = window.open("", "_blank");
+                    if (printWindow) {
+                      printWindow.document.write(`
+                        <html>
+                          <head>
+                            <title>Receipt - ${viewing?.bookingId}</title>
+                            <style>
+                              body { font-family: Arial, sans-serif; padding: 20px; }
+                              * { margin: 0; padding: 0; box-sizing: border-box; }
+                              .receipt { max-width: 600px; margin: 0 auto; }
+                            </style>
+                          </head>
+                          <body>
+                            <div class="receipt">${content.innerHTML}</div>
+                          </body>
+                        </html>
+                      `);
+                      printWindow.document.close();
+                      toast.success("Receipt opened in new window");
+                    }
+                  }
+                }}>
+                  <FileText className="h-4 w-4" />
+                  View Receipt
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
           <DialogFooter>

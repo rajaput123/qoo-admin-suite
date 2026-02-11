@@ -25,6 +25,7 @@ interface Offering {
   structure: string;
   defaultTime: string;
   basePrice: number;
+  price: number;
   capacity: number;
   status: "Active" | "Inactive" | "Draft";
   description: string;
@@ -46,12 +47,13 @@ interface Offering {
 }
 
 const mockOfferings: Offering[] = [
-  { id: "1", name: "Suprabhatam", type: "Ritual", category: "Daily Seva", structure: "Main Temple", defaultTime: "5:30 AM", basePrice: 500, capacity: 50, status: "Active", description: "Morning awakening ceremony for the deity", endTime: "6:00 AM", frequency: "Daily", dateRange: "All Year", maxPerDevotee: 2, groupBooking: false, free: false, refundable: true, priestRequired: true, sankalpam: true, gothram: true, nakshatra: false, walkinTracking: false, vipEnabled: false, images: ["https://images.unsplash.com/photo-1600693577615-9f3a0f7a16ba?w=400", "https://images.unsplash.com/photo-1609766857041-ed402ea8069a?w=400"], createdAt: "2024-01-15" },
-  { id: "2", name: "Archana", type: "Ritual", category: "Daily Seva", structure: "Padmavathi Shrine", defaultTime: "7:00 AM", basePrice: 100, capacity: 30, status: "Active", description: "Chanting of 108 names", endTime: "7:30 AM", frequency: "Daily", dateRange: "All Year", maxPerDevotee: 5, groupBooking: true, free: false, refundable: false, priestRequired: true, sankalpam: true, gothram: true, nakshatra: true, walkinTracking: false, vipEnabled: false, images: ["https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=400"], createdAt: "2024-01-10" },
-  { id: "3", name: "Abhishekam", type: "Ritual", category: "Special Seva", structure: "Main Temple", defaultTime: "9:00 AM", basePrice: 2000, capacity: 25, status: "Active", description: "Sacred bathing ceremony with milk, honey, and holy water", endTime: "10:00 AM", frequency: "Daily", dateRange: "All Year", maxPerDevotee: 1, groupBooking: false, free: false, refundable: true, priestRequired: true, sankalpam: true, gothram: true, nakshatra: true, walkinTracking: false, vipEnabled: false, images: ["https://images.unsplash.com/photo-1609766857041-ed402ea8069a?w=400"], createdAt: "2024-01-12" },
-  { id: "4", name: "Morning Darshan", type: "Darshan", category: "Regular", structure: "Main Temple", defaultTime: "6:00 AM", basePrice: 0, capacity: 500, status: "Active", description: "General morning darshan", endTime: "10:00 AM", frequency: "Daily", dateRange: "All Year", maxPerDevotee: 10, groupBooking: true, free: true, refundable: false, priestRequired: false, sankalpam: false, gothram: false, nakshatra: false, walkinTracking: true, vipEnabled: true, images: ["https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=400"], createdAt: "2024-01-08" },
-  { id: "5", name: "VIP Darshan", type: "Darshan", category: "VIP", structure: "Main Temple", defaultTime: "8:00 AM", basePrice: 300, capacity: 100, status: "Active", description: "Priority darshan with shorter wait", endTime: "10:00 AM", frequency: "Daily", dateRange: "All Year", maxPerDevotee: 4, groupBooking: true, free: false, refundable: true, priestRequired: false, sankalpam: false, gothram: false, nakshatra: false, walkinTracking: false, vipEnabled: true, images: [], createdAt: "2024-01-09" },
-  { id: "6", name: "Sahasranama", type: "Ritual", category: "Special Seva", structure: "Varadaraja Shrine", defaultTime: "11:00 AM", basePrice: 1500, capacity: 40, status: "Inactive", description: "Recitation of 1000 names", endTime: "12:00 PM", frequency: "Weekly", dateRange: "All Year", maxPerDevotee: 2, groupBooking: false, free: false, refundable: true, priestRequired: true, sankalpam: true, gothram: true, nakshatra: false, walkinTracking: false, vipEnabled: false, images: [], createdAt: "2024-02-01" },
+  { id: "1", name: "Suprabhatam", type: "Ritual", category: "Daily Seva", structure: "Main Temple", defaultTime: "5:30 AM", basePrice: 500, price: 500, capacity: 50, status: "Active", description: "Morning awakening ceremony for the deity", endTime: "6:00 AM", frequency: "Daily", dateRange: "All Year", maxPerDevotee: 2, groupBooking: false, free: false, refundable: true, priestRequired: true, sankalpam: true, gothram: true, nakshatra: false, walkinTracking: false, vipEnabled: false, images: ["https://images.unsplash.com/photo-1600693577615-9f3a0f7a16ba?w=400", "https://images.unsplash.com/photo-1609766857041-ed402ea8069a?w=400"], createdAt: "2024-01-15" },
+  { id: "2", name: "Archana", type: "Ritual", category: "Daily Seva", structure: "Padmavathi Shrine", defaultTime: "7:00 AM", basePrice: 100, price: 200, capacity: 30, status: "Active", description: "Chanting of 108 names", endTime: "7:30 AM", frequency: "Daily", dateRange: "All Year", maxPerDevotee: 5, groupBooking: true, free: false, refundable: false, priestRequired: true, sankalpam: true, gothram: true, nakshatra: true, walkinTracking: false, vipEnabled: false, images: ["https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=400"], createdAt: "2024-01-10" },
+  { id: "3", name: "Abhishekam", type: "Ritual", category: "Special Seva", structure: "Main Temple", defaultTime: "9:00 AM", basePrice: 2000, price: 2000, capacity: 25, status: "Active", description: "Sacred bathing ceremony with milk, honey, and holy water", endTime: "10:00 AM", frequency: "Daily", dateRange: "All Year", maxPerDevotee: 1, groupBooking: false, free: false, refundable: true, priestRequired: true, sankalpam: true, gothram: true, nakshatra: true, walkinTracking: false, vipEnabled: false, images: ["https://images.unsplash.com/photo-1609766857041-ed402ea8069a?w=400"], createdAt: "2024-01-12" },
+  { id: "4", name: "Morning Darshan", type: "Darshan", category: "Regular", structure: "Main Temple", defaultTime: "6:00 AM", basePrice: 0, price: 0, capacity: 500, status: "Active", description: "General morning darshan", endTime: "10:00 AM", frequency: "Daily", dateRange: "All Year", maxPerDevotee: 10, groupBooking: true, free: true, refundable: false, priestRequired: false, sankalpam: false, gothram: false, nakshatra: false, walkinTracking: true, vipEnabled: true, images: ["https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=400"], createdAt: "2024-01-08" },
+  { id: "5", name: "VIP Darshan", type: "Darshan", category: "VIP", structure: "Main Temple", defaultTime: "8:00 AM", basePrice: 300, price: 150, capacity: 100, status: "Active", description: "Priority darshan with shorter wait", endTime: "10:00 AM", frequency: "Daily", dateRange: "All Year", maxPerDevotee: 4, groupBooking: true, free: false, refundable: true, priestRequired: false, sankalpam: false, gothram: false, nakshatra: false, walkinTracking: false, vipEnabled: true, images: [], createdAt: "2024-01-09" },
+  { id: "6", name: "Sahasranama", type: "Ritual", category: "Special Seva", structure: "Varadaraja Shrine", defaultTime: "11:00 AM", basePrice: 1500, price: 1500, capacity: 40, status: "Inactive", description: "Recitation of 1000 names", endTime: "12:00 PM", frequency: "Weekly", dateRange: "All Year", maxPerDevotee: 2, groupBooking: false, free: false, refundable: true, priestRequired: true, sankalpam: true, gothram: true, nakshatra: false, walkinTracking: false, vipEnabled: false, images: [], createdAt: "2024-02-01" },
+  { id: "7", name: "Special Puja", type: "Ritual", category: "Special Seva", structure: "Main Temple", defaultTime: "10:00 AM", basePrice: 1000, price: 500, capacity: 20, status: "Active", description: "Special puja with 50% discount", endTime: "11:00 AM", frequency: "Daily", dateRange: "All Year", maxPerDevotee: 3, groupBooking: true, free: false, refundable: true, priestRequired: true, sankalpam: true, gothram: true, nakshatra: true, walkinTracking: false, vipEnabled: false, images: [], createdAt: "2024-02-05" },
 ];
 
 const structureOptions = [
@@ -97,21 +99,29 @@ const OfferingsList = () => {
     name: "", type: "Ritual" as "Ritual" | "Darshan", category: "", structure: "", description: "",
     defaultTime: "", endTime: "", frequency: "Daily", dateRange: "",
     capacity: 50, maxPerDevotee: 2, groupBooking: false,
-    free: false, basePrice: 0, refundable: true,
+    free: false, basePrice: 0, price: 0,
     priestRequired: true, sankalpam: true, gothram: true, nakshatra: false,
     walkinTracking: false, vipEnabled: false,
   });
 
   const resetForm = () => {
-    setForm({ name: "", type: "Ritual", category: "", structure: "", description: "", defaultTime: "", endTime: "", frequency: "Daily", dateRange: "", capacity: 50, maxPerDevotee: 2, groupBooking: false, free: false, basePrice: 0, refundable: true, priestRequired: true, sankalpam: true, gothram: true, nakshatra: false, walkinTracking: false, vipEnabled: false });
+    setForm({ name: "", type: "Ritual", category: "", structure: "", description: "", defaultTime: "", endTime: "", frequency: "Daily", dateRange: "", capacity: 50, maxPerDevotee: 2, groupBooking: false, free: false, basePrice: 0, price: 0, priestRequired: true, sankalpam: true, gothram: true, nakshatra: false, walkinTracking: false, vipEnabled: false });
     setEditing(null);
     setCustomFields([]);
+  };
+
+  const getDiscount = () => {
+    if (!form.basePrice || form.basePrice === 0) return { amount: 0, percent: 0 };
+    const diff = form.price - form.basePrice;
+    const amount = Math.abs(diff);
+    const percent = Math.round((amount / form.basePrice) * 100);
+    return { amount, percent, isIncrease: diff > 0 };
   };
 
   const openModal = (o?: Offering) => {
     if (o) {
       setEditing(o);
-      setForm({ name: o.name, type: o.type, category: o.category, structure: o.structure, description: o.description, defaultTime: o.defaultTime, endTime: o.endTime, frequency: o.frequency, dateRange: o.dateRange, capacity: o.capacity, maxPerDevotee: o.maxPerDevotee, groupBooking: o.groupBooking, free: o.free, basePrice: o.basePrice, refundable: o.refundable, priestRequired: o.priestRequired, sankalpam: o.sankalpam, gothram: o.gothram, nakshatra: o.nakshatra, walkinTracking: o.walkinTracking, vipEnabled: o.vipEnabled });
+      setForm({ name: o.name, type: o.type, category: o.category, structure: o.structure, description: o.description, defaultTime: o.defaultTime, endTime: o.endTime, frequency: o.frequency, dateRange: o.dateRange, capacity: o.capacity, maxPerDevotee: o.maxPerDevotee, groupBooking: o.groupBooking, free: o.free, basePrice: o.basePrice, price: o.price || o.basePrice, priestRequired: o.priestRequired, sankalpam: o.sankalpam, gothram: o.gothram, nakshatra: o.nakshatra, walkinTracking: o.walkinTracking, vipEnabled: o.vipEnabled });
     } else resetForm();
     setIsModalOpen(true);
   };
@@ -420,10 +430,36 @@ const OfferingsList = () => {
             {/* Section D – Pricing */}
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Pricing</p>
-              <div className="grid grid-cols-3 gap-3">
-                <div className="flex items-end gap-2 pb-1"><Switch checked={form.free} onCheckedChange={v => setForm({ ...form, free: v })} /><Label>Free</Label></div>
-                {!form.free && <div><Label>Base Price (₹)</Label><Input type="number" value={form.basePrice} onChange={e => setForm({ ...form, basePrice: +e.target.value })} /></div>}
-                <div className="flex items-end gap-2 pb-1"><Switch checked={form.refundable} onCheckedChange={v => setForm({ ...form, refundable: v })} /><Label>Refundable</Label></div>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2"><Switch checked={form.free} onCheckedChange={v => setForm({ ...form, free: v })} /><Label>Free</Label></div>
+                {!form.free && (
+                  <>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div><Label>Base Price (₹)</Label><Input type="number" value={form.basePrice} onChange={e => setForm({ ...form, basePrice: +e.target.value })} /></div>
+                      <div><Label>Price (₹)</Label><Input type="number" value={form.price} onChange={e => setForm({ ...form, price: +e.target.value })} /></div>
+                    </div>
+                    {!form.free && form.basePrice > 0 && (
+                      <div>
+                        <Label>Discount</Label>
+                        <Input
+                          type="text"
+                          value={
+                            (() => {
+                              const discount = getDiscount();
+                              if (discount.amount === 0) return "No discount";
+                              if (discount.isIncrease) {
+                                return `₹${discount.amount} increase (${discount.percent}% increase)`;
+                              }
+                              return `₹${discount.amount} off (${discount.percent}% off)`;
+                            })()
+                          }
+                          readOnly
+                          className="bg-muted"
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
 

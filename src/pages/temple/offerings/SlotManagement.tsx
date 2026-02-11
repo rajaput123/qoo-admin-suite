@@ -66,6 +66,10 @@ const SlotManagement = () => {
   const [isAssignOpen, setIsAssignOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [assignPriest, setAssignPriest] = useState("");
+  const [genFrom, setGenFrom] = useState("");
+  const [genTo, setGenTo] = useState("");
+  const [genOffering, setGenOffering] = useState("all");
+  const [genTime, setGenTime] = useState("");
 
   const filtered = slots.filter(s => {
     if (filterOffering !== "all" && s.offering !== filterOffering) return false;
@@ -102,6 +106,98 @@ const SlotManagement = () => {
   };
 
   const uniqueOfferings = [...new Set(slots.map(s => s.offering))];
+
+  // Get offering details from existing slots (in real app, fetch from offerings API)
+  const getOfferingDetails = (offeringName: string) => {
+    const existingSlot = slots.find(s => s.offering === offeringName);
+    if (existingSlot) {
+      return {
+        time: existingSlot.time,
+        structure: existingSlot.structure,
+        type: existingSlot.type,
+        capacity: existingSlot.capacity,
+      };
+    }
+    // Default fallback
+    return {
+      time: "9:00 AM",
+      structure: "Main Temple",
+      type: "Ritual" as const,
+      capacity: 50,
+    };
+  };
+
+  const formatTime = (timeStr: string) => {
+    // Convert "05:30" to "5:30 AM" format
+    const [hours, minutes] = timeStr.split(":");
+    const hour = parseInt(hours, 10);
+    const min = minutes;
+    const period = hour >= 12 ? "PM" : "AM";
+    const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+    return `${displayHour}:${min} ${period}`;
+  };
+
+  const handleGenerate = () => {
+    if (!genFrom || !genTo) {
+      toast.error("Please select date range");
+      return;
+    }
+    if (genOffering === "all") {
+      toast.error("Please select an offering");
+      return;
+    }
+    if (!genTime) {
+      toast.error("Please enter time");
+      return;
+    }
+
+    const from = new Date(genFrom);
+    const to = new Date(genTo);
+    if (from > to) {
+      toast.error("From date must be before To date");
+      return;
+    }
+
+    const offeringDetails = getOfferingDetails(genOffering);
+    const formattedTime = formatTime(genTime);
+    const newSlots: Slot[] = [];
+    const currentDate = new Date(from);
+
+    while (currentDate <= to) {
+      const dateStr = format(currentDate, "yyyy-MM-dd");
+      // Check if slot already exists for this date + offering + time
+      const exists = slots.some(s => s.date === dateStr && s.offering === genOffering && s.time === formattedTime);
+      if (!exists) {
+        newSlots.push({
+          id: `gen-${Date.now()}-${newSlots.length}`,
+          date: dateStr,
+          time: formattedTime,
+          offering: genOffering,
+          structure: offeringDetails.structure,
+          type: offeringDetails.type,
+          capacity: offeringDetails.capacity,
+          booked: 0,
+          available: offeringDetails.capacity,
+          priest: "Unassigned",
+          status: "Open",
+        });
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    if (newSlots.length === 0) {
+      toast.info("No new slots to generate (all slots already exist)");
+    } else {
+      setSlots([...slots, ...newSlots]);
+      toast.success(`Generated ${newSlots.length} slot(s)`);
+    }
+
+    setIsGenerateOpen(false);
+    setGenFrom("");
+    setGenTo("");
+    setGenOffering("all");
+    setGenTime("");
+  };
 
   // Calendar helpers
   const monthStart = startOfMonth(currentMonth);
@@ -300,19 +396,24 @@ const SlotManagement = () => {
       </motion.div>
 
       {/* Generate Slots Dialog */}
-      <Dialog open={isGenerateOpen} onOpenChange={setIsGenerateOpen}>
+      <Dialog open={isGenerateOpen} onOpenChange={() => { setIsGenerateOpen(false); setGenFrom(""); setGenTo(""); setGenOffering("all"); setGenTime(""); }}>
         <DialogContent className="sm:max-w-[450px] bg-background">
           <DialogHeader><DialogTitle>Generate Slots</DialogTitle><DialogDescription>Bulk generate slots for a date range</DialogDescription></DialogHeader>
           <div className="space-y-3 py-2">
-            <div><Label>From Date</Label><Input type="date" /></div>
-            <div><Label>To Date</Label><Input type="date" /></div>
+            <div><Label>From Date</Label><Input type="date" value={genFrom} onChange={e => setGenFrom(e.target.value)} /></div>
+            <div><Label>To Date</Label><Input type="date" value={genTo} onChange={e => setGenTo(e.target.value)} /></div>
             <div><Label>Offering</Label>
-              <Select><SelectTrigger className="bg-background"><SelectValue placeholder="Select offering" /></SelectTrigger>
-                <SelectContent className="bg-popover"><SelectItem value="all">All Active Offerings</SelectItem><SelectItem value="Suprabhatam">Suprabhatam</SelectItem><SelectItem value="Archana">Archana</SelectItem></SelectContent>
+              <Select value={genOffering} onValueChange={setGenOffering}>
+                <SelectTrigger className="bg-background"><SelectValue placeholder="Select offering" /></SelectTrigger>
+                <SelectContent className="bg-popover">
+                  <SelectItem value="all">All Active Offerings</SelectItem>
+                  {uniqueOfferings.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                </SelectContent>
               </Select>
             </div>
+            <div><Label>Time</Label><Input type="time" value={genTime} onChange={e => setGenTime(e.target.value)} placeholder="e.g. 05:30" /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setIsGenerateOpen(false)}>Cancel</Button><Button onClick={() => { setIsGenerateOpen(false); toast.success("Slots generated"); }}>Generate</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => { setIsGenerateOpen(false); setGenFrom(""); setGenTo(""); setGenOffering("all"); setGenTime(""); }}>Cancel</Button><Button onClick={handleGenerate}>Generate</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
