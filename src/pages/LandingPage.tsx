@@ -127,12 +127,20 @@ const LandingPage = () => {
             <p className="text-lg text-white/70 mb-8 max-w-lg leading-relaxed">
               Transform temple operations with a unified platform for offerings, donations, events, inventory, and multi-branch management.
             </p>
-            <div className="flex flex-wrap gap-4">
-              <Button size="lg" onClick={() => navigate("/login")} className="h-12 px-8 text-base gap-2 bg-primary hover:bg-primary/90">
-                Get Started <ArrowRight className="h-4 w-4" />
+            <div className="flex flex-wrap gap-4 mb-4">
+              <Button size="lg" onClick={() => navigate("/hub")} className="h-12 px-8 text-base gap-2 bg-white text-primary hover:bg-white/90">
+                <Shield className="h-4 w-4" /> Login as Keehoo Admin
               </Button>
+              <Button size="lg" onClick={() => navigate("/temple-hub")} className="h-12 px-8 text-base gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0">
+                <Building2 className="h-4 w-4" /> Login as Temple Admin
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-4">
               <Button size="lg" variant="outline" onClick={() => setDemoOpen(true)} className="h-12 px-8 text-base text-white border-white/30 hover:bg-white/10 hover:text-white gap-2">
                 <Play className="h-4 w-4" /> Watch Demo
+              </Button>
+              <Button size="lg" variant="outline" onClick={() => navigate("/temple-register")} className="h-12 px-8 text-base text-white border-white/30 hover:bg-white/10 hover:text-white gap-2">
+                Register Temple <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
           </motion.div>
