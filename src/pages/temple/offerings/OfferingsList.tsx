@@ -131,7 +131,7 @@ const OfferingsList = () => {
       setOfferings(offerings.map(o => o.id === editing.id ? { ...o, ...form } : o));
       toast.success("Offering updated");
     } else {
-      setOfferings([...offerings, { id: Date.now().toString(), ...form, status: "Active", images: [], createdAt: new Date().toISOString().split("T")[0] }]);
+      setOfferings([...offerings, { id: Date.now().toString(), ...form, refundable: false, status: "Active", images: [], createdAt: new Date().toISOString().split("T")[0] }]);
       toast.success("Offering created");
     }
     setIsModalOpen(false);
