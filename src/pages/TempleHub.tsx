@@ -296,12 +296,12 @@ const itemVariants = {
 };
 
 // Account Status Banner Component
-const AccountStatusBanner = ({ 
-  status, 
-  trialDaysLeft, 
-  onDismiss 
-}: { 
-  status: AccountStatus; 
+const AccountStatusBanner = ({
+  status,
+  trialDaysLeft,
+  onDismiss
+}: {
+  status: AccountStatus;
   trialDaysLeft?: number;
   onDismiss?: () => void;
 }) => {
@@ -386,12 +386,12 @@ const TempleHub = () => {
       {/* Header */}
       <header className="border-b border-border bg-card sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
             className="flex items-center gap-3"
           >
-            <h1 className="text-xl font-bold text-primary">Keehoo</h1>
+            <h1 className="text-xl font-bold text-primary">Temple Admin</h1>
             <Badge variant="secondary" className="text-xs gap-1">
               <Crown className="h-3 w-3" />
               {tenantData.plan}
@@ -456,8 +456,8 @@ const TempleHub = () => {
 
       {/* Account Status Banner */}
       {showBanner && (
-        <AccountStatusBanner 
-          status={tenantData.status} 
+        <AccountStatusBanner
+          status={tenantData.status}
           trialDaysLeft={tenantData.trialDaysLeft}
           onDismiss={() => setShowBanner(false)}
         />
@@ -487,15 +487,14 @@ const TempleHub = () => {
             <span>•</span>
             <span>{tenantData.region}</span>
             <span>•</span>
-            <Badge 
-              variant="outline" 
-              className={`text-xs ${
-                tenantData.status === "active" 
+            <Badge
+              variant="outline"
+              className={`text-xs ${tenantData.status === "active"
                   ? "text-green-700 border-green-300 bg-green-50"
                   : tenantData.status === "trial"
                     ? "text-amber-700 border-amber-300 bg-amber-50"
                     : "text-red-700 border-red-300 bg-red-50"
-              }`}
+                }`}
             >
               {tenantData.status === "trial" ? "Trial" : tenantData.status.charAt(0).toUpperCase() + tenantData.status.slice(1)}
             </Badge>
@@ -509,7 +508,7 @@ const TempleHub = () => {
         {!isSuspended && (
           <div className="mb-8">
             <h2 className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wide">Modules</h2>
-            <motion.div 
+            <motion.div
               variants={containerVariants}
               initial="hidden"
               animate="visible"
@@ -519,7 +518,7 @@ const TempleHub = () => {
                 const state = getModuleState(module);
                 const isRestricted = state === "expired" || state === "upcoming";
                 const isUpcoming = state === "upcoming";
-                
+
                 return (
                   <Tooltip key={module.id} delayDuration={300}>
                     <TooltipTrigger asChild>
@@ -528,9 +527,8 @@ const TempleHub = () => {
                         whileHover={!isRestricted ? { y: -4, transition: { duration: 0.2 } } : {}}
                         whileTap={!isRestricted ? { scale: 0.97 } : {}}
                         onClick={() => !isRestricted && navigate(module.path)}
-                        className={`group flex flex-col items-center text-center focus:outline-none relative ${
-                          isRestricted ? "opacity-50 cursor-not-allowed" : ""
-                        }`}
+                        className={`group flex flex-col items-center text-center focus:outline-none relative ${isRestricted ? "opacity-50 cursor-not-allowed" : ""
+                          }`}
                         disabled={isRestricted}
                       >
                         {isUpcoming && (
@@ -538,18 +536,16 @@ const TempleHub = () => {
                             Upcoming
                           </span>
                         )}
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-2 transition-all duration-200 ${
-                          isRestricted 
-                            ? "bg-muted/50" 
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-2 transition-all duration-200 ${isRestricted
+                            ? "bg-muted/50"
                             : "bg-muted group-hover:bg-primary group-hover:shadow-lg"
-                        }`}>
-                          <module.icon 
-                            className={`h-6 w-6 transition-colors duration-200 ${
-                              isRestricted 
-                                ? "text-muted-foreground" 
+                          }`}>
+                          <module.icon
+                            className={`h-6 w-6 transition-colors duration-200 ${isRestricted
+                                ? "text-muted-foreground"
                                 : "text-foreground group-hover:text-primary-foreground"
-                            }`} 
-                            strokeWidth={1.5} 
+                              }`}
+                            strokeWidth={1.5}
                           />
                         </div>
                         <span className={`text-xs font-medium ${isRestricted ? "text-muted-foreground" : "text-foreground"}`}>

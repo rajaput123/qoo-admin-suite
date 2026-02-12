@@ -9,32 +9,7 @@ import Login from "./pages/Login";
 import TempleRegister from "./pages/TempleRegister";
 import TempleHub from "./pages/TempleHub";
 import UpcomingModule from "./pages/temple/UpcomingModule";
-import Hub from "./pages/Hub";
 import Profile from "./pages/Profile";
-import DomainLayout from "./components/DomainLayout";
-import Overview from "./pages/domain/Overview";
-import Submissions from "./pages/domain/Submissions";
-import EditRequests from "./pages/domain/EditRequests";
-import Temples from "./pages/domain/Temples";
-import Duplicates from "./pages/domain/Duplicates";
-import Contributors from "./pages/domain/Contributors";
-import Categories from "./pages/domain/Categories";
-import AuditHistory from "./pages/domain/AuditHistory";
-import OnboardingLayout from "./components/OnboardingLayout";
-import OnboardingOverview from "./pages/onboarding/Overview";
-import RegistrationPipeline from "./pages/onboarding/RegistrationPipeline";
-import VerificationQueue from "./pages/onboarding/VerificationQueue";
-import DirectOnboarding from "./pages/onboarding/DirectOnboarding";
-import ComplianceRisk from "./pages/onboarding/ComplianceRisk";
-import ApprovalLogs from "./pages/onboarding/ApprovalLogs";
-import TenantLayout from "./components/TenantLayout";
-import TenantOverview from "./pages/tenant/Overview";
-import AllTenants from "./pages/tenant/AllTenants";
-import SubscriptionPlans from "./pages/tenant/SubscriptionPlans";
-import UsageMonitoring from "./pages/tenant/UsageMonitoring";
-import SuspensionCompliance from "./pages/tenant/SuspensionCompliance";
-import RegionManagement from "./pages/tenant/RegionManagement";
-import TenantLogs from "./pages/tenant/TenantLogs";
 // Temple Admin Module Layouts
 import TempleInfoLayout from "./pages/temple/TempleInfoLayout";
 import BasicInfo from "./pages/temple/info/BasicInfo";
@@ -113,16 +88,16 @@ import CompletedTasks from "./pages/temple/tasks/CompletedTasks";
 import ScheduledTemplates from "./pages/temple/tasks/ScheduledTemplates";
 // Branch Management Module
 import BranchLayout from "./pages/temple/BranchLayout";
+import BranchDashboard from "./pages/temple/branches/Dashboard";
 import AllBranches from "./pages/temple/branches/AllBranches";
 import BranchDetails from "./pages/temple/branches/BranchDetails";
 import BranchReports from "./pages/temple/branches/BranchReports";
-import BranchSettings from "./pages/temple/branches/BranchSettings";
 // Institution Management Module
 import InstitutionLayout from "./pages/temple/InstitutionLayout";
+import InstitutionDashboard from "./pages/temple/institutions/Dashboard";
 import AllInstitutions from "./pages/temple/institutions/AllInstitutions";
 import InstitutionDetails from "./pages/temple/institutions/InstitutionDetails";
 import InstitutionReports from "./pages/temple/institutions/InstitutionReports";
-import InstitutionSettings from "./pages/temple/institutions/InstitutionSettings";
 // Crowd & Capacity Management Module
 import CrowdLayout from "./pages/temple/CrowdLayout";
 import ZoneConfiguration from "./pages/temple/crowd/ZoneConfiguration";
@@ -378,17 +353,19 @@ const App = () => {
 
             {/* Branch Management Module */}
             <Route path="/temple/branches" element={<BranchLayout />}>
-              <Route index element={<AllBranches />} />
+              <Route index element={<BranchDashboard />} />
+              <Route path="dashboard" element={<BranchDashboard />} />
+              <Route path="all" element={<AllBranches />} />
               <Route path="reports" element={<BranchReports />} />
-              <Route path="settings" element={<BranchSettings />} />
             </Route>
             <Route path="/temple/branches/:branchId" element={<BranchDetails />} />
 
             {/* Institution Management Module */}
             <Route path="/temple/institutions" element={<InstitutionLayout />}>
-              <Route index element={<AllInstitutions />} />
+              <Route index element={<InstitutionDashboard />} />
+              <Route path="dashboard" element={<InstitutionDashboard />} />
+              <Route path="all" element={<AllInstitutions />} />
               <Route path="reports" element={<InstitutionReports />} />
-              <Route path="settings" element={<InstitutionSettings />} />
             </Route>
             <Route path="/temple/institutions/:institutionId" element={<InstitutionDetails />} />
 
@@ -408,39 +385,6 @@ const App = () => {
               element={<UpcomingModule moduleTitle="Projects & Initiatives" />}
             />
 
-            {/* Super Admin Routes */}
-            <Route path="/hub" element={<Hub />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/domain/information" element={<DomainLayout />}>
-              <Route index element={<Navigate to="overview" replace />} />
-              <Route path="overview" element={<Overview />} />
-              <Route path="submissions" element={<Submissions />} />
-              <Route path="edit-requests" element={<EditRequests />} />
-              <Route path="temples" element={<Temples />} />
-              <Route path="duplicates" element={<Duplicates />} />
-              <Route path="contributors" element={<Contributors />} />
-              <Route path="categories" element={<Categories />} />
-              <Route path="audit" element={<AuditHistory />} />
-            </Route>
-            <Route path="/domain/onboarding" element={<OnboardingLayout />}>
-              <Route index element={<Navigate to="overview" replace />} />
-              <Route path="overview" element={<OnboardingOverview />} />
-              <Route path="registration-pipeline" element={<RegistrationPipeline />} />
-              <Route path="verification-queue" element={<VerificationQueue />} />
-              <Route path="direct-onboarding" element={<DirectOnboarding />} />
-              <Route path="compliance-risk" element={<ComplianceRisk />} />
-              <Route path="approval-logs" element={<ApprovalLogs />} />
-            </Route>
-            <Route path="/domain/tenants" element={<TenantLayout />}>
-              <Route index element={<Navigate to="overview" replace />} />
-              <Route path="overview" element={<TenantOverview />} />
-              <Route path="all" element={<AllTenants />} />
-              <Route path="plans" element={<SubscriptionPlans />} />
-              <Route path="usage" element={<UsageMonitoring />} />
-              <Route path="suspension" element={<SuspensionCompliance />} />
-              <Route path="regions" element={<RegionManagement />} />
-              <Route path="logs" element={<TenantLogs />} />
-            </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

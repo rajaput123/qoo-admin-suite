@@ -13,8 +13,8 @@ interface DeclarationStepProps {
 }
 
 const DeclarationStep = ({ formData, onFormChange }: DeclarationStepProps) => {
-  const allAccepted = formData.termsAccepted && formData.privacyAccepted && 
-                      formData.authorizedConfirmed && formData.accuracyConfirmed;
+  const allAccepted = formData.termsAccepted && formData.privacyAccepted &&
+    formData.authorizedConfirmed && formData.accuracyConfirmed;
 
   return (
     <div className="space-y-6">
@@ -22,7 +22,7 @@ const DeclarationStep = ({ formData, onFormChange }: DeclarationStepProps) => {
         <h2 className="text-lg font-semibold text-foreground mb-1">Declaration & Consent</h2>
         <p className="text-sm text-muted-foreground">Please review and accept the following</p>
       </div>
-      
+
       <div className="space-y-4">
         {/* Terms of Service */}
         <div className="bg-muted/50 rounded-lg p-4 border border-border">
@@ -31,14 +31,14 @@ const DeclarationStep = ({ formData, onFormChange }: DeclarationStepProps) => {
             <div>
               <h3 className="font-medium text-foreground">Terms of Service</h3>
               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                By registering on Keehoo, you agree to our Terms of Service, which govern your use of the platform. 
+                By registering, you agree to our Terms of Service, which govern your use of the platform.
                 This includes acceptable use policies, service availability, and your responsibilities as a temple administrator.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3 pl-8">
-            <Checkbox 
-              id="terms" 
+            <Checkbox
+              id="terms"
               checked={formData.termsAccepted}
               onCheckedChange={(checked) => onFormChange('termsAccepted', checked as boolean)}
             />
@@ -47,7 +47,7 @@ const DeclarationStep = ({ formData, onFormChange }: DeclarationStepProps) => {
             </Label>
           </div>
         </div>
-        
+
         {/* Privacy Policy */}
         <div className="bg-muted/50 rounded-lg p-4 border border-border">
           <div className="flex items-start gap-3 mb-3">
@@ -55,14 +55,14 @@ const DeclarationStep = ({ formData, onFormChange }: DeclarationStepProps) => {
             <div>
               <h3 className="font-medium text-foreground">Privacy Policy</h3>
               <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                We collect and process your data in accordance with our Privacy Policy. 
+                We collect and process your data in accordance with our Privacy Policy.
                 Your temple and personal information will be used to provide our services and will not be shared with third parties without consent.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3 pl-8">
-            <Checkbox 
-              id="privacy" 
+            <Checkbox
+              id="privacy"
               checked={formData.privacyAccepted}
               onCheckedChange={(checked) => onFormChange('privacyAccepted', checked as boolean)}
             />
@@ -71,12 +71,12 @@ const DeclarationStep = ({ formData, onFormChange }: DeclarationStepProps) => {
             </Label>
           </div>
         </div>
-        
+
         {/* Authorization Confirmation */}
         <div className="space-y-3 pt-2">
           <div className="flex items-start gap-3">
-            <Checkbox 
-              id="authorized" 
+            <Checkbox
+              id="authorized"
               className="mt-1"
               checked={formData.authorizedConfirmed}
               onCheckedChange={(checked) => onFormChange('authorizedConfirmed', checked as boolean)}
@@ -85,10 +85,10 @@ const DeclarationStep = ({ formData, onFormChange }: DeclarationStepProps) => {
               I confirm that I am <strong>authorized to register</strong> this temple and act on behalf of the trust/organization. *
             </Label>
           </div>
-          
+
           <div className="flex items-start gap-3">
-            <Checkbox 
-              id="accuracy" 
+            <Checkbox
+              id="accuracy"
               className="mt-1"
               checked={formData.accuracyConfirmed}
               onCheckedChange={(checked) => onFormChange('accuracyConfirmed', checked as boolean)}
@@ -99,7 +99,7 @@ const DeclarationStep = ({ formData, onFormChange }: DeclarationStepProps) => {
           </div>
         </div>
       </div>
-      
+
       {/* Submission Notice */}
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
         <div className="flex gap-3">
@@ -115,7 +115,7 @@ const DeclarationStep = ({ formData, onFormChange }: DeclarationStepProps) => {
           </div>
         </div>
       </div>
-      
+
       {!allAccepted && (
         <p className="text-sm text-muted-foreground text-center">
           Please accept all required consents to submit your registration

@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import DemoVideoModal from "@/components/DemoVideoModal";
 import {
   Building2,
-  Shield,
   Calendar,
   Heart,
   Users,
@@ -18,7 +17,6 @@ import {
   ClipboardList,
   GitBranch,
   MapPin,
-  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-temple.jpg";
@@ -46,28 +44,7 @@ const stats = [
   { value: "99.9%", label: "Uptime" },
 ];
 
-const platformCards = [
-  {
-    title: "Keehoo Platform Admin",
-    subtitle: "For Trust Organizations & Platform Managers",
-    description: "Centralized governance across thousands of temples. Manage temple directory, onboarding pipelines, tenant subscriptions, compliance, and analytics at scale.",
-    features: ["Temple Directory & Onboarding", "Tenant & Subscription Management", "Compliance & Governance", "Platform-wide Analytics"],
-    image: dashboardImage,
-    cta: "Login as Admin",
-    role: "super-admin",
-    icon: Shield,
-  },
-  {
-    title: "Temple Administration",
-    subtitle: "For Temple Administrators & Staff",
-    description: "Complete digital operations for your temple. From offerings and events to donations, inventory, and multi-branch management — all in one powerful dashboard.",
-    features: ["20+ Operational Modules", "Branch & Institution Management", "Financial Tracking & Reports", "Devotee & Volunteer CRM"],
-    image: templeInterior,
-    cta: "Login as Temple Admin",
-    role: "temple-admin",
-    icon: Building2,
-  },
-];
+
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -83,7 +60,7 @@ const LandingPage = () => {
             animate={{ opacity: 1, x: 0 }}
             className="text-2xl font-bold text-primary"
           >
-            Keehoo
+            Temple Admin
           </motion.div>
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -115,7 +92,7 @@ const LandingPage = () => {
           >
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 mb-6">
               <Globe className="h-4 w-4 text-white/80" />
-              <span className="text-sm text-white/80">India's Leading Temple Management Platform</span>
+              <span className="text-sm text-white/80">Complete Temple Management Solution</span>
             </div>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1] mb-6">
               Digital Governance
@@ -128,11 +105,8 @@ const LandingPage = () => {
               Transform temple operations with a unified platform for offerings, donations, events, inventory, and multi-branch management.
             </p>
             <div className="flex flex-wrap gap-4 mb-4">
-              <Button size="lg" onClick={() => navigate("/hub")} className="h-12 px-8 text-base gap-2 bg-white text-primary hover:bg-white/90">
-                <Shield className="h-4 w-4" /> Login as Keehoo Admin
-              </Button>
               <Button size="lg" onClick={() => navigate("/temple-hub")} className="h-12 px-8 text-base gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0">
-                <Building2 className="h-4 w-4" /> Login as Temple Admin
+                <Building2 className="h-4 w-4" /> Get Started
               </Button>
             </div>
             <div className="flex flex-wrap gap-4">
@@ -168,73 +142,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Two Platforms Section */}
-      <section className="py-20 bg-background">
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Two Powerful Platforms, One Vision
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Whether you manage a trust with hundreds of temples or a single temple, Keehoo has you covered.
-            </p>
-          </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {platformCards.map((card, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.15 }}
-                className="group relative bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/30 transition-all duration-500 hover:shadow-xl"
-              >
-                {/* Image */}
-                <div className="relative h-56 overflow-hidden">
-                  <img
-                    src={card.image}
-                    alt={card.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  <div className="absolute bottom-4 left-6">
-                    <div className="flex items-center gap-2 text-white/80 text-sm mb-1">
-                      <card.icon className="h-4 w-4" />
-                      {card.subtitle}
-                    </div>
-                    <h3 className="text-2xl font-bold text-white">{card.title}</h3>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-6">
-                  <p className="text-muted-foreground text-sm mb-5 leading-relaxed">{card.description}</p>
-                  <ul className="space-y-2.5 mb-6">
-                    {card.features.map((f, fi) => (
-                      <li key={fi} className="flex items-center gap-2.5 text-sm text-foreground">
-                        <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    onClick={() => navigate(card.role === "super-admin" ? "/hub" : "/temple-hub")}
-                    className="w-full gap-2"
-                  >
-                    {card.cta} <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Features Grid */}
       <section className="py-20 bg-muted/30">
@@ -337,7 +245,7 @@ const LandingPage = () => {
               Ready to Transform Your Temple?
             </h2>
             <p className="text-white/70 text-lg mb-8 max-w-2xl mx-auto">
-              Join thousands of temples already using Keehoo for digital governance and operational excellence.
+              Join thousands of temples already using our platform for digital governance and operational excellence.
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
               <Button
@@ -365,16 +273,15 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="text-xl font-bold mb-3">Keehoo</h3>
+              <h3 className="text-xl font-bold mb-3">Temple Admin</h3>
               <p className="text-sm text-background/60 leading-relaxed">
-                Digital governance platform for temples, trusts, and religious institutions.
+                Complete digital operations platform for temples, trusts, and religious institutions.
               </p>
             </div>
             <div>
-              <h4 className="font-semibold text-sm mb-3">Platform</h4>
+              <h4 className="font-semibold text-sm mb-3">Product</h4>
               <ul className="space-y-2 text-sm text-background/60">
-                <li className="hover:text-background cursor-pointer transition-colors">Temple Admin</li>
-                <li className="hover:text-background cursor-pointer transition-colors">Platform Admin</li>
+                <li className="hover:text-background cursor-pointer transition-colors">Features</li>
                 <li className="hover:text-background cursor-pointer transition-colors">Pricing</li>
                 <li className="hover:text-background cursor-pointer transition-colors">Documentation</li>
               </ul>
@@ -399,7 +306,7 @@ const LandingPage = () => {
             </div>
           </div>
           <div className="border-t border-background/10 pt-6 text-center text-sm text-background/40">
-            © 2025 Keehoo. All rights reserved.
+            © 2025 Temple Admin. All rights reserved.
           </div>
         </div>
       </footer>

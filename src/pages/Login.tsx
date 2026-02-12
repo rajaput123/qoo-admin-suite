@@ -49,7 +49,7 @@ const Login = () => {
           className="relative z-10 max-w-md text-center"
         >
           <div className="mb-8">
-            <h1 className="text-5xl font-bold text-white mb-2 tracking-tight">Keehoo</h1>
+            <h1 className="text-5xl font-bold text-white mb-2 tracking-tight">Temple Admin</h1>
             <div className="w-12 h-0.5 bg-white/60 mx-auto" />
           </div>
           <h2 className="text-2xl font-semibold text-white/95 mb-4">
@@ -99,7 +99,7 @@ const Login = () => {
 
           {/* Mobile Logo */}
           <div className="lg:hidden text-center mb-8">
-            <h1 className="text-3xl font-bold text-primary">Keehoo</h1>
+            <h1 className="text-3xl font-bold text-primary">Temple Admin</h1>
             <p className="text-sm text-muted-foreground mt-1">Digital Governance for Temples</p>
           </div>
 
