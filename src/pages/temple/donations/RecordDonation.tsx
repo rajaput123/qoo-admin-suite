@@ -11,14 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Plus, IndianRupee, Banknote, Smartphone, Building2, Gift, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-const recentRecords = [
-  { id: "DON-2025-0891", donor: "Sri Ramesh Agarwal", amount: 500000, purpose: "Project - Gopuram Renovation", channel: "Bank Transfer", mode: "NEFT", date: "2025-02-10", time: "10:30 AM", receiptNo: "REC-2025-0891", status: "Recorded" },
-  { id: "DON-2025-0890", donor: "Anonymous", amount: 25000, purpose: "General / Hundi", channel: "Cash", mode: "Cash", date: "2025-02-10", time: "09:15 AM", receiptNo: "REC-2025-0890", status: "Recorded" },
-  { id: "DON-2025-0889", donor: "Smt. Padma Devi", amount: 100000, purpose: "Annadanam Sponsorship", channel: "UPI", mode: "GPay", date: "2025-02-09", time: "04:45 PM", receiptNo: "REC-2025-0889", status: "Recorded" },
-  { id: "DON-2025-0888", donor: "Venkatesh Trust", amount: 1000000, purpose: "Project - New Hall", channel: "Bank Transfer", mode: "RTGS", date: "2025-02-09", time: "11:00 AM", receiptNo: "REC-2025-0888", status: "Recorded" },
-  { id: "DON-2025-0887", donor: "Karthik & Family", amount: 15000, purpose: "Prasadam Sponsorship", channel: "Online", mode: "Razorpay", date: "2025-02-08", time: "06:20 PM", receiptNo: "REC-2025-0887", status: "Recorded" },
-];
+import { useDonations } from "@/modules/donations/hooks";
+import { recordDonation } from "@/modules/donations/donationsStore";
 
 const formatCurrency = (val: number) => {
   if (val >= 10000000) return `₹${(val / 10000000).toFixed(1)} Cr`;
@@ -35,18 +29,48 @@ const channelIcons: Record<string, typeof IndianRupee> = {
 };
 
 const RecordDonation = () => {
+  const donations = useDonations();
   const [showRecord, setShowRecord] = useState(false);
   const [search, setSearch] = useState("");
-  const [selectedRecord, setSelectedRecord] = useState<typeof recentRecords[0] | null>(null);
+  const [selectedRecord, setSelectedRecord] = useState<(typeof donations)[number] | null>(null);
   const { toast } = useToast();
+  const [form, setForm] = useState({
+    donorName: "",
+    phone: "",
+    amount: "",
+    channel: "" as "" | "Cash" | "UPI" | "Bank Transfer" | "Online" | "Cheque" | "In-Kind",
+    purpose: "",
+    mode: "",
+    referenceNo: "",
+    remarks: "",
+  });
 
-  const filtered = recentRecords.filter(r =>
-    r.donor.toLowerCase().includes(search.toLowerCase()) || r.id.toLowerCase().includes(search.toLowerCase())
+  const filtered = donations.filter(r =>
+    r.donorName.toLowerCase().includes(search.toLowerCase()) || r.donationId.toLowerCase().includes(search.toLowerCase()) || r.receiptNo.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleRecord = () => {
-    toast({ title: "Donation Recorded", description: "Receipt has been generated automatically." });
+    if (!form.donorName.trim()) return;
+    const amt = Number(form.amount);
+    if (!Number.isFinite(amt) || amt <= 0) return;
+    if (!form.channel) return;
+    if (!form.purpose) return;
+    if (!form.mode.trim()) return;
+
+    const d = recordDonation({
+      donorName: form.donorName.trim(),
+      phone: form.phone.trim() || undefined,
+      amount: amt,
+      purpose: form.purpose,
+      channel: form.channel,
+      mode: form.mode.trim(),
+      referenceNo: form.referenceNo.trim() || undefined,
+      remarks: form.remarks.trim() || undefined,
+      createdBy: "System",
+    });
+    toast({ title: "Donation Recorded", description: `Receipt ${d.receiptNo} generated automatically.` });
     setShowRecord(false);
+    setForm({ donorName: "", phone: "", amount: "", channel: "", purpose: "", mode: "", referenceNo: "", remarks: "" });
   };
 
   return (
@@ -104,9 +128,9 @@ const RecordDonation = () => {
             </TableHeader>
             <TableBody>
               {filtered.map(r => (
-                <TableRow key={r.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedRecord(r)}>
-                  <TableCell className="font-mono text-xs">{r.id}</TableCell>
-                  <TableCell className="font-medium text-sm">{r.donor}</TableCell>
+                <TableRow key={r.donationId} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedRecord(r)}>
+                  <TableCell className="font-mono text-xs">{r.donationId}</TableCell>
+                  <TableCell className="font-medium text-sm">{r.donorName}</TableCell>
                   <TableCell className="text-sm">{r.purpose}</TableCell>
                   <TableCell><Badge variant="outline" className="text-xs">{r.channel}</Badge></TableCell>
                   <TableCell className="text-xs">{r.mode}</TableCell>
@@ -134,8 +158,8 @@ const RecordDonation = () => {
               <TabsContent value="details" className="mt-4 space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    ["Donation ID", selectedRecord.id],
-                    ["Donor", selectedRecord.donor],
+                    ["Donation ID", selectedRecord.donationId],
+                    ["Donor", selectedRecord.donorName],
                     ["Amount", formatCurrency(selectedRecord.amount)],
                     ["Purpose", selectedRecord.purpose],
                     ["Channel", selectedRecord.channel],
@@ -175,42 +199,44 @@ const RecordDonation = () => {
           <DialogHeader><DialogTitle>Record New Donation</DialogTitle></DialogHeader>
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Donor Name</Label><Input placeholder="Donor name or Anonymous" /></div>
-              <div><Label>Phone (optional)</Label><Input placeholder="+91 XXXXX XXXXX" /></div>
+              <div><Label>Donor Name</Label><Input placeholder="Donor name or Anonymous" value={form.donorName} onChange={e => setForm(p => ({ ...p, donorName: e.target.value }))} /></div>
+              <div><Label>Phone (optional)</Label><Input placeholder="+91 XXXXX XXXXX" value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} /></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Amount (₹)</Label><Input type="number" placeholder="e.g. 50000" /></div>
+              <div><Label>Amount (₹)</Label><Input type="number" placeholder="e.g. 50000" value={form.amount} onChange={e => setForm(p => ({ ...p, amount: e.target.value }))} /></div>
               <div><Label>Channel</Label>
-                <Select><SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <Select value={form.channel} onValueChange={(v) => setForm(p => ({ ...p, channel: v as any }))}>
+                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="cash">Cash / Counter</SelectItem>
-                    <SelectItem value="upi">UPI</SelectItem>
-                    <SelectItem value="bank">Bank Transfer</SelectItem>
-                    <SelectItem value="online">Online Payment</SelectItem>
-                    <SelectItem value="cheque">Cheque / DD</SelectItem>
-                    <SelectItem value="inkind">In-Kind</SelectItem>
+                    <SelectItem value="Cash">Cash / Counter</SelectItem>
+                    <SelectItem value="UPI">UPI</SelectItem>
+                    <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                    <SelectItem value="Online">Online Payment</SelectItem>
+                    <SelectItem value="Cheque">Cheque / DD</SelectItem>
+                    <SelectItem value="In-Kind">In-Kind</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div><Label>Purpose</Label>
-              <Select><SelectTrigger><SelectValue placeholder="Select purpose" /></SelectTrigger>
+              <Select value={form.purpose} onValueChange={(v) => setForm(p => ({ ...p, purpose: v }))}>
+                <SelectTrigger><SelectValue placeholder="Select purpose" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="general">General / Hundi</SelectItem>
-                  <SelectItem value="annadanam">Annadanam Sponsorship</SelectItem>
-                  <SelectItem value="prasadam">Prasadam Sponsorship</SelectItem>
-                  <SelectItem value="seva">Seva Sponsorship</SelectItem>
-                  <SelectItem value="project">Project-linked</SelectItem>
-                  <SelectItem value="event">Event-linked</SelectItem>
-                  <SelectItem value="corpus">Corpus Fund</SelectItem>
+                  <SelectItem value="General / Hundi">General / Hundi</SelectItem>
+                  <SelectItem value="Annadanam Sponsorship">Annadanam Sponsorship</SelectItem>
+                  <SelectItem value="Prasadam Sponsorship">Prasadam Sponsorship</SelectItem>
+                  <SelectItem value="Seva Sponsorship">Seva Sponsorship</SelectItem>
+                  <SelectItem value="Project-linked">Project-linked</SelectItem>
+                  <SelectItem value="Event-linked">Event-linked</SelectItem>
+                  <SelectItem value="Corpus Fund">Corpus Fund</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><Label>Payment Mode</Label><Input placeholder="e.g. GPay, NEFT, Cash" /></div>
-              <div><Label>Reference No.</Label><Input placeholder="Transaction ref (optional)" /></div>
+              <div><Label>Payment Mode</Label><Input placeholder="e.g. GPay, NEFT, Cash" value={form.mode} onChange={e => setForm(p => ({ ...p, mode: e.target.value }))} /></div>
+              <div><Label>Reference No.</Label><Input placeholder="Transaction ref (optional)" value={form.referenceNo} onChange={e => setForm(p => ({ ...p, referenceNo: e.target.value }))} /></div>
             </div>
-            <div><Label>Remarks</Label><Textarea placeholder="Any special instructions or donor intent..." rows={2} /></div>
+            <div><Label>Remarks</Label><Textarea placeholder="Any special instructions or donor intent..." rows={2} value={form.remarks} onChange={e => setForm(p => ({ ...p, remarks: e.target.value }))} /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowRecord(false)}>Cancel</Button>

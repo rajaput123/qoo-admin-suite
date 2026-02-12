@@ -11,15 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Wallet, Link2, IndianRupee, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-const allocations = [
-  { id: "DON-2025-0891", donor: "Sri Ramesh Agarwal", amount: 500000, purpose: "Project-linked", linkedTo: "Gopuram Renovation", linkedType: "Project", allocated: 500000, utilized: 410000, status: "In Use" },
-  { id: "DON-2025-0889", donor: "Smt. Padma Devi", amount: 100000, purpose: "Annadanam", linkedTo: "Daily Annadanam", linkedType: "Kitchen", allocated: 100000, utilized: 100000, status: "Fully Utilized" },
-  { id: "DON-2025-0888", donor: "Venkatesh Trust", amount: 1000000, purpose: "Project-linked", linkedTo: "New Hall Construction", linkedType: "Project", allocated: 1000000, utilized: 280000, status: "In Use" },
-  { id: "DON-2025-0887", donor: "Karthik & Family", amount: 15000, purpose: "Prasadam Sponsorship", linkedTo: "Laddu Prasadam - Vaikunta Ekadashi", linkedType: "Prasadam", allocated: 15000, utilized: 15000, status: "Fully Utilized" },
-  { id: "DON-2025-0885", donor: "Anonymous", amount: 50000, purpose: "Seva Sponsorship", linkedTo: "Sahasranama Archana", linkedType: "Seva", allocated: 50000, utilized: 0, status: "Allocated" },
-  { id: "DON-2025-0884", donor: "Lakshmi Trust", amount: 200000, purpose: "Event-linked", linkedTo: "Brahmotsavam 2025", linkedType: "Event", allocated: 0, utilized: 0, status: "Unallocated" },
-];
+import { useAllocations, useDonations } from "@/modules/donations/hooks";
+import { allocateFund } from "@/modules/donations/donationsStore";
 
 const formatCurrency = (val: number) => {
   if (val >= 10000000) return `₹${(val / 10000000).toFixed(1)} Cr`;
@@ -36,13 +29,63 @@ const typeColors: Record<string, string> = {
 };
 
 const FundAllocation = () => {
+  const donations = useDonations();
+  const allocations = useAllocations();
   const [search, setSearch] = useState("");
   const [showAllocate, setShowAllocate] = useState(false);
-  const [selectedAllocation, setSelectedAllocation] = useState<typeof allocations[0] | null>(null);
+  const [selectedAllocation, setSelectedAllocation] = useState<{
+    donationId: string;
+    donorName: string;
+    amount: number;
+    purpose: string;
+    linkedTo: string;
+    linkedType: any;
+    allocated: number;
+    utilized: number;
+  } | null>(null);
   const { toast } = useToast();
+  const [allocForm, setAllocForm] = useState({
+    donationId: "",
+    linkedType: "" as any,
+    linkedTo: "",
+    allocated: "",
+  });
 
-  const filtered = allocations.filter(a =>
-    a.donor.toLowerCase().includes(search.toLowerCase()) || a.id.toLowerCase().includes(search.toLowerCase()) || a.linkedTo.toLowerCase().includes(search.toLowerCase())
+  const viewRows = allocations
+    .map(a => {
+      const d = donations.find(x => x.donationId === a.donationId);
+      return {
+        donationId: a.donationId,
+        donorName: d?.donorName ?? "—",
+        amount: d?.amount ?? 0,
+        purpose: a.purpose,
+        linkedTo: a.linkedTo,
+        linkedType: a.linkedType,
+        allocated: a.allocated,
+        utilized: a.utilized,
+        status: a.allocated <= 0 ? "Unallocated" : a.utilized >= a.allocated ? "Fully Utilized" : "In Use",
+      };
+    })
+    .concat(
+      donations
+        .filter(d => !allocations.some(a => a.donationId === d.donationId))
+        .map(d => ({
+          donationId: d.donationId,
+          donorName: d.donorName,
+          amount: d.amount,
+          purpose: d.purpose,
+          linkedTo: "—",
+          linkedType: "General",
+          allocated: 0,
+          utilized: 0,
+          status: "Unallocated",
+        }))
+    );
+
+  const filtered = viewRows.filter(a =>
+    a.donorName.toLowerCase().includes(search.toLowerCase()) ||
+    a.donationId.toLowerCase().includes(search.toLowerCase()) ||
+    a.linkedTo.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -87,9 +130,9 @@ const FundAllocation = () => {
               {filtered.map(a => {
                 const pct = a.allocated > 0 ? Math.round((a.utilized / a.allocated) * 100) : 0;
                 return (
-                  <TableRow key={a.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedAllocation(a)}>
-                    <TableCell className="font-mono text-xs">{a.id}</TableCell>
-                    <TableCell className="font-medium text-sm">{a.donor}</TableCell>
+                  <TableRow key={a.donationId} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedAllocation(a)}>
+                    <TableCell className="font-mono text-xs">{a.donationId}</TableCell>
+                    <TableCell className="font-medium text-sm">{a.donorName}</TableCell>
                     <TableCell className="text-sm">{a.purpose}</TableCell>
                     <TableCell className="text-sm">{a.linkedTo}</TableCell>
                     <TableCell><Badge variant={typeColors[a.linkedType] as any || "outline"} className="text-[10px]">{a.linkedType}</Badge></TableCell>
@@ -119,8 +162,8 @@ const FundAllocation = () => {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  ["Donation ID", selectedAllocation.id],
-                  ["Donor", selectedAllocation.donor],
+                  ["Donation ID", selectedAllocation.donationId],
+                  ["Donor", selectedAllocation.donorName],
                   ["Purpose", selectedAllocation.purpose],
                   ["Linked To", selectedAllocation.linkedTo],
                   ["Linked Type", selectedAllocation.linkedType],
@@ -156,24 +199,57 @@ const FundAllocation = () => {
         <DialogContent className="max-w-md">
           <DialogHeader><DialogTitle>Allocate Fund</DialogTitle></DialogHeader>
           <div className="grid gap-4">
-            <div><Label>Donation ID</Label><Input placeholder="DON-2025-XXXX" /></div>
-            <div><Label>Link To Module</Label>
-              <Select><SelectTrigger><SelectValue placeholder="Select module" /></SelectTrigger>
+            <div>
+              <Label>Donation</Label>
+              <Select value={allocForm.donationId} onValueChange={(v) => setAllocForm(p => ({ ...p, donationId: v }))}>
+                <SelectTrigger><SelectValue placeholder="Select donation" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="project">Project</SelectItem>
-                  <SelectItem value="seva">Seva / Ritual</SelectItem>
-                  <SelectItem value="event">Event</SelectItem>
-                  <SelectItem value="kitchen">Kitchen / Annadanam</SelectItem>
-                  <SelectItem value="prasadam">Prasadam</SelectItem>
+                  {donations.map(d => (
+                    <SelectItem key={d.donationId} value={d.donationId}>
+                      {d.donationId} • {d.donorName} • ₹{d.amount.toLocaleString()}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Entity Name</Label><Input placeholder="e.g. Gopuram Renovation, Brahmotsavam 2025" /></div>
-            <div><Label>Allocation Amount (₹)</Label><Input type="number" placeholder="Amount to allocate" /></div>
+            <div><Label>Link To Module</Label>
+              <Select value={allocForm.linkedType} onValueChange={(v) => setAllocForm(p => ({ ...p, linkedType: v }))}>
+                <SelectTrigger><SelectValue placeholder="Select module" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Project">Project</SelectItem>
+                  <SelectItem value="Seva">Seva / Ritual</SelectItem>
+                  <SelectItem value="Event">Event</SelectItem>
+                  <SelectItem value="Kitchen">Kitchen / Annadanam</SelectItem>
+                  <SelectItem value="Prasadam">Prasadam</SelectItem>
+                  <SelectItem value="General">General</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label>Entity Name</Label><Input placeholder="e.g. Gopuram Renovation, Brahmotsavam 2025" value={allocForm.linkedTo} onChange={e => setAllocForm(p => ({ ...p, linkedTo: e.target.value }))} /></div>
+            <div><Label>Allocation Amount (₹)</Label><Input type="number" placeholder="Amount to allocate" value={allocForm.allocated} onChange={e => setAllocForm(p => ({ ...p, allocated: e.target.value }))} /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAllocate(false)}>Cancel</Button>
-            <Button onClick={() => { toast({ title: "Fund Allocated", description: "Donation linked to module successfully." }); setShowAllocate(false); }}>Allocate</Button>
+            <Button
+              onClick={() => {
+                const amt = Number(allocForm.allocated);
+                if (!allocForm.donationId || !allocForm.linkedType || !allocForm.linkedTo.trim() || !Number.isFinite(amt) || amt <= 0) return;
+                const d = donations.find(x => x.donationId === allocForm.donationId);
+                allocateFund({
+                  donationId: allocForm.donationId,
+                  purpose: d?.purpose ?? "General",
+                  linkedType: allocForm.linkedType,
+                  linkedTo: allocForm.linkedTo.trim(),
+                  allocated: amt,
+                  createdBy: "System",
+                });
+                toast({ title: "Fund Allocated", description: "Donation linked to module successfully." });
+                setShowAllocate(false);
+                setAllocForm({ donationId: "", linkedType: "" as any, linkedTo: "", allocated: "" });
+              }}
+            >
+              Allocate
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

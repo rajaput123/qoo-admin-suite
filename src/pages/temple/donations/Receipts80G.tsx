@@ -7,20 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search, Receipt, FileDown, FileText, CheckCircle2, Clock, AlertCircle } from "lucide-react";
-
-const receipts = [
-  { id: "REC-2025-0891", donationId: "DON-2025-0891", donor: "Sri Ramesh Agarwal", amount: 500000, date: "2025-02-10", mode: "Bank Transfer", receiptType: "Standard", status: "Issued" },
-  { id: "REC-2025-0890", donationId: "DON-2025-0890", donor: "Anonymous", amount: 25000, date: "2025-02-10", mode: "Cash", receiptType: "Standard", status: "Issued" },
-  { id: "REC-2025-0889", donationId: "DON-2025-0889", donor: "Smt. Padma Devi", amount: 100000, date: "2025-02-09", mode: "UPI", receiptType: "Standard", status: "Issued" },
-  { id: "REC-2025-0888", donationId: "DON-2025-0888", donor: "Venkatesh Trust", amount: 1000000, date: "2025-02-09", mode: "Bank Transfer", receiptType: "Standard", status: "Issued" },
-];
-
-const certificates80G = [
-  { id: "80G-2025-0045", donor: "Sri Ramesh Agarwal", pan: "ABCPA1234R", totalAmount: 2500000, fy: "2024-25", receiptsLinked: 8, status: "Generated", generatedDate: "2025-02-01" },
-  { id: "80G-2025-0044", donor: "Smt. Padma Foundation", pan: "AAATA5678B", totalAmount: 10000000, fy: "2024-25", receiptsLinked: 3, status: "Generated", generatedDate: "2025-01-28" },
-  { id: "80G-2025-0043", donor: "Venkatesh Trust", pan: "BBBTV9012C", totalAmount: 5000000, fy: "2024-25", receiptsLinked: 12, status: "Pending", generatedDate: "-" },
-  { id: "80G-2025-0042", donor: "Karthik Reddy", pan: "CCCPK3456D", totalAmount: 350000, fy: "2024-25", receiptsLinked: 5, status: "Generated", generatedDate: "2025-01-15" },
-];
+import { useCertificates80G, useDonations } from "@/modules/donations/hooks";
+import { generate80GCertificate } from "@/modules/donations/donationsStore";
 
 const formatCurrency = (val: number) => {
   if (val >= 10000000) return `₹${(val / 10000000).toFixed(1)} Cr`;
@@ -29,8 +17,35 @@ const formatCurrency = (val: number) => {
 };
 
 const Receipts80G = () => {
+  const donations = useDonations();
+  const certificates80G = useCertificates80G();
   const [search, setSearch] = useState("");
-  const [selectedReceipt, setSelectedReceipt] = useState<typeof receipts[0] | null>(null);
+  const [selectedReceipt, setSelectedReceipt] = useState<{
+    id: string;
+    donationId: string;
+    donor: string;
+    amount: number;
+    date: string;
+    mode: string;
+    status: string;
+  } | null>(null);
+
+  const receipts = donations.map(d => ({
+    id: d.receiptNo,
+    donationId: d.donationId,
+    donor: d.donorName,
+    amount: d.amount,
+    date: d.date,
+    mode: d.channel,
+    receiptType: "Standard",
+    status: "Issued",
+  }));
+
+  const filteredReceipts = receipts.filter(r =>
+    r.id.toLowerCase().includes(search.toLowerCase()) ||
+    r.donationId.toLowerCase().includes(search.toLowerCase()) ||
+    r.donor.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
@@ -76,7 +91,7 @@ const Receipts80G = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {receipts.map(r => (
+                  {filteredReceipts.map(r => (
                     <TableRow key={r.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedReceipt(r)}>
                       <TableCell className="font-mono text-xs">{r.id}</TableCell>
                       <TableCell className="font-mono text-xs">{r.donationId}</TableCell>
@@ -113,20 +128,29 @@ const Receipts80G = () => {
                 </TableHeader>
                 <TableBody>
                   {certificates80G.map(c => (
-                    <TableRow key={c.id}>
-                      <TableCell className="font-mono text-xs">{c.id}</TableCell>
-                      <TableCell className="font-medium text-sm">{c.donor}</TableCell>
+                    <TableRow key={c.certificateId}>
+                      <TableCell className="font-mono text-xs">{c.certificateId}</TableCell>
+                      <TableCell className="font-medium text-sm">{c.donorName}</TableCell>
                       <TableCell className="font-mono text-xs">{c.pan}</TableCell>
                       <TableCell className="text-right font-mono font-medium">{formatCurrency(c.totalAmount)}</TableCell>
                       <TableCell className="text-xs">{c.fy}</TableCell>
-                      <TableCell className="text-right">{c.receiptsLinked}</TableCell>
+                      <TableCell className="text-right">{c.receiptNos.length}</TableCell>
                       <TableCell className="text-xs">{c.generatedDate}</TableCell>
                       <TableCell><Badge variant={c.status === "Generated" ? "default" : "secondary"} className="text-[10px]">{c.status}</Badge></TableCell>
                       <TableCell>
                         {c.status === "Generated" ? (
                           <Button variant="ghost" size="sm" className="h-7 text-xs"><FileDown className="h-3 w-3 mr-1" />PDF</Button>
                         ) : (
-                          <Button variant="outline" size="sm" className="h-7 text-xs">Generate</Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs"
+                            onClick={() => {
+                              generate80GCertificate({ donorId: c.donorId, fy: c.fy, createdBy: "System" });
+                            }}
+                          >
+                            Generate
+                          </Button>
                         )}
                       </TableCell>
                     </TableRow>

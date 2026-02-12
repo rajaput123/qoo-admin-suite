@@ -3,13 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Heart, IndianRupee, Users, Receipt, TrendingUp, TrendingDown, Calendar, Eye } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-
-const stats = [
-  { label: "Total Donations (FY)", value: "₹4.82 Cr", change: "+18%", up: true, icon: IndianRupee },
-  { label: "Active Donors", value: "2,847", change: "+124", up: true, icon: Users },
-  { label: "Receipts Issued", value: "3,412", change: "This month: 286", up: true, icon: Receipt },
-  { label: "Pending Allocation", value: "₹38.5 L", change: "12 donations", up: false, icon: Eye },
-];
+import { useAllocations, useDonations, useDonors } from "@/modules/donations/hooks";
 
 const monthlyData = [
   { month: "Jul", amount: 32 }, { month: "Aug", amount: 28 }, { month: "Sep", amount: 45 },
@@ -33,14 +27,6 @@ const channelData = [
   { channel: "Event-linked", count: 312, amount: "₹28 L" },
 ];
 
-const recentDonations = [
-  { id: "DON-2025-0891", donor: "Sri Ramesh Agarwal", amount: 500000, purpose: "Gopuram Renovation", channel: "Bank Transfer", date: "2025-02-10", status: "Allocated" },
-  { id: "DON-2025-0890", donor: "Anonymous", amount: 25000, purpose: "General / Hundi", channel: "Cash", date: "2025-02-10", status: "Pending" },
-  { id: "DON-2025-0889", donor: "Smt. Padma Devi", amount: 100000, purpose: "Annadanam", channel: "UPI", date: "2025-02-09", status: "Utilized" },
-  { id: "DON-2025-0888", donor: "Venkatesh Trust", amount: 1000000, purpose: "New Hall Construction", channel: "Bank Transfer", date: "2025-02-09", status: "Allocated" },
-  { id: "DON-2025-0887", donor: "Karthik & Family", amount: 15000, purpose: "Prasadam Sponsorship", channel: "Online", date: "2025-02-08", status: "Utilized" },
-];
-
 const formatCurrency = (val: number) => {
   if (val >= 10000000) return `₹${(val / 10000000).toFixed(1)} Cr`;
   if (val >= 100000) return `₹${(val / 100000).toFixed(1)} L`;
@@ -48,6 +34,35 @@ const formatCurrency = (val: number) => {
 };
 
 const Dashboard = () => {
+  const donors = useDonors();
+  const donations = useDonations();
+  const allocations = useAllocations();
+
+  const allocatedSet = new Set(allocations.map(a => a.donationId));
+  const pendingAllocDonations = donations.filter(d => !allocatedSet.has(d.donationId));
+  const pendingAllocAmount = pendingAllocDonations.reduce((s, d) => s + d.amount, 0);
+
+  const fyTotal = donations.reduce((s, d) => s + d.amount, 0);
+  const activeDonors = new Set(donations.map(d => d.donorId)).size;
+  const receiptsIssued = donations.length;
+
+  const stats = [
+    { label: "Total Donations (FY)", value: formatCurrency(fyTotal), change: `${donations.length} donations`, up: true, icon: IndianRupee },
+    { label: "Active Donors", value: activeDonors.toLocaleString(), change: `${donors.length} in registry`, up: true, icon: Users },
+    { label: "Receipts Issued", value: receiptsIssued.toLocaleString(), change: "Auto-generated", up: true, icon: Receipt },
+    { label: "Pending Allocation", value: formatCurrency(pendingAllocAmount), change: `${pendingAllocDonations.length} donations`, up: false, icon: Eye },
+  ];
+
+  const recentDonations = donations.slice(0, 5).map(d => ({
+    id: d.donationId,
+    donor: d.donorName,
+    amount: d.amount,
+    purpose: d.purpose,
+    channel: d.channel,
+    date: d.date,
+    status: allocatedSet.has(d.donationId) ? "Allocated" : "Pending",
+  }));
+
   return (
     <div className="space-y-6">
       <div>

@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FileDown, FileBarChart, Shield, Users, IndianRupee, Calendar, CheckCircle2, Eye } from "lucide-react";
+import { useDonationAudit } from "@/modules/donations/hooks";
 
 const trusteeReports = [
   { id: "RPT-001", title: "Monthly Donation Summary – Jan 2025", type: "Monthly", period: "Jan 2025", totalAmount: "₹62.5 L", donors: 312, generated: "2025-02-01", status: "Published" },
@@ -13,15 +14,6 @@ const trusteeReports = [
   { id: "RPT-003", title: "Quarterly Review – Q3 FY25", type: "Quarterly", period: "Oct-Dec 2024", totalAmount: "₹1.91 Cr", donors: 1045, generated: "2025-01-05", status: "Published" },
   { id: "RPT-004", title: "Annual Donation Report – FY 2023-24", type: "Annual", period: "Apr 2023 - Mar 2024", totalAmount: "₹3.85 Cr", donors: 2156, generated: "2024-04-15", status: "Published" },
   { id: "RPT-005", title: "Campaign Performance – Gopuram Fund", type: "Campaign", period: "Aug 2024 - Present", totalAmount: "₹3.2 Cr", donors: 245, generated: "2025-02-05", status: "Draft" },
-];
-
-const auditRecords = [
-  { id: "AUD-001", action: "Donation Recorded", entity: "DON-2025-0891", user: "Ramesh Kumar", timestamp: "2025-02-10 10:30", details: "₹5L from Sri Ramesh Agarwal via Bank Transfer" },
-  { id: "AUD-002", action: "Fund Allocated", entity: "DON-2025-0891", user: "Ramesh Kumar", timestamp: "2025-02-10 10:35", details: "Allocated to Gopuram Renovation project" },
-  { id: "AUD-003", action: "Receipt Generated", entity: "REC-2025-0891", user: "System", timestamp: "2025-02-10 10:30", details: "Auto-generated receipt for DON-2025-0891" },
-  { id: "AUD-004", action: "80G Certificate Generated", entity: "80G-2025-0045", user: "Lakshmi Devi", timestamp: "2025-02-01 14:20", details: "FY 2024-25 certificate for Sri Ramesh Agarwal" },
-  { id: "AUD-005", action: "Campaign Created", entity: "CMP-005", user: "Ramesh Kumar", timestamp: "2025-01-15 09:00", details: "Prasadam for Festivals campaign launched" },
-  { id: "AUD-006", action: "Utilization Logged", entity: "EXP-2025-0456", user: "Venkatesh", timestamp: "2025-02-08 16:45", details: "₹85K gold foil procurement against Gopuram Fund" },
 ];
 
 const governanceRules = [
@@ -35,6 +27,7 @@ const governanceRules = [
 
 const ReportsGovernance = () => {
   const [reportPeriod, setReportPeriod] = useState("all");
+  const auditRecords = useDonationAudit();
 
   return (
     <div className="space-y-6">
