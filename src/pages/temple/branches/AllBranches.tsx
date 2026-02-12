@@ -14,6 +14,7 @@ import { Plus, Search, GitBranch, MapPin, Building2, IndianRupee } from "lucide-
 import { branches } from "@/data/branchData";
 import CustomFieldsSection, { CustomField } from "@/components/CustomFieldsSection";
 import { toast } from "@/hooks/use-toast";
+import BranchDetails from "./BranchDetails";
 
 const AllBranches = () => {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ const AllBranches = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [perPage, setPerPage] = useState(10);
+  const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
 
   const filtered = branches.filter(b => {
     const matchSearch = b.name.toLowerCase().includes(search.toLowerCase()) || b.city.toLowerCase().includes(search.toLowerCase()) || b.code.toLowerCase().includes(search.toLowerCase());
@@ -42,6 +44,14 @@ const AllBranches = () => {
     if (s === "Inactive") return "text-red-700 border-red-300 bg-red-50";
     return "text-amber-700 border-amber-300 bg-amber-50";
   };
+
+  if (selectedBranchId) {
+    return (
+      <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+        <BranchDetails branchId={selectedBranchId} onBack={() => setSelectedBranchId(null)} />
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
@@ -133,7 +143,7 @@ const AllBranches = () => {
             </TableHeader>
             <TableBody>
               {filtered.slice(0, perPage).map(branch => (
-                <TableRow key={branch.id} className="cursor-pointer" onClick={() => navigate(`/temple/branches/${branch.id}`)}>
+                <TableRow key={branch.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedBranchId(branch.id)}>
                   <TableCell>
                     <p className="font-medium text-sm">{branch.name}</p>
                     <p className="text-xs text-muted-foreground">{branch.code}</p>

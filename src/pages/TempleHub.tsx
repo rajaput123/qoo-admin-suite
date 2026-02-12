@@ -246,7 +246,7 @@ const allModules = [
     id: "finance",
     title: "Finance & Accounts",
     icon: IndianRupee,
-    enabled: false,
+    enabled: true,
     path: "/temple/finance",
     description: "Budget, expenses, audit, financial reports",
     category: "operations",
@@ -255,7 +255,7 @@ const allModules = [
     id: "projects",
     title: "Projects & Initiatives",
     icon: FolderKanban,
-    enabled: false,
+    enabled: true,
     path: "/temple/projects",
     description: "Strategic projects, milestones, budget governance",
     category: "analytics",
@@ -490,10 +490,10 @@ const TempleHub = () => {
             <Badge
               variant="outline"
               className={`text-xs ${tenantData.status === "active"
-                  ? "text-green-700 border-green-300 bg-green-50"
-                  : tenantData.status === "trial"
-                    ? "text-amber-700 border-amber-300 bg-amber-50"
-                    : "text-red-700 border-red-300 bg-red-50"
+                ? "text-green-700 border-green-300 bg-green-50"
+                : tenantData.status === "trial"
+                  ? "text-amber-700 border-amber-300 bg-amber-50"
+                  : "text-red-700 border-red-300 bg-red-50"
                 }`}
             >
               {tenantData.status === "trial" ? "Trial" : tenantData.status.charAt(0).toUpperCase() + tenantData.status.slice(1)}
@@ -537,13 +537,13 @@ const TempleHub = () => {
                           </span>
                         )}
                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-2 transition-all duration-200 ${isRestricted
-                            ? "bg-muted/50"
-                            : "bg-muted group-hover:bg-primary group-hover:shadow-lg"
+                          ? "bg-muted/50"
+                          : "bg-muted group-hover:bg-primary group-hover:shadow-lg"
                           }`}>
                           <module.icon
                             className={`h-6 w-6 transition-colors duration-200 ${isRestricted
-                                ? "text-muted-foreground"
-                                : "text-foreground group-hover:text-primary-foreground"
+                              ? "text-muted-foreground"
+                              : "text-foreground group-hover:text-primary-foreground"
                               }`}
                             strokeWidth={1.5}
                           />

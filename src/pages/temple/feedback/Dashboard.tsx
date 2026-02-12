@@ -1,123 +1,196 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { MessageSquareText, Star, TrendingUp, TrendingDown, ThumbsUp, ThumbsDown, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { MessageSquareText, AlertCircle, CheckCircle2, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
+
+// Mock data for last 30 days
+const generateLast30DaysData = () => {
+  const data = [];
+  const today = new Date();
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const day = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    // Simulate feedback volume with some variation
+    const baseVolume = 80 + Math.random() * 40;
+    const negativeVolume = 10 + Math.random() * 20;
+    data.push({
+      date: day,
+      total: Math.round(baseVolume),
+      negative: Math.round(negativeVolume),
+    });
+  }
+  return data;
+};
+
+const chartData = generateLast30DaysData();
+
+// Calculate if there's a negative spike (more than 30% increase in negative feedback)
+const recentNegative = chartData.slice(-7).reduce((sum, d) => sum + d.negative, 0);
+const previousNegative = chartData.slice(-14, -7).reduce((sum, d) => sum + d.negative, 0);
+const negativeSpike = recentNegative > previousNegative * 1.3;
+
+// Mock feedback data
+const mockFeedback = [
+  { id: "FB-1201", type: "Appreciation", sentiment: "positive", status: "Resolved" },
+  { id: "FB-1200", type: "Complaint", sentiment: "negative", status: "Open" },
+  { id: "FB-1199", type: "Suggestion", sentiment: "neutral", status: "Resolved" },
+  { id: "FB-1198", type: "Complaint", sentiment: "negative", status: "In Progress" },
+  { id: "FB-1197", type: "Appreciation", sentiment: "positive", status: "Resolved" },
+  { id: "FB-1196", type: "Complaint", sentiment: "negative", status: "Escalated" },
+];
+
+const totalFeedbackThisMonth = 2847;
+const openComplaints = mockFeedback.filter(f => f.type === "Complaint" && f.status === "Open").length + 12;
+const resolvedComplaints = mockFeedback.filter(f => f.status === "Resolved").length + 234;
+const totalComplaints = mockFeedback.filter(f => f.type === "Complaint").length + 156;
+const negativeCount = mockFeedback.filter(f => f.sentiment === "negative").length + 342;
+const positiveCount = mockFeedback.filter(f => f.sentiment === "positive").length + 1892;
+const escalatedCases = mockFeedback.filter(f => f.status === "Escalated").length + 8;
+
+const negativePercentage = ((negativeCount / totalFeedbackThisMonth) * 100).toFixed(1);
+const positivePercentage = ((positiveCount / totalFeedbackThisMonth) * 100).toFixed(1);
 
 const kpis = [
-  { label: "Total Feedback", value: "2,847", change: "+12%", trend: "up", icon: MessageSquareText },
-  { label: "Avg Rating", value: "4.3 / 5", change: "+0.2", trend: "up", icon: Star },
-  { label: "Positive Sentiment", value: "78%", change: "+5%", trend: "up", icon: ThumbsUp },
-  { label: "Pending Review", value: "34", change: "-8", trend: "down", icon: AlertCircle },
+  {
+    label: "Total Feedback (This Month)",
+    value: totalFeedbackThisMonth.toLocaleString(),
+    icon: MessageSquareText,
+    color: "text-primary",
+    bg: "bg-primary/5",
+  },
+  {
+    label: "Open Complaints",
+    value: openComplaints.toString(),
+    icon: AlertCircle,
+    color: "text-amber-600",
+    bg: "bg-amber-50",
+  },
+  {
+    label: "Resolved Complaints",
+    value: resolvedComplaints.toString(),
+    icon: CheckCircle2,
+    color: "text-green-600",
+    bg: "bg-green-50",
+  },
+  {
+    label: "Negative Feedback %",
+    value: `${negativePercentage}%`,
+    icon: TrendingDown,
+    color: "text-red-600",
+    bg: "bg-red-50",
+  },
+  {
+    label: "Positive Feedback %",
+    value: `${positivePercentage}%`,
+    icon: TrendingUp,
+    color: "text-green-600",
+    bg: "bg-green-50",
+  },
+  {
+    label: "Escalated Cases",
+    value: escalatedCases.toString(),
+    icon: AlertTriangle,
+    color: "text-orange-600",
+    bg: "bg-orange-50",
+  },
 ];
-
-const recentFeedback = [
-  { id: "FB-1201", devotee: "Lakshmi Devi", category: "Darshan Experience", rating: 5, comment: "Wonderful arrangements during Maha Shivaratri", date: "2026-02-10", status: "Reviewed" },
-  { id: "FB-1200", devotee: "Anonymous", category: "Queue Management", rating: 2, comment: "Waited 3 hours despite having a slot booking", date: "2026-02-10", status: "Escalated" },
-  { id: "FB-1199", devotee: "Raghav Sharma", category: "Prasadam Quality", rating: 4, comment: "Good taste but portions could be larger", date: "2026-02-09", status: "Acknowledged" },
-  { id: "FB-1198", devotee: "Meera K", category: "Cleanliness", rating: 3, comment: "Restrooms near east gate need attention", date: "2026-02-09", status: "Action Taken" },
-  { id: "FB-1197", devotee: "Venkat Rao", category: "Staff Behaviour", rating: 5, comment: "Security staff very helpful and courteous", date: "2026-02-09", status: "Reviewed" },
-];
-
-const categoryBreakdown = [
-  { category: "Darshan Experience", count: 842, avgRating: 4.5, percentage: 30 },
-  { category: "Queue Management", count: 564, avgRating: 3.2, percentage: 20 },
-  { category: "Prasadam Quality", count: 451, avgRating: 4.1, percentage: 16 },
-  { category: "Cleanliness", count: 394, avgRating: 3.8, percentage: 14 },
-  { category: "Staff Behaviour", count: 338, avgRating: 4.4, percentage: 12 },
-  { category: "Facilities", count: 258, avgRating: 3.6, percentage: 8 },
-];
-
-const statusColor: Record<string, string> = {
-  Reviewed: "bg-green-100 text-green-700",
-  Escalated: "bg-red-100 text-red-700",
-  Acknowledged: "bg-blue-100 text-blue-700",
-  "Action Taken": "bg-purple-100 text-purple-700",
-  Pending: "bg-amber-100 text-amber-700",
-};
 
 const FeedbackDashboard = () => {
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Feedback Dashboard</h1>
-        <p className="text-sm text-muted-foreground mt-1">Overview of devotee feedback, ratings, and sentiment trends</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          Quick health of devotee feedback
+        </p>
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Negative Spike Alert */}
+      {negativeSpike && (
+        <Alert className="border-red-200 bg-red-50">
+          <AlertTriangle className="h-4 w-4 text-red-600" />
+          <AlertDescription className="text-red-800">
+            <strong>Negative Feedback Spike Detected:</strong> Negative feedback has increased by{" "}
+            {((recentNegative / previousNegative - 1) * 100).toFixed(0)}% in the last 7 days compared to the previous week.
+            Please review recent complaints.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {kpis.map((kpi) => (
-          <Card key={kpi.label}>
+          <Card key={kpi.label} className="hover:shadow-md transition-shadow">
             <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <kpi.icon className="h-4 w-4 text-muted-foreground" />
-                <span className={`text-xs font-medium flex items-center gap-0.5 ${kpi.trend === "up" ? "text-green-600" : "text-amber-600"}`}>
-                  {kpi.trend === "up" ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                  {kpi.change}
-                </span>
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${kpi.bg} mb-2`}>
+                <kpi.icon className={`h-5 w-5 ${kpi.color}`} />
               </div>
               <p className="text-2xl font-bold text-foreground">{kpi.value}</p>
-              <p className="text-xs text-muted-foreground">{kpi.label}</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">{kpi.label}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Category Breakdown */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Feedback by Category</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {categoryBreakdown.map((cat) => (
-              <div key={cat.category}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium">{cat.category}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground">{cat.count}</span>
-                    <Badge variant="outline" className="text-[10px] gap-0.5">
-                      <Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400" /> {cat.avgRating}
-                    </Badge>
-                  </div>
-                </div>
-                <Progress value={cat.percentage} className="h-1.5" />
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Recent Feedback */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Recent Feedback</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {recentFeedback.map((fb) => (
-              <div key={fb.id} className="p-3 rounded-lg border hover:bg-muted/30 transition-colors">
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono text-muted-foreground">{fb.id}</span>
-                    <Badge variant="outline" className={`text-[10px] ${statusColor[fb.status]}`}>{fb.status}</Badge>
-                  </div>
-                  <div className="flex items-center gap-0.5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className={`h-3 w-3 ${i < fb.rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-sm text-foreground">{fb.comment}</p>
-                <div className="flex items-center gap-2 mt-1.5 text-xs text-muted-foreground">
-                  <span>{fb.devotee}</span>
-                  <span>•</span>
-                  <span>{fb.category}</span>
-                  <span>•</span>
-                  <span>{fb.date}</span>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
+      {/* Trend Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Feedback Volume (Last 30 Days)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis
+                dataKey="date"
+                tick={{ fontSize: 12 }}
+                interval="preserveStartEnd"
+              />
+              <YAxis tick={{ fontSize: 12 }} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
+                  borderRadius: "6px",
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="total"
+                stroke="hsl(var(--primary))"
+                strokeWidth={2}
+                dot={{ r: 3 }}
+                name="Total Feedback"
+              />
+              <Line
+                type="monotone"
+                dataKey="negative"
+                stroke="hsl(0 84.2% 60.2%)"
+                strokeWidth={2}
+                dot={{ r: 3 }}
+                name="Negative Feedback"
+              />
+              {negativeSpike && (
+                <ReferenceLine
+                  x={chartData[chartData.length - 7].date}
+                  stroke="hsl(0 84.2% 60.2%)"
+                  strokeDasharray="5 5"
+                  label={{ value: "Spike Start", position: "top" }}
+                />
+              )}
+            </LineChart>
+          </ResponsiveContainer>
+          {negativeSpike && (
+            <div className="mt-2 text-xs text-red-600 flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              Negative feedback spike detected in recent days
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

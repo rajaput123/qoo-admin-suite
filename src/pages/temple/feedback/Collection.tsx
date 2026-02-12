@@ -2,109 +2,303 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Star, MessageSquareText, QrCode, Globe, Phone, FileText, Eye, CheckCircle2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Filter, AlertTriangle, Eye } from "lucide-react";
 
-const feedbackEntries = [
-  { id: "FB-1201", devotee: "Lakshmi Devi", phone: "98765xxxxx", channel: "Kiosk", category: "Darshan Experience", rating: 5, comment: "Wonderful arrangements", date: "2026-02-10 09:30", status: "Reviewed", reviewer: "Admin Priya" },
-  { id: "FB-1200", devotee: "Anonymous", phone: "-", channel: "QR Code", category: "Queue Management", rating: 2, comment: "Waited 3 hours despite booking", date: "2026-02-10 08:45", status: "Escalated", reviewer: "-" },
-  { id: "FB-1199", devotee: "Raghav Sharma", phone: "91234xxxxx", channel: "Online", category: "Prasadam Quality", rating: 4, comment: "Good taste, larger portions needed", date: "2026-02-09 16:20", status: "Acknowledged", reviewer: "Admin Suresh" },
-  { id: "FB-1198", devotee: "Meera K", phone: "87654xxxxx", channel: "Counter", category: "Cleanliness", rating: 3, comment: "East gate restrooms need attention", date: "2026-02-09 14:10", status: "Action Taken", reviewer: "Admin Priya" },
-  { id: "FB-1197", devotee: "Venkat Rao", phone: "90123xxxxx", channel: "App", category: "Staff Behaviour", rating: 5, comment: "Security staff very courteous", date: "2026-02-09 11:00", status: "Reviewed", reviewer: "Admin Suresh" },
-  { id: "FB-1196", devotee: "Anonymous", phone: "-", channel: "Suggestion Box", category: "Facilities", rating: 2, comment: "Drinking water facility insufficient near south entrance", date: "2026-02-08 15:30", status: "Pending", reviewer: "-" },
+type FeedbackType = "Complaint" | "Suggestion" | "Appreciation";
+type FeedbackStatus = "Open" | "In Progress" | "Resolved" | "Escalated";
+type Sentiment = "positive" | "neutral" | "negative";
+type RelatedTo = "Temple" | "Seva" | "Freelancer" | "Kitchen" | "Facilities" | "Other";
+
+interface FeedbackEntry {
+  id: string;
+  subject: string;
+  preview: string;
+  relatedTo: RelatedTo;
+  sentiment: Sentiment;
+  type: FeedbackType;
+  date: string;
+  status: FeedbackStatus;
+  fullContent?: string;
+}
+
+const feedbackEntries: FeedbackEntry[] = [
+  {
+    id: "FB-1201",
+    subject: "Excellent Darshan Experience",
+    preview: "Wonderful arrangements during Maha Shivaratri. The queue management was smooth...",
+    relatedTo: "Temple",
+    sentiment: "positive",
+    type: "Appreciation",
+    date: "2024-02-10",
+    status: "Resolved",
+    fullContent: "Wonderful arrangements during Maha Shivaratri. The queue management was smooth and the darshan was divine. Thank you for the excellent service.",
+  },
+  {
+    id: "FB-1200",
+    subject: "Long Wait Time Despite Booking",
+    preview: "Waited 3 hours despite having a slot booking. The system needs improvement...",
+    relatedTo: "Seva",
+    sentiment: "negative",
+    type: "Complaint",
+    date: "2024-02-10",
+    status: "Open",
+    fullContent: "Waited 3 hours despite having a slot booking. The system needs improvement. Very disappointed with the experience.",
+  },
+  {
+    id: "FB-1199",
+    subject: "Prasadam Portion Size",
+    preview: "Good taste but portions could be larger. Quality is excellent though...",
+    relatedTo: "Kitchen",
+    sentiment: "neutral",
+    type: "Suggestion",
+    date: "2024-02-09",
+    status: "Resolved",
+    fullContent: "Good taste but portions could be larger. Quality is excellent though. Please consider increasing the serving size.",
+  },
+  {
+    id: "FB-1198",
+    subject: "Restroom Cleanliness Issue",
+    preview: "Restrooms near east gate need attention. Not maintained properly...",
+    relatedTo: "Facilities",
+    sentiment: "negative",
+    type: "Complaint",
+    date: "2024-02-09",
+    status: "In Progress",
+    fullContent: "Restrooms near east gate need attention. Not maintained properly. Please improve the cleanliness standards.",
+  },
+  {
+    id: "FB-1197",
+    subject: "Helpful Security Staff",
+    preview: "Security staff very helpful and courteous. Made our visit pleasant...",
+    relatedTo: "Temple",
+    sentiment: "positive",
+    type: "Appreciation",
+    date: "2024-02-09",
+    status: "Resolved",
+    fullContent: "Security staff very helpful and courteous. Made our visit pleasant. Great service!",
+  },
+  {
+    id: "FB-1196",
+    subject: "Freelancer Service Quality",
+    preview: "The freelancer assigned for puja was not professional. Arrived late...",
+    relatedTo: "Freelancer",
+    sentiment: "negative",
+    type: "Complaint",
+    date: "2024-02-08",
+    status: "Escalated",
+    fullContent: "The freelancer assigned for puja was not professional. Arrived late and did not follow proper rituals. Very disappointed.",
+  },
+  {
+    id: "FB-1195",
+    subject: "Drinking Water Facility",
+    preview: "Drinking water facility insufficient near south entrance. Need more water points...",
+    relatedTo: "Facilities",
+    sentiment: "neutral",
+    type: "Suggestion",
+    date: "2024-02-08",
+    status: "Open",
+    fullContent: "Drinking water facility insufficient near south entrance. Need more water points for devotees.",
+  },
+  {
+    id: "FB-1194",
+    subject: "Beautiful Temple Decorations",
+    preview: "The temple decorations during festival were amazing. Very well done...",
+    relatedTo: "Temple",
+    sentiment: "positive",
+    type: "Appreciation",
+    date: "2024-02-07",
+    status: "Resolved",
+    fullContent: "The temple decorations during festival were amazing. Very well done. Thank you for the beautiful arrangements.",
+  },
 ];
-
-const channels = [
-  { name: "Kiosk", icon: MessageSquareText, count: 892, active: true },
-  { name: "QR Code", icon: QrCode, count: 634, active: true },
-  { name: "Online Portal", icon: Globe, count: 521, active: true },
-  { name: "Phone/SMS", icon: Phone, count: 412, active: true },
-  { name: "Suggestion Box", icon: FileText, count: 388, active: true },
-];
-
-const statusColor: Record<string, string> = {
-  Reviewed: "bg-green-100 text-green-700",
-  Escalated: "bg-red-100 text-red-700",
-  Acknowledged: "bg-blue-100 text-blue-700",
-  "Action Taken": "bg-purple-100 text-purple-700",
-  Pending: "bg-amber-100 text-amber-700",
-};
 
 const FeedbackCollection = () => {
-  const [showAdd, setShowAdd] = useState(false);
-  const [viewEntry, setViewEntry] = useState<typeof feedbackEntries[0] | null>(null);
+  const [dateRange, setDateRange] = useState<"all" | "today" | "week" | "month">("all");
+  const [sentimentFilter, setSentimentFilter] = useState<"all" | Sentiment>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | FeedbackStatus>("all");
+  const [viewEntry, setViewEntry] = useState<FeedbackEntry | null>(null);
+
+  // Check for negative spike (more than 5 negative feedbacks in last 24 hours)
+  const today = new Date().toISOString().split("T")[0];
+  const recentNegative = feedbackEntries.filter(
+    f => f.date === today && f.sentiment === "negative"
+  ).length;
+  const hasNegativeSpike = recentNegative >= 5;
+
+  // Filter feedback
+  const filtered = feedbackEntries.filter(entry => {
+    const matchDate =
+      dateRange === "all" ||
+      (dateRange === "today" && entry.date === today) ||
+      (dateRange === "week" && new Date(entry.date) >= new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)) ||
+      (dateRange === "month" && new Date(entry.date) >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
+    const matchSentiment = sentimentFilter === "all" || entry.sentiment === sentimentFilter;
+    const matchStatus = statusFilter === "all" || entry.status === statusFilter;
+    return matchDate && matchSentiment && matchStatus;
+  });
+
+  const sentimentColor = (sentiment: Sentiment) => {
+    if (sentiment === "positive") return "bg-green-100 text-green-700 border-green-200";
+    if (sentiment === "negative") return "bg-red-100 text-red-700 border-red-200";
+    return "bg-yellow-100 text-yellow-700 border-yellow-200";
+  };
+
+  const statusColor = (status: FeedbackStatus) => {
+    if (status === "Resolved") return "bg-green-100 text-green-700 border-green-200";
+    if (status === "Escalated") return "bg-red-100 text-red-700 border-red-200";
+    if (status === "In Progress") return "bg-blue-100 text-blue-700 border-blue-200";
+    return "bg-amber-100 text-amber-700 border-amber-200";
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Feedback Collection</h1>
-          <p className="text-sm text-muted-foreground mt-1">Collect, review, and manage devotee feedback across all channels</p>
-        </div>
-        <Button onClick={() => setShowAdd(true)} className="gap-1.5"><Plus className="h-4 w-4" /> Add Manual Entry</Button>
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Feedback Collection</h1>
+        <p className="text-sm text-muted-foreground mt-1">Inbox - Collect, review, and manage devotee feedback</p>
       </div>
 
-      {/* Channel Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        {channels.map((ch) => (
-          <Card key={ch.name}>
-            <CardContent className="p-3 flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                <ch.icon className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <p className="text-lg font-bold text-foreground">{ch.count}</p>
-                <p className="text-xs text-muted-foreground">{ch.name}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Negative Spike Alert */}
+      {hasNegativeSpike && (
+        <Alert className="border-red-200 bg-red-50">
+          <AlertTriangle className="h-4 w-4 text-red-600" />
+          <AlertDescription className="text-red-800">
+            <strong>Alert:</strong> Negative feedback spike detected! {recentNegative} negative feedback entries today.
+            Please review immediately.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Filters */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Filter className="h-4 w-4" />
+            Filters
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Date Range</Label>
+              <Select value={dateRange} onValueChange={(v) => setDateRange(v as typeof dateRange)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Time</SelectItem>
+                  <SelectItem value="today">Today</SelectItem>
+                  <SelectItem value="week">Last 7 Days</SelectItem>
+                  <SelectItem value="month">Last 30 Days</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Sentiment</Label>
+              <Select value={sentimentFilter} onValueChange={(v) => setSentimentFilter(v as typeof sentimentFilter)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Sentiments</SelectItem>
+                  <SelectItem value="positive">Positive</SelectItem>
+                  <SelectItem value="neutral">Neutral</SelectItem>
+                  <SelectItem value="negative">Negative</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="Open">Open</SelectItem>
+                  <SelectItem value="In Progress">In Progress</SelectItem>
+                  <SelectItem value="Resolved">Resolved</SelectItem>
+                  <SelectItem value="Escalated">Escalated</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Feedback Table */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">All Feedback Entries</CardTitle>
+          <CardTitle className="text-base">Feedback Inbox ({filtered.length})</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Devotee</TableHead>
-                <TableHead>Channel</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Rating</TableHead>
+                <TableHead>Subject</TableHead>
+                <TableHead>Feedback Preview</TableHead>
+                <TableHead>Related To</TableHead>
+                <TableHead>Sentiment</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {feedbackEntries.map((entry) => (
-                <TableRow key={entry.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setViewEntry(entry)}>
-                  <TableCell className="font-mono text-xs">{entry.id}</TableCell>
-                  <TableCell className="text-sm">{entry.devotee}</TableCell>
-                  <TableCell><Badge variant="outline" className="text-[10px]">{entry.channel}</Badge></TableCell>
-                  <TableCell className="text-sm">{entry.category}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-0.5">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} className={`h-3 w-3 ${i < entry.rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
-                      ))}
-                    </div>
+              {filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                    No feedback found matching the filters
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{entry.date}</TableCell>
-                  <TableCell><Badge variant="outline" className={`text-[10px] ${statusColor[entry.status]}`}>{entry.status}</Badge></TableCell>
-                  <TableCell><Button variant="ghost" size="sm" className="h-7 w-7 p-0"><Eye className="h-3.5 w-3.5" /></Button></TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filtered.map((entry) => (
+                  <TableRow key={entry.id} className="hover:bg-muted/50">
+                    <TableCell className="font-medium text-sm">{entry.subject}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground max-w-xs">
+                      <p className="truncate">{entry.preview}</p>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-xs">
+                        {entry.relatedTo}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={`text-xs ${sentimentColor(entry.sentiment)}`}>
+                        {entry.sentiment.charAt(0).toUpperCase() + entry.sentiment.slice(1)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-xs">
+                        {entry.type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{entry.date}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={`text-xs ${statusColor(entry.status)}`}>
+                        {entry.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0"
+                        onClick={() => setViewEntry(entry)}
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>
@@ -112,109 +306,54 @@ const FeedbackCollection = () => {
 
       {/* View Detail Modal */}
       <Dialog open={!!viewEntry} onOpenChange={() => setViewEntry(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Feedback Detail — {viewEntry?.id}</DialogTitle>
           </DialogHeader>
           {viewEntry && (
             <div className="space-y-4">
-              <div className="p-3 rounded-lg bg-muted/50 border">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">{viewEntry.devotee}</span>
-                  <div className="flex items-center gap-0.5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className={`h-3.5 w-3.5 ${i < viewEntry.rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground/30"}`} />
-                    ))}
-                  </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Subject</Label>
+                  <p className="text-sm font-medium">{viewEntry.subject}</p>
                 </div>
-                <p className="text-sm text-foreground">{viewEntry.comment}</p>
-                <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                  <Badge variant="outline" className="text-[10px]">{viewEntry.channel}</Badge>
-                  <span>{viewEntry.category}</span>
-                  <span>•</span>
-                  <span>{viewEntry.date}</span>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Date</Label>
+                  <p className="text-sm">{viewEntry.date}</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Related To</Label>
+                  <Badge variant="outline" className="text-xs mt-1">
+                    {viewEntry.relatedTo}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Type</Label>
+                  <Badge variant="outline" className="text-xs mt-1">
+                    {viewEntry.type}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Sentiment</Label>
+                  <Badge variant="outline" className={`text-xs mt-1 ${sentimentColor(viewEntry.sentiment)}`}>
+                    {viewEntry.sentiment.charAt(0).toUpperCase() + viewEntry.sentiment.slice(1)}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Status</Label>
+                  <Badge variant="outline" className={`text-xs mt-1 ${statusColor(viewEntry.status)}`}>
+                    {viewEntry.status}
+                  </Badge>
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <Label>Status</Label>
-                <Select defaultValue={viewEntry.status}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Pending">Pending</SelectItem>
-                    <SelectItem value="Acknowledged">Acknowledged</SelectItem>
-                    <SelectItem value="Reviewed">Reviewed</SelectItem>
-                    <SelectItem value="Escalated">Escalated</SelectItem>
-                    <SelectItem value="Action Taken">Action Taken</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Admin Response</Label>
-                <Textarea placeholder="Add response or internal notes..." rows={3} />
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setViewEntry(null)}>Close</Button>
-                <Button className="gap-1"><CheckCircle2 className="h-4 w-4" /> Update</Button>
+              <div>
+                <Label className="text-xs text-muted-foreground">Full Feedback</Label>
+                <div className="mt-1 p-3 rounded-lg bg-muted/50 border text-sm">
+                  {viewEntry.fullContent || viewEntry.preview}
+                </div>
               </div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Manual Entry Modal */}
-      <Dialog open={showAdd} onOpenChange={setShowAdd}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add Manual Feedback</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label>Devotee Name</Label>
-              <Input placeholder="Enter name or 'Anonymous'" />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Category</Label>
-              <Select>
-                <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="darshan">Darshan Experience</SelectItem>
-                  <SelectItem value="queue">Queue Management</SelectItem>
-                  <SelectItem value="prasadam">Prasadam Quality</SelectItem>
-                  <SelectItem value="cleanliness">Cleanliness</SelectItem>
-                  <SelectItem value="staff">Staff Behaviour</SelectItem>
-                  <SelectItem value="facilities">Facilities</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Rating</Label>
-              <Select>
-                <SelectTrigger><SelectValue placeholder="Select rating" /></SelectTrigger>
-                <SelectContent>
-                  {[5, 4, 3, 2, 1].map((r) => <SelectItem key={r} value={String(r)}>{r} Star{r > 1 ? "s" : ""}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>Comment</Label>
-              <Textarea placeholder="Enter feedback..." rows={3} />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Channel</Label>
-              <Select defaultValue="counter">
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="counter">Counter</SelectItem>
-                  <SelectItem value="suggestion-box">Suggestion Box</SelectItem>
-                  <SelectItem value="phone">Phone/SMS</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowAdd(false)}>Cancel</Button>
-              <Button onClick={() => setShowAdd(false)}>Submit</Button>
-            </div>
-          </div>
         </DialogContent>
       </Dialog>
     </div>

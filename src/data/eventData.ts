@@ -15,7 +15,7 @@ export const getEventTasks = (eventId: string) => templeTasks.filter(t => t.even
 export interface TempleEvent {
   id: string;
   name: string;
-  type: "Festival" | "Annadanam" | "Cultural" | "VIP" | "Public" | "Special Ritual";
+  type: "Festival" | "Special Pooja" | "Cultural" | "Fundraiser" | "Annadanam" | "Camp" | "Other" | "VIP" | "Public" | "Special Ritual";
   templeId: string;
   structureId: string;
   structureName: string;
@@ -25,7 +25,7 @@ export interface TempleEvent {
   actualSpend: number;
   estimatedFootfall: string;
   description: string;
-  status: "Draft" | "Scheduled" | "Ongoing" | "Completed" | "Cancelled" | "Archived";
+  status: "Draft" | "Scheduled" | "Published" | "Ongoing" | "Completed" | "Cancelled" | "Archived";
   organizer: string;
   capacity: number;
   linkedSeva?: string[];
@@ -176,67 +176,133 @@ export interface EventTemplate {
   name: string;
   type: TempleEvent["type"];
   description: string;
-  defaultDuration: number;
-  estimatedBudget: number;
-  defaultSevas: string[];
-  defaultRoles: string[];
-  defaultMaterials: string[];
-  defaultTasks: string[];
-  defaultPriestAssignment?: string;
-  conflictCheckEnabled: boolean;
+  defaultBannerImage?: string;
+  // Seva Setup
+  enableSevaBooking: boolean;
+  attachedSevas: string[];
+  defaultPricing?: Record<string, number>;
+  slotStructure?: string;
+  // Donation Setup
+  enableDonations: boolean;
+  suggestedDonationGoal?: number;
+  minimumDonationAmount?: number;
+  transparencyNote?: string;
+  // Resource Preset
+  defaultPriests: string[];
+  defaultFreelancers: string[];
+  volunteersRequired: string[];
+  equipmentNeeded: string[];
+  hallAllocation?: string;
+  // Estimated Expenses
+  estDecorationCost?: number;
+  estPriestPayment?: number;
+  estFoodCost?: number;
+  estMiscellaneous?: number;
+  // System
   usageCount: number;
+  lastUsedDate?: string;
+  createdAt: string;
+  createdBy: string;
 }
 
 export const eventTemplates: EventTemplate[] = [
   {
-    id: "TPL-001", name: "Major Festival Template", type: "Festival", description: "Complete festival setup with all departments — 7-10 day duration",
-    defaultDuration: 10, estimatedBudget: 5000000,
-    defaultSevas: ["Suprabhatam", "Abhishekam", "Kalyanotsavam", "Special Darshan"],
-    defaultRoles: ["Photography", "Decoration", "Sound System", "Lighting"],
-    defaultMaterials: ["Rose Petals", "Jasmine Garlands", "Camphor", "Ghee"],
-    defaultTasks: ["Setup main mandap", "Arrange flower decorations", "Test sound system", "Brief volunteer teams", "Stock prasadam materials"],
-    defaultPriestAssignment: "Sri Ramachandra Sharma",
-    conflictCheckEnabled: true,
+    id: "TPL-001",
+    name: "Major Festival Template",
+    type: "Festival",
+    description: "Complete festival setup with all departments — 7-10 day duration",
+    enableSevaBooking: true,
+    attachedSevas: ["Suprabhatam", "Abhishekam", "Kalyanotsavam", "Special Darshan"],
+    enableDonations: true,
+    suggestedDonationGoal: 2000000,
+    minimumDonationAmount: 100,
+    defaultPriests: ["Sri Ramachandra Sharma"],
+    defaultFreelancers: ["Photography", "Decoration", "Sound System"],
+    volunteersRequired: ["Crowd Control", "Kitchen Assistants", "Ritual Support"],
+    equipmentNeeded: ["PA System", "Lighting", "Decoration Materials"],
+    hallAllocation: "Main Temple",
+    estDecorationCost: 450000,
+    estPriestPayment: 50000,
+    estFoodCost: 300000,
+    estMiscellaneous: 200000,
     usageCount: 3,
+    lastUsedDate: "2024-02-01",
+    createdAt: "2024-01-15",
+    createdBy: "Temple Admin",
   },
   {
-    id: "TPL-002", name: "Single Day Special Ritual", type: "Special Ritual", description: "One-day ritual event with extended darshan and prasadam",
-    defaultDuration: 1, estimatedBudget: 800000,
-    defaultSevas: ["Abhishekam", "Special Darshan"],
-    defaultRoles: ["Photography", "Sound System"],
-    defaultMaterials: ["Camphor", "Kumkum", "Coconut", "Milk"],
-    defaultTasks: ["Prepare abhishekam materials", "Arrange prasadam distribution", "Coordinate with volunteers"],
-    defaultPriestAssignment: "Sri Venkateshwara Dikshitar",
-    conflictCheckEnabled: true,
+    id: "TPL-002",
+    name: "Single Day Special Pooja",
+    type: "Special Pooja",
+    description: "One-day ritual event with extended darshan and prasadam",
+    enableSevaBooking: true,
+    attachedSevas: ["Abhishekam", "Special Darshan"],
+    enableDonations: false,
+    defaultPriests: ["Sri Venkateshwara Dikshitar"],
+    defaultFreelancers: ["Photography", "Sound System"],
+    volunteersRequired: ["Ritual Support", "Prasadam Distribution"],
+    equipmentNeeded: ["Sound System", "Pooja Materials"],
+    estDecorationCost: 50000,
+    estPriestPayment: 20000,
+    estFoodCost: 100000,
+    estMiscellaneous: 30000,
     usageCount: 5,
+    lastUsedDate: "2024-02-10",
+    createdAt: "2024-01-10",
+    createdBy: "Temple Admin",
   },
   {
-    id: "TPL-003", name: "Annadanam Drive", type: "Annadanam", description: "Mass feeding program with kitchen batch planning",
-    defaultDuration: 3, estimatedBudget: 600000,
-    defaultSevas: [],
-    defaultRoles: ["Kitchen Assistants", "Crowd Control"],
-    defaultMaterials: ["Rice", "Toor Dal", "Ghee", "Sesame Oil"],
-    defaultTasks: ["Procure ingredients", "Arrange seating area", "Setup serving counters", "Coordinate kitchen staff"],
-    defaultPriestAssignment: undefined,
-    conflictCheckEnabled: false,
+    id: "TPL-003",
+    name: "Annadanam Drive",
+    type: "Annadanam",
+    description: "Mass feeding program with kitchen batch planning",
+    enableSevaBooking: false,
+    attachedSevas: [],
+    enableDonations: true,
+    suggestedDonationGoal: 500000,
+    minimumDonationAmount: 50,
+    transparencyNote: "Donations will be used for procuring ingredients and serving meals to devotees",
+    defaultPriests: [],
+    defaultFreelancers: [],
+    volunteersRequired: ["Kitchen Assistants", "Crowd Control", "Serving"],
+    equipmentNeeded: ["Cooking Utensils", "Serving Counters"],
+    hallAllocation: "Annadanam Hall",
+    estDecorationCost: 0,
+    estPriestPayment: 0,
+    estFoodCost: 400000,
+    estMiscellaneous: 50000,
     usageCount: 4,
+    lastUsedDate: "2024-02-05",
+    createdAt: "2024-01-20",
+    createdBy: "Temple Admin",
   },
   {
-    id: "TPL-004", name: "Cultural Event", type: "Cultural", description: "Music/dance festival in Cultural Hall",
-    defaultDuration: 3, estimatedBudget: 300000,
-    defaultSevas: [],
-    defaultRoles: ["Sound System", "Lighting", "Photography"],
-    defaultMaterials: [],
-    defaultTasks: ["Book artists", "Setup stage", "Test audio equipment", "Arrange seating"],
-    defaultPriestAssignment: undefined,
-    conflictCheckEnabled: true,
+    id: "TPL-004",
+    name: "Cultural Event",
+    type: "Cultural",
+    description: "Music/dance festival in Cultural Hall",
+    enableSevaBooking: false,
+    attachedSevas: [],
+    enableDonations: false,
+    defaultPriests: [],
+    defaultFreelancers: ["Sound System", "Lighting", "Photography"],
+    volunteersRequired: ["Stage Management", "Crowd Control"],
+    equipmentNeeded: ["Stage Setup", "Audio Equipment", "Lighting"],
+    hallAllocation: "Cultural Hall",
+    estDecorationCost: 80000,
+    estPriestPayment: 0,
+    estFoodCost: 50000,
+    estMiscellaneous: 70000,
     usageCount: 2,
+    lastUsedDate: "2024-01-25",
+    createdAt: "2024-01-05",
+    createdBy: "Temple Admin",
   },
 ];
 
 // ---- DROPDOWN OPTIONS ----
-export const eventTypes: TempleEvent["type"][] = ["Festival", "Annadanam", "Cultural", "VIP", "Public", "Special Ritual"];
-export const eventStatuses: TempleEvent["status"][] = ["Draft", "Scheduled", "Ongoing", "Completed", "Cancelled", "Archived"];
+export const eventTypes: TempleEvent["type"][] = ["Festival", "Special Pooja", "Cultural", "Fundraiser", "Annadanam", "Camp", "Other", "VIP", "Public", "Special Ritual"];
+export const eventStatuses: TempleEvent["status"][] = ["Draft", "Scheduled", "Published", "Ongoing", "Completed", "Cancelled", "Archived"];
 export const expenseCategories: EventExpense["category"][] = ["Freelancer Payment", "Material Cost", "Kitchen Cost", "Miscellaneous", "Decoration", "Sound & Lighting", "Transportation", "Donations Refund"];
 
 // ---- HELPER FUNCTIONS ----

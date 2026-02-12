@@ -22,8 +22,14 @@ import {
 } from "@/data/branchData";
 import { toast } from "@/hooks/use-toast";
 
-const BranchDetails = () => {
-  const { branchId } = useParams();
+interface BranchDetailsProps {
+  branchId?: string;
+  onBack?: () => void;
+}
+
+const BranchDetails = ({ branchId: propBranchId, onBack }: BranchDetailsProps) => {
+  const { branchId: paramBranchId } = useParams();
+  const branchId = propBranchId || paramBranchId || "";
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
   const [showAddAdmin, setShowAddAdmin] = useState(false);
@@ -33,7 +39,7 @@ const BranchDetails = () => {
     return (
       <div className="p-6 text-center">
         <p className="text-muted-foreground">Branch not found.</p>
-        <Button variant="outline" onClick={() => navigate("/temple/branches")} className="mt-4">Back to Branches</Button>
+        <Button variant="outline" onClick={() => onBack ? onBack() : navigate("/temple/branches")} className="mt-4">Back to Branches</Button>
       </div>
     );
   }
@@ -59,7 +65,7 @@ const BranchDetails = () => {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/temple/branches")}>
+          <Button variant="ghost" size="icon" onClick={() => onBack ? onBack() : navigate("/temple/branches")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>

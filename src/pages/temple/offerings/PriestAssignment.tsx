@@ -1,54 +1,38 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Calendar, CheckCircle, AlertTriangle, Clock } from "lucide-react";
+import { Search, Plus, Download, Users, CheckCircle, XCircle, Clock, User } from "lucide-react";
 import { toast } from "sonner";
 import SearchableSelect from "@/components/SearchableSelect";
 
-interface PriestSchedule {
+interface Assignment {
   id: string;
-  priestName: string;
   date: string;
-  slots: { time: string; offering: string; structure: string; status: "Assigned" | "Completed" | "Absent" }[];
+  time: string;
+  offering: string;
+  structure: string;
+  priestName: string;
+  status: "Assigned" | "Completed" | "Absent" | "Unassigned";
+  assignedBy?: string;
+  assignedAt?: string;
 }
 
-const mockSchedule: PriestSchedule[] = [
-  {
-    id: "1", priestName: "Pandit Sharma", date: "2026-02-09",
-    slots: [
-      { time: "5:30 AM", offering: "Suprabhatam", structure: "Main Temple", status: "Completed" },
-      { time: "7:00 PM", offering: "Ekantha Seva", structure: "Main Temple", status: "Assigned" },
-    ],
-  },
-  {
-    id: "2", priestName: "Pandit Rao", date: "2026-02-09",
-    slots: [
-      { time: "7:00 AM", offering: "Archana", structure: "Padmavathi Shrine", status: "Completed" },
-    ],
-  },
-  {
-    id: "3", priestName: "Pandit Kumar", date: "2026-02-09",
-    slots: [
-      { time: "9:00 AM", offering: "Abhishekam", structure: "Main Temple", status: "Assigned" },
-    ],
-  },
-  {
-    id: "4", priestName: "Pandit Iyer", date: "2026-02-09",
-    slots: [
-      { time: "11:00 AM", offering: "Sahasranama", structure: "Varadaraja Shrine", status: "Assigned" },
-    ],
-  },
-];
-
-const unassignedSlots = [
-  { id: "u1", time: "4:00 PM", offering: "Ashtottara", structure: "Lakshmi Shrine", date: "2026-02-09" },
-  { id: "u2", time: "5:30 AM", offering: "Suprabhatam", structure: "Main Temple", date: "2026-02-10" },
-  { id: "u3", time: "7:00 AM", offering: "Archana", structure: "Padmavathi Shrine", date: "2026-02-10" },
+const mockAssignments: Assignment[] = [
+  { id: "A001", date: "2026-02-09", time: "5:30 AM", offering: "Suprabhatam", structure: "Main Temple", priestName: "Pandit Sharma", status: "Completed", assignedBy: "Admin", assignedAt: "2026-02-08 10:30 AM" },
+  { id: "A002", date: "2026-02-09", time: "7:00 AM", offering: "Archana", structure: "Padmavathi Shrine", priestName: "Pandit Rao", status: "Completed", assignedBy: "Admin", assignedAt: "2026-02-08 10:32 AM" },
+  { id: "A003", date: "2026-02-09", time: "9:00 AM", offering: "Abhishekam", structure: "Main Temple", priestName: "Pandit Kumar", status: "Completed", assignedBy: "Admin", assignedAt: "2026-02-08 10:35 AM" },
+  { id: "A004", date: "2026-02-09", time: "11:00 AM", offering: "Sahasranama", structure: "Varadaraja Shrine", priestName: "Pandit Iyer", status: "Completed", assignedBy: "Admin", assignedAt: "2026-02-08 10:40 AM" },
+  { id: "A005", date: "2026-02-09", time: "7:00 PM", offering: "Ekantha Seva", structure: "Main Temple", priestName: "Pandit Sharma", status: "Completed", assignedBy: "Admin", assignedAt: "2026-02-08 11:00 AM" },
+  { id: "A006", date: "2026-02-09", time: "4:00 PM", offering: "Ashtottara", structure: "Lakshmi Shrine", priestName: "", status: "Unassigned" },
+  { id: "A007", date: "2026-02-10", time: "5:30 AM", offering: "Suprabhatam", structure: "Main Temple", priestName: "", status: "Unassigned" },
+  { id: "A008", date: "2026-02-10", time: "7:00 AM", offering: "Archana", structure: "Padmavathi Shrine", priestName: "", status: "Unassigned" },
+  { id: "A009", date: "2026-02-10", time: "9:00 AM", offering: "Abhishekam", structure: "Main Temple", priestName: "Pandit Kumar", status: "Assigned", assignedBy: "Admin", assignedAt: "2026-02-09 03:00 PM" },
+  { id: "A010", date: "2026-02-10", time: "11:00 AM", offering: "Sahasranama", structure: "Varadaraja Shrine", priestName: "Pandit Iyer", status: "Assigned", assignedBy: "Admin", assignedAt: "2026-02-09 03:05 PM" },
 ];
 
 const priestOptions = [
@@ -56,143 +40,283 @@ const priestOptions = [
   { value: "Pandit Rao", label: "Pandit Rao" },
   { value: "Pandit Kumar", label: "Pandit Kumar" },
   { value: "Pandit Iyer", label: "Pandit Iyer" },
+  { value: "Pandit Venkatesh", label: "Pandit Venkatesh" },
 ];
 
 const PriestAssignment = () => {
-  const [filterDate, setFilterDate] = useState("2026-02-09");
+  const [search, setSearch] = useState("");
+  const [filterDate, setFilterDate] = useState("all");
+  const [filterPriest, setFilterPriest] = useState("all");
+  const [filterStructure, setFilterStructure] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
   const [isAssignOpen, setIsAssignOpen] = useState(false);
-  const [selectedUnassigned, setSelectedUnassigned] = useState<typeof unassignedSlots[0] | null>(null);
+  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [assignPriest, setAssignPriest] = useState("");
-  const [viewPriest, setViewPriest] = useState<PriestSchedule | null>(null);
+  const [assignments, setAssignments] = useState(mockAssignments);
+
+  const allDates = [...new Set(assignments.map(a => a.date))].sort();
+  const allPriests = [...new Set(assignments.filter(a => a.priestName).map(a => a.priestName))];
+  const allStructures = [...new Set(assignments.map(a => a.structure))];
+
+  const filtered = assignments.filter(a => {
+    if (search && !a.offering.toLowerCase().includes(search.toLowerCase()) && !a.priestName.toLowerCase().includes(search.toLowerCase()) && !a.id.toLowerCase().includes(search.toLowerCase())) return false;
+    if (filterDate !== "all" && a.date !== filterDate) return false;
+    if (filterPriest !== "all" && a.priestName !== filterPriest) return false;
+    if (filterStructure !== "all" && a.structure !== filterStructure) return false;
+    if (filterStatus !== "all" && a.status !== filterStatus) return false;
+    return true;
+  });
+
+  const stats = {
+    total: assignments.length,
+    assigned: assignments.filter(a => a.status === "Assigned").length,
+    completed: assignments.filter(a => a.status === "Completed").length,
+    unassigned: assignments.filter(a => a.status === "Unassigned").length,
+    absent: assignments.filter(a => a.status === "Absent").length,
+  };
 
   const handleAssign = () => {
-    if (assignPriest) toast.success(`Assigned ${assignPriest} to ${selectedUnassigned?.offering}`);
+    if (!assignPriest || !selectedAssignment) return;
+
+    const updated = assignments.map(a =>
+      a.id === selectedAssignment.id
+        ? { ...a, priestName: assignPriest, status: "Assigned" as const, assignedBy: "Admin", assignedAt: new Date().toLocaleString() }
+        : a
+    );
+    setAssignments(updated);
+    toast.success(`Assigned ${assignPriest} to ${selectedAssignment.offering}`);
     setIsAssignOpen(false);
-    setSelectedUnassigned(null);
+    setSelectedAssignment(null);
     setAssignPriest("");
   };
 
-  const handleAttendance = (priestName: string, slotTime: string) => {
-    toast.success(`Attendance marked for ${priestName} at ${slotTime}`);
+  const handleMarkAttendance = (assignment: Assignment, present: boolean) => {
+    const updated = assignments.map(a =>
+      a.id === assignment.id
+        ? { ...a, status: present ? "Completed" as const : "Absent" as const }
+        : a
+    );
+    setAssignments(updated);
+    toast.success(`Marked ${assignment.priestName} as ${present ? "Present" : "Absent"} for ${assignment.offering}`);
+  };
+
+  const handleReassign = (assignment: Assignment) => {
+    setSelectedAssignment(assignment);
+    setAssignPriest(assignment.priestName);
+    setIsAssignOpen(true);
+  };
+
+  const handleExport = () => {
+    const csv = [
+      "Assignment ID,Date,Time,Offering,Structure,Priest,Status,Assigned By,Assigned At",
+      ...filtered.map(a => `${a.id},${a.date},${a.time},"${a.offering}","${a.structure}","${a.priestName}",${a.status},${a.assignedBy || ""},${a.assignedAt || ""}`)
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `priest-assignments-${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success("Assignments exported");
+  };
+
+  const statusColors = {
+    Assigned: "bg-blue-100 text-blue-700",
+    Completed: "bg-green-100 text-green-700",
+    Absent: "bg-red-100 text-red-700",
+    Unassigned: "bg-amber-100 text-amber-700",
   };
 
   return (
     <div className="p-6 space-y-6">
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="flex items-center justify-between mb-6">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Priest Assignment</h1>
             <p className="text-muted-foreground">Assign priests to ritual slots and track attendance</p>
           </div>
-          <Select value={filterDate} onValueChange={setFilterDate}>
-            <SelectTrigger className="w-[180px] bg-background"><SelectValue /></SelectTrigger>
-            <SelectContent className="bg-popover">
-              <SelectItem value="2026-02-09">9 Feb 2026</SelectItem>
-              <SelectItem value="2026-02-10">10 Feb 2026</SelectItem>
-              <SelectItem value="2026-02-11">11 Feb 2026</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleExport} className="gap-2">
+              <Download className="h-4 w-4" />Export
+            </Button>
+          </div>
         </div>
 
-        {/* Unassigned Slots */}
-        {unassignedSlots.filter(s => s.date === filterDate).length > 0 && (
-          <Card className="mb-6 border-amber-200 bg-amber-50/50">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2 text-amber-700">
-                <AlertTriangle className="h-4 w-4" />
-                Unassigned Slots
-                <Badge variant="outline" className="ml-auto border-amber-300 text-amber-700">{unassignedSlots.filter(s => s.date === filterDate).length}</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Offering</TableHead>
-                    <TableHead>Structure</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {unassignedSlots.filter(s => s.date === filterDate).map(s => (
-                    <TableRow key={s.id}>
-                      <TableCell className="font-medium">{s.time}</TableCell>
-                      <TableCell>{s.offering}</TableCell>
-                      <TableCell className="text-muted-foreground">{s.structure}</TableCell>
-                      <TableCell className="text-right">
-                        <Button size="sm" variant="outline" onClick={() => { setSelectedUnassigned(s); setIsAssignOpen(true); }} className="gap-1">
-                          <Users className="h-3 w-3" /> Assign
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        )}
+        {/* Summary Cards */}
+        <div className="grid grid-cols-5 gap-4 mb-6">
+          <div className="border rounded-lg p-4 bg-card">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground">Total Slots</p>
+                <p className="text-2xl font-bold mt-1">{stats.total}</p>
+              </div>
+              <Clock className="h-8 w-8 text-muted-foreground" />
+            </div>
+          </div>
+          <div className="border rounded-lg p-4 bg-card">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground">Assigned</p>
+                <p className="text-2xl font-bold mt-1 text-blue-600">{stats.assigned}</p>
+              </div>
+              <Users className="h-8 w-8 text-blue-600" />
+            </div>
+          </div>
+          <div className="border rounded-lg p-4 bg-card">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground">Completed</p>
+                <p className="text-2xl font-bold mt-1 text-green-600">{stats.completed}</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
+          </div>
+          <div className="border rounded-lg p-4 bg-card">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground">Unassigned</p>
+                <p className="text-2xl font-bold mt-1 text-amber-600">{stats.unassigned}</p>
+              </div>
+              <User className="h-8 w-8 text-amber-600" />
+            </div>
+          </div>
+          <div className="border rounded-lg p-4 bg-card">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground">Absent</p>
+                <p className="text-2xl font-bold mt-1 text-red-600">{stats.absent}</p>
+              </div>
+              <XCircle className="h-8 w-8 text-red-600" />
+            </div>
+          </div>
+        </div>
 
-        {/* Priest Daily Schedule */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg"><Calendar className="h-5 w-5 text-primary" /></div>
-              <div><CardTitle>Priest Daily Schedule</CardTitle><CardDescription>{filterDate}</CardDescription></div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {mockSchedule.filter(s => s.date === filterDate).map(priest => (
-                <div key={priest.id} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Users className="h-4 w-4 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{priest.priestName}</p>
-                        <p className="text-xs text-muted-foreground">{priest.slots.length} slot(s) assigned</p>
-                      </div>
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-3 mb-4">
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="Search offering, priest, ID..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
+          <Select value={filterDate} onValueChange={setFilterDate}>
+            <SelectTrigger className="w-[140px] bg-background"><SelectValue placeholder="Date" /></SelectTrigger>
+            <SelectContent className="bg-popover">
+              <SelectItem value="all">All Dates</SelectItem>
+              {allDates.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={filterPriest} onValueChange={setFilterPriest}>
+            <SelectTrigger className="w-[150px] bg-background"><SelectValue placeholder="Priest" /></SelectTrigger>
+            <SelectContent className="bg-popover">
+              <SelectItem value="all">All Priests</SelectItem>
+              {allPriests.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={filterStructure} onValueChange={setFilterStructure}>
+            <SelectTrigger className="w-[180px] bg-background"><SelectValue placeholder="Structure" /></SelectTrigger>
+            <SelectContent className="bg-popover">
+              <SelectItem value="all">All Structures</SelectItem>
+              {allStructures.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-[140px] bg-background"><SelectValue placeholder="Status" /></SelectTrigger>
+            <SelectContent className="bg-popover">
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="Assigned">Assigned</SelectItem>
+              <SelectItem value="Completed">Completed</SelectItem>
+              <SelectItem value="Unassigned">Unassigned</SelectItem>
+              <SelectItem value="Absent">Absent</SelectItem>
+            </SelectContent>
+          </Select>
+          <Badge variant="secondary" className="ml-auto">{filtered.length} assignments</Badge>
+        </div>
+
+        {/* Table */}
+        <div className="border rounded-lg overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[100px]">ID</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Time</TableHead>
+                <TableHead>Offering</TableHead>
+                <TableHead>Structure</TableHead>
+                <TableHead>Priest</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center text-muted-foreground py-8">No assignments found</TableCell>
+                </TableRow>
+              ) : filtered.map(a => (
+                <TableRow key={a.id} className={a.status === "Unassigned" ? "bg-amber-50/50" : ""}>
+                  <TableCell className="font-medium text-primary">{a.id}</TableCell>
+                  <TableCell className="text-sm">{a.date}</TableCell>
+                  <TableCell className="font-medium text-sm">{a.time}</TableCell>
+                  <TableCell className="font-medium">{a.offering}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{a.structure}</TableCell>
+                  <TableCell className="text-sm">
+                    {a.priestName || <span className="text-muted-foreground italic">—</span>}
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={`${statusColors[a.status]} border-0 text-xs`}>
+                      {a.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      {a.status === "Unassigned" && (
+                        <Button size="sm" variant="outline" onClick={() => { setSelectedAssignment(a); setAssignPriest(""); setIsAssignOpen(true); }} className="h-8 text-xs gap-1">
+                          <Users className="h-3 w-3" />Assign
+                        </Button>
+                      )}
+                      {a.status === "Assigned" && (
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => handleMarkAttendance(a, true)} className="h-8 text-xs gap-1">
+                            <CheckCircle className="h-3 w-3" />Present
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => handleMarkAttendance(a, false)} className="h-8 text-xs gap-1 text-red-600">
+                            <XCircle className="h-3 w-3" />Absent
+                          </Button>
+                        </>
+                      )}
+                      {(a.status === "Assigned" || a.status === "Completed" || a.status === "Absent") && (
+                        <Button size="sm" variant="ghost" onClick={() => handleReassign(a)} className="h-8 text-xs">
+                          Reassign
+                        </Button>
+                      )}
                     </div>
-                  </div>
-                  <Table>
-                    <TableBody>
-                      {priest.slots.map((slot, i) => (
-                        <TableRow key={i}>
-                          <TableCell className="font-medium text-sm w-24">{slot.time}</TableCell>
-                          <TableCell>{slot.offering}</TableCell>
-                          <TableCell className="text-muted-foreground text-sm">{slot.structure}</TableCell>
-                          <TableCell><Badge variant={slot.status === "Completed" ? "default" : slot.status === "Absent" ? "destructive" : "secondary"}>{slot.status}</Badge></TableCell>
-                          <TableCell className="text-right">
-                            {slot.status === "Assigned" && (
-                              <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => handleAttendance(priest.priestName, slot.time)}>
-                                <CheckCircle className="h-3 w-3" /> Mark Present
-                              </Button>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                  </TableCell>
+                </TableRow>
               ))}
-            </div>
-          </CardContent>
-        </Card>
+            </TableBody>
+          </Table>
+        </div>
       </motion.div>
 
-      {/* Assign Priest Dialog */}
+      {/* Assign/Reassign Priest Dialog */}
       <Dialog open={isAssignOpen} onOpenChange={setIsAssignOpen}>
         <DialogContent className="sm:max-w-[400px] bg-background">
           <DialogHeader>
-            <DialogTitle>Assign Priest</DialogTitle>
-            <DialogDescription>{selectedUnassigned?.offering} – {selectedUnassigned?.time}</DialogDescription>
+            <DialogTitle>{selectedAssignment?.priestName ? "Reassign Priest" : "Assign Priest"}</DialogTitle>
+            <DialogDescription>
+              {selectedAssignment?.offering} – {selectedAssignment?.time} ({selectedAssignment?.date})
+              {selectedAssignment?.priestName && (
+                <span className="block mt-1 text-xs">Currently assigned: <strong>{selectedAssignment.priestName}</strong></span>
+              )}
+            </DialogDescription>
           </DialogHeader>
           <SearchableSelect options={priestOptions} value={assignPriest} onValueChange={setAssignPriest} placeholder="Select priest" />
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsAssignOpen(false)}>Cancel</Button>
-            <Button onClick={handleAssign}>Assign</Button>
+            <Button onClick={handleAssign} disabled={!assignPriest}>
+              {selectedAssignment?.priestName ? "Reassign" : "Assign"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

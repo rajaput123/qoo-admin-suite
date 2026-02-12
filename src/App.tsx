@@ -71,6 +71,7 @@ import VirtualTour from "./pages/temple/structure/VirtualTour";
 // Event Management Module
 import EventsLayout from "./pages/temple/EventsLayout";
 import AllEvents from "./pages/temple/events/AllEvents";
+import CreateEvent from "./pages/temple/events/CreateEvent";
 import CalendarView from "./pages/temple/events/CalendarView";
 import EventTemplates from "./pages/temple/events/EventTemplates";
 import EventResources from "./pages/temple/events/EventResources";
@@ -129,10 +130,8 @@ import DonationReportsGovernance from "./pages/temple/donations/ReportsGovernanc
 import FeedbackLayout from "./pages/temple/FeedbackLayout";
 import FeedbackDashboard from "./pages/temple/feedback/Dashboard";
 import FeedbackCollection from "./pages/temple/feedback/Collection";
-import FeedbackRatings from "./pages/temple/feedback/Ratings";
 import FeedbackSentiment from "./pages/temple/feedback/Sentiment";
 import FeedbackAnalytics from "./pages/temple/feedback/Analytics";
-import FeedbackConfiguration from "./pages/temple/feedback/Configuration";
 // Freelancer Management Module
 import FreelancerLayout from "./pages/temple/FreelancerLayout";
 import FreelancersList from "./pages/temple/freelancers/FreelancersList";
@@ -146,6 +145,24 @@ import VipDevotees from "./pages/temple/vip/Devotees";
 import VipLevels from "./pages/temple/vip/Levels";
 import VipActivity from "./pages/temple/vip/Activity";
 import VipReports from "./pages/temple/vip/Reports";
+// Finance Module
+import FinanceLayout from "./pages/temple/FinanceLayout";
+import FinanceDashboard from "./pages/temple/finance/FinanceDashboard";
+import ChartOfAccounts from "./pages/temple/finance/ChartOfAccounts";
+import FinanceLedger from "./pages/temple/finance/FinanceLedger";
+import FundManagement from "./pages/temple/finance/FundManagement";
+import ExpensesPayables from "./pages/temple/finance/ExpensesPayables";
+import BankManagement from "./pages/temple/finance/BankManagement";
+import FinancialReports from "./pages/temple/finance/FinancialReports";
+// Projects & Initiatives Module
+import ProjectsLayout from "./pages/temple/ProjectsLayout";
+import ProjectsDashboard from "./pages/temple/projects/Dashboard";
+import AllProjects from "./pages/temple/projects/AllProjects";
+import CreateProject from "./pages/temple/projects/CreateProject";
+import ProjectDetail from "./pages/temple/projects/ProjectDetail";
+import ProjectsTimeline from "./pages/temple/projects/Timeline";
+import ProjectsReports from "./pages/temple/projects/Reports";
+import ProjectsArchive from "./pages/temple/projects/Archive";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -263,10 +280,16 @@ const App = () => {
               <Route path="allocation" element={<FundAllocation />} />
               <Route path="reports" element={<DonationReportsGovernance />} />
             </Route>
-            <Route
-              path="/temple/finance"
-              element={<UpcomingModule moduleTitle="Finance & Accounts" />}
-            />
+            {/* Finance & Accounts Module */}
+            <Route path="/temple/finance" element={<FinanceLayout />}>
+              <Route index element={<FinanceDashboard />} />
+              <Route path="coa" element={<ChartOfAccounts />} />
+              <Route path="ledger" element={<FinanceLedger />} />
+              <Route path="funds" element={<FundManagement />} />
+              <Route path="expenses" element={<ExpensesPayables />} />
+              <Route path="banking" element={<BankManagement />} />
+              <Route path="reports" element={<FinancialReports />} />
+            </Route>
             <Route
               path="/temple/planner"
               element={<UpcomingModule moduleTitle="Planner" />}
@@ -304,6 +327,7 @@ const App = () => {
             {/* Event Management Module */}
             <Route path="/temple/events" element={<EventsLayout />}>
               <Route index element={<AllEvents />} />
+              <Route path="create" element={<CreateEvent />} />
               <Route path="calendar" element={<CalendarView />} />
               <Route path="templates" element={<EventTemplates />} />
               <Route path="resources" element={<EventResources />} />
@@ -373,17 +397,20 @@ const App = () => {
             <Route path="/temple/feedback" element={<FeedbackLayout />}>
               <Route index element={<FeedbackDashboard />} />
               <Route path="collection" element={<FeedbackCollection />} />
-              <Route path="ratings" element={<FeedbackRatings />} />
               <Route path="sentiment" element={<FeedbackSentiment />} />
               <Route path="analytics" element={<FeedbackAnalytics />} />
-              <Route path="config" element={<FeedbackConfiguration />} />
             </Route>
 
-            {/* Projects & Initiatives (Upcoming) */}
-            <Route
-              path="/temple/projects/*"
-              element={<UpcomingModule moduleTitle="Projects & Initiatives" />}
-            />
+            {/* Projects & Initiatives */}
+            <Route path="/temple/projects" element={<ProjectsLayout />}>
+              <Route index element={<ProjectsDashboard />} />
+              <Route path="all" element={<AllProjects />} />
+              <Route path="create" element={<CreateProject />} />
+              <Route path=":id" element={<ProjectDetail />} />
+              <Route path="timeline" element={<ProjectsTimeline />} />
+              <Route path="reports" element={<ProjectsReports />} />
+              <Route path="archive" element={<ProjectsArchive />} />
+            </Route>
 
             <Route path="*" element={<NotFound />} />
           </Routes>
