@@ -4,10 +4,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarCheck, IndianRupee, Store, Globe, Clock, AlertCircle, Image } from "lucide-react";
+import { CalendarCheck, IndianRupee, Store, Globe, Clock, AlertCircle, Image, ArrowLeft, Printer, MessageSquare } from "lucide-react";
 
 const todayBookings = [
   { id: "1", bookingId: "BK-0001", time: "5:30 AM", offering: "Suprabhatam", type: "Ritual" as const, structure: "Main Temple", devotee: "Ramesh Kumar", quantity: 2, amount: 1000, source: "Online" as const, paymentStatus: "Paid", bookingStatus: "Confirmed", phone: "+91 98765 43210", email: "ramesh@email.com", gothram: "Bharadwaja", nakshatra: "Rohini", priest: "Pandit Sharma", paymentMode: "UPI", txnId: "TXN-98765", images: ["https://images.unsplash.com/photo-1600693577615-9f3a0f7a16ba?w=400"], notes: "Family prayer", createdAt: "2026-02-08" },
@@ -53,6 +52,126 @@ const BookingsToday = () => {
     { label: "Revenue Today", value: `₹${totalRevenue.toLocaleString()}`, icon: IndianRupee, description: "Confirmed payments" },
     { label: "Pending Payments", value: pendingPayments.toString(), icon: AlertCircle, description: "Awaiting payment" },
   ];
+
+  // Inline detail view
+  if (viewing) {
+    const b = viewing;
+    return (
+      <div className="p-6 space-y-6">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          {/* Header */}
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => setViewing(null)}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <div>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl font-semibold tracking-tight">{b.bookingId}</h1>
+                  <Badge variant={b.paymentStatus === "Paid" ? "default" : "secondary"}>{b.paymentStatus}</Badge>
+                  <Badge variant={statusColor(b.bookingStatus) as any}>{b.bookingStatus}</Badge>
+                </div>
+                <p className="text-muted-foreground text-sm mt-1">{b.offering} · {b.structure} · {sourceIcon(b.source)} {b.source}</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="gap-2"><Printer className="h-4 w-4" />Print Receipt</Button>
+              <Button variant="outline" size="sm" className="gap-2"><MessageSquare className="h-4 w-4" />SMS</Button>
+              {b.bookingStatus === "Confirmed" && <Button size="sm">Mark Completed</Button>}
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <Tabs defaultValue="booking" className="space-y-4">
+            <div className="border-b border-border">
+              <TabsList className="w-full justify-start border-b-0 rounded-none h-auto p-0 bg-transparent gap-0">
+                <TabsTrigger value="booking" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground">
+                  Booking Details
+                </TabsTrigger>
+                <TabsTrigger value="devotee" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground">
+                  Devotee Info
+                </TabsTrigger>
+                <TabsTrigger value="payment" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground">
+                  Payment
+                </TabsTrigger>
+                <TabsTrigger value="gallery" className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground">
+                  Gallery
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent value="booking" className="space-y-6">
+              <div>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Booking Information</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-8 text-sm">
+                  <div><span className="text-muted-foreground">Booking ID:</span> <span className="ml-2 font-medium font-mono text-xs">{b.bookingId}</span></div>
+                  <div><span className="text-muted-foreground">Source:</span> <span className="ml-2">{sourceIcon(b.source)} {b.source}</span></div>
+                  <div><span className="text-muted-foreground">Offering:</span> <span className="ml-2 font-medium">{b.offering}</span></div>
+                  <div><span className="text-muted-foreground">Type:</span> <span className="ml-2"><Badge variant={b.type === "Ritual" ? "default" : "secondary"}>{b.type}</Badge></span></div>
+                  <div><span className="text-muted-foreground">Structure:</span> <span className="ml-2 font-medium">{b.structure}</span></div>
+                  <div><span className="text-muted-foreground">Time:</span> <span className="ml-2 font-medium">{b.time}</span></div>
+                  <div><span className="text-muted-foreground">Quantity:</span> <span className="ml-2 font-medium">{b.quantity}</span></div>
+                  <div><span className="text-muted-foreground">Priest:</span> <span className="ml-2 font-medium">{b.priest}</span></div>
+                </div>
+              </div>
+              {b.notes && (
+                <>
+                  <hr className="border-border" />
+                  <div>
+                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Notes</h3>
+                    <p className="text-sm text-muted-foreground">{b.notes}</p>
+                  </div>
+                </>
+              )}
+            </TabsContent>
+
+            <TabsContent value="devotee" className="space-y-6">
+              <div>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Devotee Information</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-8 text-sm">
+                  <div><span className="text-muted-foreground">Name:</span> <span className="ml-2 font-medium">{b.devotee}</span></div>
+                  <div><span className="text-muted-foreground">Phone:</span> <span className="ml-2 font-medium">{b.phone}</span></div>
+                  <div><span className="text-muted-foreground">Email:</span> <span className="ml-2 font-medium">{b.email || "—"}</span></div>
+                  {b.gothram && <div><span className="text-muted-foreground">Gothram:</span> <span className="ml-2 font-medium">{b.gothram}</span></div>}
+                  {b.nakshatra && <div><span className="text-muted-foreground">Nakshatra:</span> <span className="ml-2 font-medium">{b.nakshatra}</span></div>}
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="payment" className="space-y-6">
+              <div>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Payment Details</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-8 text-sm">
+                  <div><span className="text-muted-foreground">Amount:</span> <span className="ml-2 font-medium text-lg">{b.amount > 0 ? `₹${b.amount}` : "Free"}</span></div>
+                  <div><span className="text-muted-foreground">Payment Mode:</span> <span className="ml-2 font-medium">{b.paymentMode}</span></div>
+                  <div><span className="text-muted-foreground">Transaction ID:</span> <span className="ml-2 font-mono text-xs">{b.txnId}</span></div>
+                  <div><span className="text-muted-foreground">Booked On:</span> <span className="ml-2 font-medium">{b.createdAt}</span></div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="gallery" className="space-y-6">
+              <div>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Images</h3>
+                {b.images && b.images.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {b.images.map((img, i) => (
+                      <img key={i} src={img} alt="" className="w-full h-48 object-cover rounded-lg border" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center py-12 text-muted-foreground">
+                    <Image className="h-12 w-12 mb-2 opacity-30" />
+                    <p className="text-sm">No images attached</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -134,86 +253,7 @@ const BookingsToday = () => {
         </Card>
       </motion.div>
 
-      {/* Booking Detail Dialog */}
-      <Dialog open={!!viewing} onOpenChange={() => setViewing(null)}>
-        <DialogContent className="sm:max-w-[650px] max-h-[85vh] overflow-y-auto bg-background">
-          <DialogHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <DialogTitle>Booking {viewing?.bookingId}</DialogTitle>
-                <DialogDescription>{viewing?.offering} · {viewing?.structure} · {viewing?.source}</DialogDescription>
-              </div>
-              <div className="flex gap-2">
-                <Badge variant={viewing?.paymentStatus === "Paid" ? "default" : "secondary"}>{viewing?.paymentStatus}</Badge>
-                <Badge variant={statusColor(viewing?.bookingStatus || "") as any}>{viewing?.bookingStatus}</Badge>
-              </div>
-            </div>
-          </DialogHeader>
-          <Tabs defaultValue="booking" className="mt-2">
-            <TabsList className="w-full justify-start border-b rounded-none h-auto p-0 bg-transparent">
-              {["booking", "devotee", "payment", "gallery"].map(t => (
-                <TabsTrigger key={t} value={t} className="rounded-none border-b-2 border-transparent data-[state=active]:border-amber-700 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:font-medium px-4 py-2 text-sm text-muted-foreground capitalize">{t}</TabsTrigger>
-              ))}
-            </TabsList>
-            <TabsContent value="booking" className="mt-4 space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  ["Booking ID", viewing?.bookingId],
-                  ["Source", `${sourceIcon(viewing?.source || "")} ${viewing?.source}`],
-                  ["Offering", viewing?.offering],
-                  ["Type", viewing?.type],
-                  ["Structure", viewing?.structure],
-                  ["Time", viewing?.time],
-                  ["Quantity", viewing?.quantity],
-                  ["Priest", viewing?.priest],
-                ].map(([label, value]) => (
-                  <div key={label as string} className="p-3 bg-muted/50 rounded-lg"><p className="text-xs text-muted-foreground">{label as string}</p><p className="font-medium">{String(value)}</p></div>
-                ))}
-              </div>
-              {viewing?.notes && <div className="p-3 bg-muted/50 rounded-lg"><p className="text-xs text-muted-foreground">Notes</p><p className="text-sm mt-1">{viewing.notes}</p></div>}
-            </TabsContent>
-            <TabsContent value="devotee" className="mt-4 space-y-3">
-              <div className="grid grid-cols-1 gap-3">
-                <div className="p-4 border rounded-lg"><p className="text-sm text-muted-foreground">Name</p><p className="font-medium text-lg">{viewing?.devotee}</p></div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-4 border rounded-lg"><p className="text-sm text-muted-foreground">Phone</p><p className="font-medium">{viewing?.phone}</p></div>
-                  <div className="p-4 border rounded-lg"><p className="text-sm text-muted-foreground">Email</p><p className="font-medium">{viewing?.email || "—"}</p></div>
-                </div>
-                {viewing?.gothram && <div className="grid grid-cols-2 gap-3">
-                  <div className="p-4 border rounded-lg"><p className="text-sm text-muted-foreground">Gothram</p><p className="font-medium">{viewing.gothram}</p></div>
-                  <div className="p-4 border rounded-lg"><p className="text-sm text-muted-foreground">Nakshatra</p><p className="font-medium">{viewing?.nakshatra}</p></div>
-                </div>}
-              </div>
-            </TabsContent>
-            <TabsContent value="payment" className="mt-4 space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-4 border rounded-lg"><p className="text-sm text-muted-foreground">Amount</p><p className="font-medium text-xl">{viewing?.amount ? `₹${viewing.amount}` : "Free"}</p></div>
-                <div className="p-4 border rounded-lg"><p className="text-sm text-muted-foreground">Payment Mode</p><p className="font-medium">{viewing?.paymentMode}</p></div>
-                <div className="p-4 border rounded-lg"><p className="text-sm text-muted-foreground">Transaction ID</p><p className="font-mono text-sm">{viewing?.txnId}</p></div>
-                <div className="p-4 border rounded-lg"><p className="text-sm text-muted-foreground">Booked On</p><p className="font-medium">{viewing?.createdAt}</p></div>
-              </div>
-            </TabsContent>
-            <TabsContent value="gallery" className="mt-4">
-              {viewing?.images && viewing.images.length > 0 ? (
-                <div className="grid grid-cols-2 gap-4">{viewing.images.map((img, i) => <img key={i} src={img} alt="" className="w-full h-40 object-cover rounded-lg border" />)}</div>
-              ) : (
-                <div className="flex flex-col items-center py-8 text-muted-foreground"><Image className="h-12 w-12 mb-2 opacity-50" /><p>No images attached</p></div>
-              )}
-            </TabsContent>
-          </Tabs>
-          <DialogFooter className="flex-wrap gap-2">
-            {viewing?.bookingStatus === "Confirmed" && (
-              <>
-                <Button variant="outline" className="text-destructive">Cancel Booking</Button>
-                <Button variant="outline">Mark No Show</Button>
-                <Button>Mark Completed</Button>
-              </>
-            )}
-            {viewing?.bookingStatus !== "Confirmed" && <Button variant="outline" onClick={() => setViewing(null)}>Close</Button>}
-            <Button variant="outline" size="sm">Download Receipt</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
     </div>
   );
 };

@@ -48,11 +48,96 @@ const nakshatraOptions = [
 
 const steps = ["Select Offering", "Select Slot", "Devotee Details", "Payment", "Confirm"];
 
+type SlotOption = {
+  id: string;
+  dateLabel: string;
+  dateIso: string;
+  timeLabel: string;
+  available: number;
+};
+
+function parse12hToMinutes(raw: string) {
+  const m = raw.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!m) return null;
+  let h = Number(m[1]);
+  const min = Number(m[2]);
+  const ampm = m[3].toUpperCase();
+  if (!Number.isFinite(h) || !Number.isFinite(min)) return null;
+  h = h % 12;
+  if (ampm === "PM") h += 12;
+  return h * 60 + min;
+}
+
+function minutesTo12hLabel(totalMinutes: number) {
+  const h24 = Math.floor(totalMinutes / 60) % 24;
+  const min = totalMinutes % 60;
+  const ampm = h24 >= 12 ? "PM" : "AM";
+  const h12 = h24 % 12 === 0 ? 12 : h24 % 12;
+  return `${h12}:${String(min).padStart(2, "0")} ${ampm}`;
+}
+
+function getTodayIso(offsetDays = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return d.toISOString().slice(0, 10);
+}
+
+function getDateLabel(offsetDays = 0) {
+  if (offsetDays === 0) return "Today";
+  if (offsetDays === 1) return "Tomorrow";
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return d.toLocaleDateString("en-IN", { weekday: "short", day: "2-digit", month: "short" });
+}
+
+function buildSlotOptions(offering: (typeof offerings)[number]): SlotOption[] {
+  const time = offering.time;
+
+  if (time.includes("–") || time.includes("-")) {
+    const parts = time.split("–").length > 1 ? time.split("–") : time.split("-");
+    const startRaw = parts[0]?.trim() ?? "";
+    const endRaw = parts[1]?.trim() ?? "";
+    const startMin = parse12hToMinutes(startRaw);
+    const endMin = parse12hToMinutes(endRaw);
+    if (startMin != null && endMin != null && endMin > startMin) {
+      const interval = 30;
+      const times: number[] = [];
+      for (let t = startMin; t <= endMin; t += interval) times.push(t);
+      const count = times.length || 1;
+      const base = Math.max(1, Math.floor(offering.available / count));
+      let remainder = Math.max(0, offering.available - base * count);
+      return times.map((t) => {
+        const extra = remainder > 0 ? 1 : 0;
+        remainder = Math.max(0, remainder - extra);
+        const avail = base + extra;
+        return {
+          id: `${getTodayIso(0)}-${t}`,
+          dateLabel: "Today",
+          dateIso: getTodayIso(0),
+          timeLabel: minutesTo12hLabel(t),
+          available: avail,
+        };
+      });
+    }
+  }
+
+  const fixed = parse12hToMinutes(time);
+  const timeLabel = fixed != null ? minutesTo12hLabel(fixed) : time;
+  return [0, 1, 2].map((offsetDays) => ({
+    id: `${getTodayIso(offsetDays)}-${timeLabel}`,
+    dateLabel: getDateLabel(offsetDays),
+    dateIso: getTodayIso(offsetDays),
+    timeLabel,
+    available: offering.available,
+  }));
+}
+
 const CounterBooking = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [filterStructure, setFilterStructure] = useState("all");
   const [filterType, setFilterType] = useState("all");
   const [selectedOffering, setSelectedOffering] = useState<typeof offerings[0] | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<SlotOption | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [devotee, setDevotee] = useState({ name: "", phone: "", email: "", gothram: "", nakshatra: "", sankalpam: "" });
   const [paymentMode, setPaymentMode] = useState("Cash");
@@ -75,6 +160,7 @@ const CounterBooking = () => {
   const handleReset = () => {
     setCurrentStep(0);
     setSelectedOffering(null);
+    setSelectedSlot(null);
     setQuantity(1);
     setDevotee({ name: "", phone: "", email: "", gothram: "", nakshatra: "", sankalpam: "" });
     setPaymentMode("Cash");
@@ -156,7 +242,16 @@ const CounterBooking = () => {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {filteredOfferings.map(o => (
-                  <button key={o.id} onClick={() => { setSelectedOffering(o); setCurrentStep(1); }} className={`p-4 border rounded-lg text-left hover:border-primary hover:bg-muted/50 transition-all ${selectedOffering?.id === o.id ? "border-primary bg-primary/5" : ""}`}>
+                  <button
+                    key={o.id}
+                    onClick={() => {
+                      setSelectedOffering(o);
+                      setSelectedSlot(null);
+                      setQuantity(1);
+                      setCurrentStep(1);
+                    }}
+                    className={`p-4 border rounded-lg text-left hover:border-primary hover:bg-muted/50 transition-all ${selectedOffering?.id === o.id ? "border-primary bg-primary/5" : ""}`}
+                  >
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-medium">{o.name}</span>
                       <Badge variant={o.type === "Ritual" ? "default" : "secondary"}>{o.type}</Badge>
@@ -178,20 +273,48 @@ const CounterBooking = () => {
           <Card>
             <CardHeader><CardTitle className="text-base">Select Slot</CardTitle><CardDescription>{selectedOffering.name} · {selectedOffering.structure}</CardDescription></CardHeader>
             <CardContent className="space-y-4">
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <div className="grid grid-cols-3 gap-4 text-center">
-                  <div><p className="text-xs text-muted-foreground">Date</p><p className="font-bold">Today</p></div>
-                  <div><p className="text-xs text-muted-foreground">Time</p><p className="font-bold">{selectedOffering.time}</p></div>
-                  <div><p className="text-xs text-muted-foreground">Available</p><p className="font-bold text-emerald-600">{selectedOffering.available}</p></div>
-                </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {buildSlotOptions(selectedOffering).map((slot) => {
+                  const isSelected = selectedSlot?.id === slot.id;
+                  return (
+                    <button
+                      key={slot.id}
+                      onClick={() => {
+                        setSelectedSlot(slot);
+                        setQuantity((q) => Math.min(q, slot.available));
+                      }}
+                      className={`p-3 border rounded-lg text-left transition-all hover:bg-muted/50 ${
+                        isSelected ? "border-primary bg-primary/5 ring-2 ring-primary/20" : ""
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <p className="text-xs text-muted-foreground">{slot.dateLabel}</p>
+                          <p className="font-semibold text-sm">{slot.timeLabel}</p>
+                        </div>
+                        <Badge variant="secondary" className="text-[10px]">{slot.available} left</Badge>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mt-1">{slot.dateIso}</p>
+                    </button>
+                  );
+                })}
               </div>
               <div>
                 <Label>Quantity</Label>
-                <Input type="number" min={1} max={selectedOffering.available} value={quantity} onChange={e => setQuantity(Math.min(+e.target.value, selectedOffering.available))} className="w-32" />
+                <Input
+                  type="number"
+                  min={1}
+                  max={selectedSlot?.available ?? selectedOffering.available}
+                  value={quantity}
+                  onChange={e => setQuantity(Math.min(+e.target.value, selectedSlot?.available ?? selectedOffering.available))}
+                  className="w-32"
+                  disabled={!selectedSlot}
+                />
+                {!selectedSlot && <p className="text-xs text-muted-foreground mt-1">Select a slot to set quantity.</p>}
               </div>
               <div className="flex justify-between">
                 <Button variant="outline" onClick={() => setCurrentStep(0)}>Back</Button>
-                <Button onClick={() => setCurrentStep(2)}>Continue</Button>
+                <Button onClick={() => setCurrentStep(2)} disabled={!selectedSlot}>Continue</Button>
               </div>
             </CardContent>
           </Card>
@@ -264,7 +387,7 @@ const CounterBooking = () => {
               <div className="space-y-2 p-4 border rounded-lg">
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Offering</span><span className="font-medium">{selectedOffering?.name} ({selectedOffering?.type})</span></div>
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Structure</span><span className="font-medium">{selectedOffering?.structure}</span></div>
-                <div className="flex justify-between text-sm"><span className="text-muted-foreground">Time</span><span className="font-medium">{selectedOffering?.time}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-muted-foreground">Slot</span><span className="font-medium">{selectedSlot ? `${selectedSlot.dateLabel} · ${selectedSlot.timeLabel}` : (selectedOffering?.time ?? "—")}</span></div>
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Quantity</span><span className="font-medium">{quantity}</span></div>
                 <Separator />
                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Devotee</span><span className="font-medium">{devotee.name}</span></div>

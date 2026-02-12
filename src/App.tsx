@@ -49,7 +49,7 @@ import BookingsLayout from "./pages/temple/BookingsLayout";
 import BookingsToday from "./pages/temple/bookings/BookingsToday";
 import AllBookings from "./pages/temple/bookings/AllBookings";
 import CounterBooking from "./pages/temple/bookings/CounterBooking";
-import CancellationsRefunds from "./pages/temple/bookings/CancellationsRefunds";
+
 import Attendance from "./pages/temple/bookings/Attendance";
 import BookingReports from "./pages/temple/bookings/BookingReports";
 import SettingsLayout from "./pages/temple/SettingsLayout";
@@ -209,266 +209,266 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-          {/* Landing & Auth Routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/temple-register" element={<TempleRegister />} />
+            {/* Landing & Auth Routes */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/temple-register" element={<TempleRegister />} />
 
-          {/* Temple Admin Routes */}
-          <Route path="/temple-hub" element={<TempleHub />} />
+            {/* Temple Admin Routes */}
+            <Route path="/temple-hub" element={<TempleHub />} />
 
-          {/* Temple Info Module */}
-          <Route path="/temple/info" element={<TempleInfoLayout />}>
-            <Route index element={<BasicInfo />} />
-            <Route path="layout" element={<BasicInfo />} />
-            <Route path="facilities" element={<BasicInfo />} />
-            <Route path="branches" element={<BasicInfo />} />
-            <Route path="media" element={<BasicInfo />} />
-          </Route>
+            {/* Temple Info Module */}
+            <Route path="/temple/info" element={<TempleInfoLayout />}>
+              <Route index element={<BasicInfo />} />
+              <Route path="layout" element={<BasicInfo />} />
+              <Route path="facilities" element={<BasicInfo />} />
+              <Route path="branches" element={<BasicInfo />} />
+              <Route path="media" element={<BasicInfo />} />
+            </Route>
 
-          {/* Temple Structure Module */}
-          <Route path="/temple/structure" element={<TempleStructureLayout />}>
-            <Route index element={<MainTemple />} />
-            <Route path="shrines" element={<Shrines />} />
-            <Route path="sacred" element={<Sacred />} />
-            <Route path="halls" element={<Halls />} />
-            <Route path="counters" element={<Counters />} />
-            <Route path="hierarchy" element={<HierarchyView />} />
-            <Route path="virtual-tour" element={<VirtualTour />} />
-          </Route>
+            {/* Temple Structure Module */}
+            <Route path="/temple/structure" element={<TempleStructureLayout />}>
+              <Route index element={<MainTemple />} />
+              <Route path="shrines" element={<Shrines />} />
+              <Route path="sacred" element={<Sacred />} />
+              <Route path="halls" element={<Halls />} />
+              <Route path="counters" element={<Counters />} />
+              <Route path="hierarchy" element={<HierarchyView />} />
+              <Route path="virtual-tour" element={<VirtualTour />} />
+            </Route>
 
-          {/* Supplier Management Module */}
-          <Route path="/temple/suppliers" element={<SupplierLayout />}>
-            <Route index element={<SupplierDashboard />} />
-            <Route path="registry" element={<SupplierRegistry />} />
-            <Route path="onboarding" element={<SupplierOnboarding />} />
-            <Route path="categories" element={<SupplierCategories />} />
-            <Route path="purchase-orders" element={<SupplierPurchaseOrders />} />
-            <Route path="deliveries" element={<SupplierDeliveries />} />
-            <Route path="payments" element={<SupplierPayments />} />
-            <Route path="performance" element={<SupplierPerformance />} />
-            <Route path="reports" element={<SupplierReports />} />
-          </Route>
+            {/* Supplier Management Module */}
+            <Route path="/temple/suppliers" element={<SupplierLayout />}>
+              <Route index element={<SupplierDashboard />} />
+              <Route path="registry" element={<SupplierRegistry />} />
+              <Route path="onboarding" element={<SupplierOnboarding />} />
+              <Route path="categories" element={<SupplierCategories />} />
+              <Route path="purchase-orders" element={<SupplierPurchaseOrders />} />
+              <Route path="deliveries" element={<SupplierDeliveries />} />
+              <Route path="payments" element={<SupplierPayments />} />
+              <Route path="performance" element={<SupplierPerformance />} />
+              <Route path="reports" element={<SupplierReports />} />
+            </Route>
 
-          {/* Stock & Inventory Module */}
-          <Route path="/temple/inventory" element={<InventoryLayout />}>
-            <Route index element={<InventoryDashboard />} />
-            <Route path="items" element={<InventoryItems />} />
-            <Route path="items/:id" element={<ItemDetail />} />
-            <Route path="transactions" element={<InventoryTransactions />} />
-            <Route path="transactions/:id" element={<TransactionDetail />} />
-            <Route path="purchases" element={<InventoryPurchases />} />
-            <Route path="purchases/:id" element={<PurchaseOrderDetail />} />
-            <Route path="purchases/deliveries/:id" element={<DeliveryDetail />} />
-            <Route path="requests" element={<InventoryRequests />} />
-            <Route path="adjustments" element={<InventoryAdjustments />} />
-            <Route path="reports" element={<InventoryReports />} />
-          </Route>
+            {/* Stock & Inventory Module */}
+            <Route path="/temple/inventory" element={<InventoryLayout />}>
+              <Route index element={<InventoryDashboard />} />
+              <Route path="items" element={<InventoryItems />} />
+              <Route path="items/:id" element={<ItemDetail />} />
+              <Route path="transactions" element={<InventoryTransactions />} />
+              <Route path="transactions/:id" element={<TransactionDetail />} />
+              <Route path="purchases" element={<InventoryPurchases />} />
+              <Route path="purchases/:id" element={<PurchaseOrderDetail />} />
+              <Route path="purchases/deliveries/:id" element={<DeliveryDetail />} />
+              <Route path="requests" element={<InventoryRequests />} />
+              <Route path="adjustments" element={<InventoryAdjustments />} />
+              <Route path="reports" element={<InventoryReports />} />
+            </Route>
 
-          {/* Offerings Module */}
-          <Route path="/temple/offerings" element={<OfferingsLayout />}>
-            <Route index element={<OfferingsToday />} />
-            <Route path="list" element={<OfferingsList />} />
-            <Route path="slots" element={<SlotManagement />} />
-            <Route path="bookings" element={<BookingManagement />} />
-            <Route path="pricing" element={<PricingRules />} />
-            <Route path="priests" element={<PriestAssignment />} />
-            <Route path="reports" element={<OfferingsReports />} />
-          </Route>
+            {/* Offerings Module */}
+            <Route path="/temple/offerings" element={<OfferingsLayout />}>
+              <Route index element={<OfferingsToday />} />
+              <Route path="list" element={<OfferingsList />} />
+              <Route path="slots" element={<SlotManagement />} />
+              <Route path="bookings" element={<BookingManagement />} />
+              <Route path="pricing" element={<PricingRules />} />
+              <Route path="priests" element={<PriestAssignment />} />
+              <Route path="reports" element={<OfferingsReports />} />
+            </Route>
 
-          {/* Bookings Module */}
-          <Route path="/temple/bookings" element={<BookingsLayout />}>
-            <Route index element={<BookingsToday />} />
-            <Route path="all" element={<AllBookings />} />
-            <Route path="counter" element={<CounterBooking />} />
-            <Route path="cancellations" element={<CancellationsRefunds />} />
-            <Route path="attendance" element={<Attendance />} />
-            <Route path="reports" element={<BookingReports />} />
-          </Route>
+            {/* Bookings Module */}
+            <Route path="/temple/bookings" element={<BookingsLayout />}>
+              <Route index element={<BookingsToday />} />
+              <Route path="all" element={<AllBookings />} />
+              <Route path="counter" element={<CounterBooking />} />
 
-          {/* Settings Module */}
-          <Route path="/temple/settings" element={<SettingsLayout />}>
-            <Route index element={<TempleProfile />} />
-            <Route path="subscription" element={<TempleProfile />} />
-            <Route path="payments" element={<TempleProfile />} />
-            <Route path="users" element={<TempleProfile />} />
-            <Route path="notifications" element={<TempleProfile />} />
-            <Route path="security" element={<TempleProfile />} />
-          </Route>
+              <Route path="attendance" element={<Attendance />} />
+              <Route path="reports" element={<BookingReports />} />
+            </Route>
 
-          {/* Prasadam Management Module */}
-          <Route path="/temple/prasadam" element={<PrasadamLayout />}>
-            <Route index element={<PrasadamDashboard />} />
-            <Route path="master" element={<PrasadamMaster />} />
-            <Route path="recipes" element={<RecipeMapping />} />
-            <Route path="planning" element={<ProductionPlanning />} />
-            <Route path="batches" element={<BatchProduction />} />
-            <Route path="stock" element={<FinishedStock />} />
-            <Route path="counters" element={<CounterAllocation />} />
-            <Route path="online" element={<OnlineBooking />} />
-            <Route path="sponsorship" element={<SponsorshipAllocation />} />
-            <Route path="expiry" element={<ExpiryWastage />} />
-            <Route path="reports" element={<PrasadamReports />} />
-          </Route>
+            {/* Settings Module */}
+            <Route path="/temple/settings" element={<SettingsLayout />}>
+              <Route index element={<TempleProfile />} />
+              <Route path="subscription" element={<TempleProfile />} />
+              <Route path="payments" element={<TempleProfile />} />
+              <Route path="users" element={<TempleProfile />} />
+              <Route path="notifications" element={<TempleProfile />} />
+              <Route path="security" element={<TempleProfile />} />
+            </Route>
 
-          {/* Placeholder routes for other Temple modules */}
-          {/* Donation Management Module */}
-          <Route path="/temple/donations" element={<DonationsLayout />}>
-            <Route index element={<DonationDashboard />} />
-            <Route path="donors" element={<DonorRegistry />} />
-            <Route path="record" element={<RecordDonation />} />
-            <Route path="receipts" element={<Receipts80G />} />
-            <Route path="allocation" element={<FundAllocation />} />
-            <Route path="reports" element={<DonationReportsGovernance />} />
-          </Route>
-          <Route path="/temple/finance" element={<TempleHub />} />
+            {/* Prasadam Management Module */}
+            <Route path="/temple/prasadam" element={<PrasadamLayout />}>
+              <Route index element={<PrasadamDashboard />} />
+              <Route path="master" element={<PrasadamMaster />} />
+              <Route path="recipes" element={<RecipeMapping />} />
+              <Route path="planning" element={<ProductionPlanning />} />
+              <Route path="batches" element={<BatchProduction />} />
+              <Route path="stock" element={<FinishedStock />} />
+              <Route path="counters" element={<CounterAllocation />} />
+              <Route path="online" element={<OnlineBooking />} />
+              <Route path="sponsorship" element={<SponsorshipAllocation />} />
+              <Route path="expiry" element={<ExpiryWastage />} />
+              <Route path="reports" element={<PrasadamReports />} />
+            </Route>
 
-          {/* Freelancer Management Module */}
-          <Route path="/temple/freelancer" element={<Navigate to="/temple/freelancers" replace />} />
-          <Route path="/temple/freelancers" element={<FreelancerLayout />}>
-            <Route index element={<FreelancersList />} />
-            <Route path="assignments" element={<FreelancerAssignments />} />
-            <Route path="payments" element={<FreelancerPayments />} />
-            <Route path="performance" element={<FreelancerPerformance />} />
-            <Route path="insights" element={<FreelancerInsights />} />
-          </Route>
+            {/* Placeholder routes for other Temple modules */}
+            {/* Donation Management Module */}
+            <Route path="/temple/donations" element={<DonationsLayout />}>
+              <Route index element={<DonationDashboard />} />
+              <Route path="donors" element={<DonorRegistry />} />
+              <Route path="record" element={<RecordDonation />} />
+              <Route path="receipts" element={<Receipts80G />} />
+              <Route path="allocation" element={<FundAllocation />} />
+              <Route path="reports" element={<DonationReportsGovernance />} />
+            </Route>
+            <Route path="/temple/finance" element={<TempleHub />} />
 
-          {/* VIP Devotee Management Module */}
-          <Route path="/temple/vip" element={<VipLayout />}>
-            <Route index element={<VipDashboard />} />
-            <Route path="devotees" element={<VipDevotees />} />
-            <Route path="levels" element={<VipLevels />} />
-            <Route path="activity" element={<VipActivity />} />
-            <Route path="reports" element={<VipReports />} />
-          </Route>
+            {/* Freelancer Management Module */}
+            <Route path="/temple/freelancer" element={<Navigate to="/temple/freelancers" replace />} />
+            <Route path="/temple/freelancers" element={<FreelancerLayout />}>
+              <Route index element={<FreelancersList />} />
+              <Route path="assignments" element={<FreelancerAssignments />} />
+              <Route path="payments" element={<FreelancerPayments />} />
+              <Route path="performance" element={<FreelancerPerformance />} />
+              <Route path="insights" element={<FreelancerInsights />} />
+            </Route>
 
-          {/* Devotee CRM Module */}
-          <Route path="/temple/devotees" element={<DevoteesLayout />}>
-            <Route index element={<DevoteesList />} />
-            <Route path="segments" element={<DevoteeGroups />} />
-            <Route path="insights" element={<DevoteeDashboard />} />
-          </Route>
-          {/* Event Management Module */}
-          <Route path="/temple/events" element={<EventsLayout />}>
-            <Route index element={<AllEvents />} />
-            <Route path="calendar" element={<CalendarView />} />
-            <Route path="templates" element={<EventTemplates />} />
-            <Route path="resources" element={<EventResources />} />
-            <Route path="expenses" element={<EventExpenses />} />
-            <Route path="reports" element={<EventReports />} />
-            <Route path="archive" element={<EventArchive />} />
-            <Route path=":eventId" element={<EventDetails />} />
-          </Route>
-          {/* PR & Communication Module */}
-          <Route path="/temple/communication" element={<CommunicationLayout />}>
-            <Route index element={<ControlCenter />} />
-            <Route path="announcements" element={<CommAnnouncements />} />
-            <Route path="media" element={<MediaCommunication />} />
-            <Route path="broadcast" element={<LiveBroadcast />} />
-            <Route path="experience" element={<DevoteeExperience />} />
-            <Route path="meetings" element={<PublicMeetings />} />
-            <Route path="logs" element={<CommLogsReports />} />
-          </Route>
-          <Route path="/temple/live" element={<TempleHub />} />
-          {/* Crowd & Capacity Management Module */}
-          <Route path="/temple/crowd" element={<CrowdLayout />}>
-            <Route index element={<ZoneConfiguration />} />
-            <Route path="flow" element={<SlotFlowControl />} />
-            <Route path="live" element={<RealTimeMonitoring />} />
-            <Route path="analytics" element={<CrowdAnalytics />} />
-            <Route path="prediction" element={<PredictionRisk />} />
-            <Route path="compliance" element={<CompliancePreparedness />} />
-            <Route path="drone" element={<DroneMonitoring />} />
-            <Route path="alerts" element={<AlertsEmergency />} />
-          </Route>
-          <Route path="/temple/people" element={<TempleHub />} />
-          <Route path="/temple/assets" element={<TempleHub />} />
+            {/* VIP Devotee Management Module */}
+            <Route path="/temple/vip" element={<VipLayout />}>
+              <Route index element={<VipDashboard />} />
+              <Route path="devotees" element={<VipDevotees />} />
+              <Route path="levels" element={<VipLevels />} />
+              <Route path="activity" element={<VipActivity />} />
+              <Route path="reports" element={<VipReports />} />
+            </Route>
 
-          {/* Task Management Module */}
-          <Route path="/temple/tasks" element={<TasksLayout />}>
-            <Route index element={<TaskDashboard />} />
-            <Route path="all" element={<AllTasks />} />
-            <Route path="my" element={<MyTasks />} />
-            <Route path="overdue" element={<OverdueTasks />} />
-            <Route path="completed" element={<CompletedTasks />} />
-            <Route path="templates" element={<ScheduledTemplates />} />
-          </Route>
-          <Route path="/temple/reports" element={<TempleHub />} />
+            {/* Devotee CRM Module */}
+            <Route path="/temple/devotees" element={<DevoteesLayout />}>
+              <Route index element={<DevoteesList />} />
+              <Route path="segments" element={<DevoteeGroups />} />
+              <Route path="insights" element={<DevoteeDashboard />} />
+            </Route>
+            {/* Event Management Module */}
+            <Route path="/temple/events" element={<EventsLayout />}>
+              <Route index element={<AllEvents />} />
+              <Route path="calendar" element={<CalendarView />} />
+              <Route path="templates" element={<EventTemplates />} />
+              <Route path="resources" element={<EventResources />} />
+              <Route path="expenses" element={<EventExpenses />} />
+              <Route path="reports" element={<EventReports />} />
+              <Route path="archive" element={<EventArchive />} />
+              <Route path=":eventId" element={<EventDetails />} />
+            </Route>
+            {/* PR & Communication Module */}
+            <Route path="/temple/communication" element={<CommunicationLayout />}>
+              <Route index element={<ControlCenter />} />
+              <Route path="announcements" element={<CommAnnouncements />} />
+              <Route path="media" element={<MediaCommunication />} />
+              <Route path="broadcast" element={<LiveBroadcast />} />
+              <Route path="experience" element={<DevoteeExperience />} />
+              <Route path="meetings" element={<PublicMeetings />} />
+              <Route path="logs" element={<CommLogsReports />} />
+            </Route>
+            <Route path="/temple/live" element={<TempleHub />} />
+            {/* Crowd & Capacity Management Module */}
+            <Route path="/temple/crowd" element={<CrowdLayout />}>
+              <Route index element={<ZoneConfiguration />} />
+              <Route path="flow" element={<SlotFlowControl />} />
+              <Route path="live" element={<RealTimeMonitoring />} />
+              <Route path="analytics" element={<CrowdAnalytics />} />
+              <Route path="prediction" element={<PredictionRisk />} />
+              <Route path="compliance" element={<CompliancePreparedness />} />
+              <Route path="drone" element={<DroneMonitoring />} />
+              <Route path="alerts" element={<AlertsEmergency />} />
+            </Route>
+            <Route path="/temple/people" element={<TempleHub />} />
+            <Route path="/temple/assets" element={<TempleHub />} />
 
-          {/* Branch Management Module */}
-          <Route path="/temple/branches" element={<BranchLayout />}>
-            <Route index element={<AllBranches />} />
-            <Route path="reports" element={<BranchReports />} />
-            <Route path="settings" element={<BranchSettings />} />
-          </Route>
-          <Route path="/temple/branches/:branchId" element={<BranchDetails />} />
+            {/* Task Management Module */}
+            <Route path="/temple/tasks" element={<TasksLayout />}>
+              <Route index element={<TaskDashboard />} />
+              <Route path="all" element={<AllTasks />} />
+              <Route path="my" element={<MyTasks />} />
+              <Route path="overdue" element={<OverdueTasks />} />
+              <Route path="completed" element={<CompletedTasks />} />
+              <Route path="templates" element={<ScheduledTemplates />} />
+            </Route>
+            <Route path="/temple/reports" element={<TempleHub />} />
 
-          {/* Institution Management Module */}
-          <Route path="/temple/institutions" element={<InstitutionLayout />}>
-            <Route index element={<AllInstitutions />} />
-            <Route path="reports" element={<InstitutionReports />} />
-            <Route path="settings" element={<InstitutionSettings />} />
-          </Route>
-          <Route path="/temple/institutions/:institutionId" element={<InstitutionDetails />} />
+            {/* Branch Management Module */}
+            <Route path="/temple/branches" element={<BranchLayout />}>
+              <Route index element={<AllBranches />} />
+              <Route path="reports" element={<BranchReports />} />
+              <Route path="settings" element={<BranchSettings />} />
+            </Route>
+            <Route path="/temple/branches/:branchId" element={<BranchDetails />} />
 
-          {/* Feedback & Analytics Module */}
-          <Route path="/temple/feedback" element={<FeedbackLayout />}>
-            <Route index element={<FeedbackDashboard />} />
-            <Route path="collection" element={<FeedbackCollection />} />
-            <Route path="ratings" element={<FeedbackRatings />} />
-            <Route path="sentiment" element={<FeedbackSentiment />} />
-            <Route path="analytics" element={<FeedbackAnalytics />} />
-            <Route path="config" element={<FeedbackConfiguration />} />
-          </Route>
+            {/* Institution Management Module */}
+            <Route path="/temple/institutions" element={<InstitutionLayout />}>
+              <Route index element={<AllInstitutions />} />
+              <Route path="reports" element={<InstitutionReports />} />
+              <Route path="settings" element={<InstitutionSettings />} />
+            </Route>
+            <Route path="/temple/institutions/:institutionId" element={<InstitutionDetails />} />
 
-          {/* Projects & Initiatives Module */}
-          <Route path="/temple/projects" element={<ProjectsLayout />}>
-            <Route index element={<PortfolioDashboard />} />
-            <Route path="master" element={<ProjectMaster />} />
-            <Route path="milestones" element={<MilestonesPhases />} />
-            <Route path="budget" element={<BudgetFunding />} />
-            <Route path="donations" element={<DonationMapping />} />
-            <Route path="approvals" element={<ApprovalWorkflow />} />
-            <Route path="tasks" element={<TaskIntegration />} />
-            <Route path="risk" element={<RiskChange />} />
-            <Route path="analytics" element={<ProgressAnalytics />} />
-            <Route path="reports" element={<ReportsGovernance />} />
-          </Route>
+            {/* Feedback & Analytics Module */}
+            <Route path="/temple/feedback" element={<FeedbackLayout />}>
+              <Route index element={<FeedbackDashboard />} />
+              <Route path="collection" element={<FeedbackCollection />} />
+              <Route path="ratings" element={<FeedbackRatings />} />
+              <Route path="sentiment" element={<FeedbackSentiment />} />
+              <Route path="analytics" element={<FeedbackAnalytics />} />
+              <Route path="config" element={<FeedbackConfiguration />} />
+            </Route>
 
-          {/* Super Admin Routes */}
-          <Route path="/hub" element={<Hub />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/domain/information" element={<DomainLayout />}>
-            <Route index element={<Navigate to="overview" replace />} />
-            <Route path="overview" element={<Overview />} />
-            <Route path="submissions" element={<Submissions />} />
-            <Route path="edit-requests" element={<EditRequests />} />
-            <Route path="temples" element={<Temples />} />
-            <Route path="duplicates" element={<Duplicates />} />
-            <Route path="contributors" element={<Contributors />} />
-            <Route path="categories" element={<Categories />} />
-            <Route path="audit" element={<AuditHistory />} />
-          </Route>
-          <Route path="/domain/onboarding" element={<OnboardingLayout />}>
-            <Route index element={<Navigate to="overview" replace />} />
-            <Route path="overview" element={<OnboardingOverview />} />
-            <Route path="registration-pipeline" element={<RegistrationPipeline />} />
-            <Route path="verification-queue" element={<VerificationQueue />} />
-            <Route path="direct-onboarding" element={<DirectOnboarding />} />
-            <Route path="compliance-risk" element={<ComplianceRisk />} />
-            <Route path="approval-logs" element={<ApprovalLogs />} />
-          </Route>
-          <Route path="/domain/tenants" element={<TenantLayout />}>
-            <Route index element={<Navigate to="overview" replace />} />
-            <Route path="overview" element={<TenantOverview />} />
-            <Route path="all" element={<AllTenants />} />
-            <Route path="plans" element={<SubscriptionPlans />} />
-            <Route path="usage" element={<UsageMonitoring />} />
-            <Route path="suspension" element={<SuspensionCompliance />} />
-            <Route path="regions" element={<RegionManagement />} />
-            <Route path="logs" element={<TenantLogs />} />
-          </Route>
-          <Route path="*" element={<NotFound />} />
+            {/* Projects & Initiatives Module */}
+            <Route path="/temple/projects" element={<ProjectsLayout />}>
+              <Route index element={<PortfolioDashboard />} />
+              <Route path="master" element={<ProjectMaster />} />
+              <Route path="milestones" element={<MilestonesPhases />} />
+              <Route path="budget" element={<BudgetFunding />} />
+              <Route path="donations" element={<DonationMapping />} />
+              <Route path="approvals" element={<ApprovalWorkflow />} />
+              <Route path="tasks" element={<TaskIntegration />} />
+              <Route path="risk" element={<RiskChange />} />
+              <Route path="analytics" element={<ProgressAnalytics />} />
+              <Route path="reports" element={<ReportsGovernance />} />
+            </Route>
+
+            {/* Super Admin Routes */}
+            <Route path="/hub" element={<Hub />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/domain/information" element={<DomainLayout />}>
+              <Route index element={<Navigate to="overview" replace />} />
+              <Route path="overview" element={<Overview />} />
+              <Route path="submissions" element={<Submissions />} />
+              <Route path="edit-requests" element={<EditRequests />} />
+              <Route path="temples" element={<Temples />} />
+              <Route path="duplicates" element={<Duplicates />} />
+              <Route path="contributors" element={<Contributors />} />
+              <Route path="categories" element={<Categories />} />
+              <Route path="audit" element={<AuditHistory />} />
+            </Route>
+            <Route path="/domain/onboarding" element={<OnboardingLayout />}>
+              <Route index element={<Navigate to="overview" replace />} />
+              <Route path="overview" element={<OnboardingOverview />} />
+              <Route path="registration-pipeline" element={<RegistrationPipeline />} />
+              <Route path="verification-queue" element={<VerificationQueue />} />
+              <Route path="direct-onboarding" element={<DirectOnboarding />} />
+              <Route path="compliance-risk" element={<ComplianceRisk />} />
+              <Route path="approval-logs" element={<ApprovalLogs />} />
+            </Route>
+            <Route path="/domain/tenants" element={<TenantLayout />}>
+              <Route index element={<Navigate to="overview" replace />} />
+              <Route path="overview" element={<TenantOverview />} />
+              <Route path="all" element={<AllTenants />} />
+              <Route path="plans" element={<SubscriptionPlans />} />
+              <Route path="usage" element={<UsageMonitoring />} />
+              <Route path="suspension" element={<SuspensionCompliance />} />
+              <Route path="regions" element={<RegionManagement />} />
+              <Route path="logs" element={<TenantLogs />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
