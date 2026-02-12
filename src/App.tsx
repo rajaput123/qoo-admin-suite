@@ -173,8 +173,6 @@ import DonorRegistry from "./pages/temple/donations/DonorRegistry";
 import RecordDonation from "./pages/temple/donations/RecordDonation";
 import Receipts80G from "./pages/temple/donations/Receipts80G";
 import FundAllocation from "./pages/temple/donations/FundAllocation";
-import DonationCampaigns from "./pages/temple/donations/Campaigns";
-import UtilizationTracking from "./pages/temple/donations/UtilizationTracking";
 import DonationReportsGovernance from "./pages/temple/donations/ReportsGovernance";
 // Feedback & Analytics Module
 import FeedbackLayout from "./pages/temple/FeedbackLayout";
@@ -321,8 +319,6 @@ const App = () => {
             <Route path="record" element={<RecordDonation />} />
             <Route path="receipts" element={<Receipts80G />} />
             <Route path="allocation" element={<FundAllocation />} />
-            <Route path="campaigns" element={<DonationCampaigns />} />
-            <Route path="utilization" element={<UtilizationTracking />} />
             <Route path="reports" element={<DonationReportsGovernance />} />
           </Route>
           <Route path="/temple/finance" element={<TempleHub />} />
