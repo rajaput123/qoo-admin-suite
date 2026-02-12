@@ -120,7 +120,7 @@ const allModules = [
     id: "prasadam-kitchen",
     title: "Prasadam & Kitchen",
     icon: UtensilsCrossed,
-    enabled: true,
+    enabled: false,
     path: "/temple/prasadam",
     description: "Prasadam production, Annadanam, kitchen operations",
     category: "core",
@@ -156,7 +156,7 @@ const allModules = [
     id: "knowledge",
     title: "Knowledge Management",
     icon: BookOpen,
-    enabled: true,
+    enabled: false,
     path: "/temple/knowledge",
     description: "Documents, SOPs, and knowledge base",
     category: "operations",
@@ -165,7 +165,7 @@ const allModules = [
     id: "assets",
     title: "Asset Management",
     icon: Package,
-    enabled: true,
+    enabled: false,
     path: "/temple/assets",
     description: "Temple asset tracking and maintenance",
     category: "operations",
@@ -219,7 +219,7 @@ const allModules = [
     id: "planner",
     title: "Planner",
     icon: Calendar,
-    enabled: true,
+    enabled: false,
     path: "/temple/planner",
     description: "Calendar and scheduling planner",
     category: "analytics",
@@ -246,7 +246,7 @@ const allModules = [
     id: "finance",
     title: "Finance & Accounts",
     icon: IndianRupee,
-    enabled: true,
+    enabled: false,
     path: "/temple/finance",
     description: "Budget, expenses, audit, financial reports",
     category: "operations",
@@ -255,7 +255,7 @@ const allModules = [
     id: "projects",
     title: "Projects & Initiatives",
     icon: FolderKanban,
-    enabled: true,
+    enabled: false,
     path: "/temple/projects",
     description: "Strategic projects, milestones, budget governance",
     category: "analytics",
@@ -377,7 +377,7 @@ const TempleHub = () => {
   const getModuleState = (module: typeof allModules[0]) => {
     if (isSuspended) return "suspended";
     if (isExpired && module.category !== "system") return "expired";
-    if (!module.enabled) return "locked";
+    if (!module.enabled) return "upcoming";
     return "enabled";
   };
 
@@ -517,7 +517,8 @@ const TempleHub = () => {
             >
               {enabledModules.map((module) => {
                 const state = getModuleState(module);
-                const isRestricted = state === "expired";
+                const isRestricted = state === "expired" || state === "upcoming";
+                const isUpcoming = state === "upcoming";
                 
                 return (
                   <Tooltip key={module.id} delayDuration={300}>
@@ -532,6 +533,11 @@ const TempleHub = () => {
                         }`}
                         disabled={isRestricted}
                       >
+                        {isUpcoming && (
+                          <span className="absolute -top-1 -right-1 z-10 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground border">
+                            Upcoming
+                          </span>
+                        )}
                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-2 transition-all duration-200 ${
                           isRestricted 
                             ? "bg-muted/50" 
@@ -553,8 +559,11 @@ const TempleHub = () => {
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="max-w-[200px] text-center">
                       <p className="text-xs">{module.description}</p>
-                      {isRestricted && (
+                      {state === "expired" && (
                         <p className="text-xs text-destructive mt-1">Subscription expired</p>
+                      )}
+                      {state === "upcoming" && (
+                        <p className="text-xs text-muted-foreground mt-1">Upcoming</p>
                       )}
                     </TooltipContent>
                   </Tooltip>
@@ -584,8 +593,8 @@ const TempleHub = () => {
               <Button variant="outline" size="sm" onClick={() => navigate("/temple/communication")}>
                 Send Announcement
               </Button>
-              <Button variant="outline" size="sm" onClick={() => navigate("/temple/planner")}>
-                Open Planner
+              <Button variant="outline" size="sm" disabled title="Upcoming">
+                Planner (Upcoming)
               </Button>
             </div>
           </motion.div>

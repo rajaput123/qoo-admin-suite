@@ -8,6 +8,7 @@ import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import TempleRegister from "./pages/TempleRegister";
 import TempleHub from "./pages/TempleHub";
+import UpcomingModule from "./pages/temple/UpcomingModule";
 import Hub from "./pages/Hub";
 import Profile from "./pages/Profile";
 import DomainLayout from "./components/DomainLayout";
@@ -80,19 +81,6 @@ import SupplierDeliveries from "./pages/temple/suppliers/Deliveries";
 import SupplierPayments from "./pages/temple/suppliers/Payments";
 import SupplierPerformance from "./pages/temple/suppliers/Performance";
 import SupplierReports from "./pages/temple/suppliers/Reports";
-// Prasadam Management Module
-import PrasadamLayout from "./pages/temple/PrasadamLayout";
-import PrasadamDashboard from "./pages/temple/prasadam/Dashboard";
-import PrasadamMaster from "./pages/temple/prasadam/PrasadamMaster";
-import RecipeMapping from "./pages/temple/prasadam/RecipeMapping";
-import ProductionPlanning from "./pages/temple/prasadam/ProductionPlanning";
-import BatchProduction from "./pages/temple/prasadam/BatchProduction";
-import FinishedStock from "./pages/temple/prasadam/FinishedStock";
-import CounterAllocation from "./pages/temple/prasadam/CounterAllocation";
-import OnlineBooking from "./pages/temple/prasadam/OnlineBooking";
-import SponsorshipAllocation from "./pages/temple/prasadam/SponsorshipAllocation";
-import ExpiryWastage from "./pages/temple/prasadam/ExpiryWastage";
-import PrasadamReports from "./pages/temple/prasadam/Reports";
 // Devotee CRM Module
 import DevoteesLayout from "./pages/temple/DevoteesLayout";
 import DevoteeDashboard from "./pages/temple/devotees/Dashboard";
@@ -145,18 +133,6 @@ import PredictionRisk from "./pages/temple/crowd/PredictionRisk";
 import CompliancePreparedness from "./pages/temple/crowd/CompliancePreparedness";
 import DroneMonitoring from "./pages/temple/crowd/DroneMonitoring";
 import AlertsEmergency from "./pages/temple/crowd/AlertsEmergency";
-// Projects & Initiatives Module
-import ProjectsLayout from "./pages/temple/ProjectsLayout";
-import PortfolioDashboard from "./pages/temple/projects/PortfolioDashboard";
-import ProjectMaster from "./pages/temple/projects/ProjectMaster";
-import MilestonesPhases from "./pages/temple/projects/MilestonesPhases";
-import BudgetFunding from "./pages/temple/projects/BudgetFunding";
-import DonationMapping from "./pages/temple/projects/DonationMapping";
-import ApprovalWorkflow from "./pages/temple/projects/ApprovalWorkflow";
-import TaskIntegration from "./pages/temple/projects/TaskIntegration";
-import RiskChange from "./pages/temple/projects/RiskChange";
-import ProgressAnalytics from "./pages/temple/projects/ProgressAnalytics";
-import ReportsGovernance from "./pages/temple/projects/ReportsGovernance";
 // PR & Communication Module
 import CommunicationLayout from "./pages/temple/CommunicationLayout";
 import ControlCenter from "./pages/temple/communication/ControlCenter";
@@ -296,20 +272,11 @@ const App = () => {
               <Route path="security" element={<TempleProfile />} />
             </Route>
 
-            {/* Prasadam Management Module */}
-            <Route path="/temple/prasadam" element={<PrasadamLayout />}>
-              <Route index element={<PrasadamDashboard />} />
-              <Route path="master" element={<PrasadamMaster />} />
-              <Route path="recipes" element={<RecipeMapping />} />
-              <Route path="planning" element={<ProductionPlanning />} />
-              <Route path="batches" element={<BatchProduction />} />
-              <Route path="stock" element={<FinishedStock />} />
-              <Route path="counters" element={<CounterAllocation />} />
-              <Route path="online" element={<OnlineBooking />} />
-              <Route path="sponsorship" element={<SponsorshipAllocation />} />
-              <Route path="expiry" element={<ExpiryWastage />} />
-              <Route path="reports" element={<PrasadamReports />} />
-            </Route>
+            {/* Prasadam & Kitchen (Upcoming) */}
+            <Route
+              path="/temple/prasadam/*"
+              element={<UpcomingModule moduleTitle="Prasadam & Kitchen" />}
+            />
 
             {/* Placeholder routes for other Temple modules */}
             {/* Donation Management Module */}
@@ -321,7 +288,18 @@ const App = () => {
               <Route path="allocation" element={<FundAllocation />} />
               <Route path="reports" element={<DonationReportsGovernance />} />
             </Route>
-            <Route path="/temple/finance" element={<TempleHub />} />
+            <Route
+              path="/temple/finance"
+              element={<UpcomingModule moduleTitle="Finance & Accounts" />}
+            />
+            <Route
+              path="/temple/planner"
+              element={<UpcomingModule moduleTitle="Planner" />}
+            />
+            <Route
+              path="/temple/knowledge"
+              element={<UpcomingModule moduleTitle="Knowledge Management" />}
+            />
 
             {/* Freelancer Management Module */}
             <Route path="/temple/freelancer" element={<Navigate to="/temple/freelancers" replace />} />
@@ -382,7 +360,10 @@ const App = () => {
               <Route path="alerts" element={<AlertsEmergency />} />
             </Route>
             <Route path="/temple/people" element={<TempleHub />} />
-            <Route path="/temple/assets" element={<TempleHub />} />
+            <Route
+              path="/temple/assets"
+              element={<UpcomingModule moduleTitle="Asset Management" />}
+            />
 
             {/* Task Management Module */}
             <Route path="/temple/tasks" element={<TasksLayout />}>
@@ -421,19 +402,11 @@ const App = () => {
               <Route path="config" element={<FeedbackConfiguration />} />
             </Route>
 
-            {/* Projects & Initiatives Module */}
-            <Route path="/temple/projects" element={<ProjectsLayout />}>
-              <Route index element={<PortfolioDashboard />} />
-              <Route path="master" element={<ProjectMaster />} />
-              <Route path="milestones" element={<MilestonesPhases />} />
-              <Route path="budget" element={<BudgetFunding />} />
-              <Route path="donations" element={<DonationMapping />} />
-              <Route path="approvals" element={<ApprovalWorkflow />} />
-              <Route path="tasks" element={<TaskIntegration />} />
-              <Route path="risk" element={<RiskChange />} />
-              <Route path="analytics" element={<ProgressAnalytics />} />
-              <Route path="reports" element={<ReportsGovernance />} />
-            </Route>
+            {/* Projects & Initiatives (Upcoming) */}
+            <Route
+              path="/temple/projects/*"
+              element={<UpcomingModule moduleTitle="Projects & Initiatives" />}
+            />
 
             {/* Super Admin Routes */}
             <Route path="/hub" element={<Hub />} />
