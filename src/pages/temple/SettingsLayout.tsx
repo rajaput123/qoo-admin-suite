@@ -1,17 +1,16 @@
-import { Settings, User, CreditCard, Shield, Users, Bell, Palette } from "lucide-react";
+import { Settings, Building2, ShieldCheck, FileText, CreditCard, Bell, Plug, Sliders, LayoutGrid } from "lucide-react";
 import TempleLayout from "@/components/TempleLayout";
 
 const navItems = [
-  { label: "Temple Profile", path: "/temple/settings", icon: Settings },
-  { label: "Subscription", path: "/temple/settings/subscription", icon: CreditCard },
-  { label: "Payment Setup", path: "/temple/settings/payments", icon: CreditCard },
-  { label: "User Roles", path: "/temple/settings/users", icon: Users },
-  { label: "Notifications", path: "/temple/settings/notifications", icon: Bell },
-  { label: "Security", path: "/temple/settings/security", icon: Shield },
+  { label: "Organization", path: "/temple/settings", icon: Building2, description: "Profile & branding" },
+  { label: "Access Control", path: "/temple/settings/access", icon: ShieldCheck, description: "Roles & permissions" },
+  { label: "Module Policies", path: "/temple/settings/module-policies", icon: FileText, description: "Booking logic" },
+  { label: "Financial Configuration", path: "/temple/settings/finance", icon: CreditCard, description: "Payment gateways" },
+  { label: "Communication Settings", path: "/temple/settings/communication", icon: Bell, description: "Email & SMS" },
 ];
 
 const SettingsLayout = () => {
-  return <TempleLayout title="Settings" icon={Settings} navItems={navItems} />;
+  return <TempleLayout title="Admin Settings" icon={Settings} navItems={navItems} />;
 };
 
 export default SettingsLayout;

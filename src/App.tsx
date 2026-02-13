@@ -29,7 +29,11 @@ import CounterBooking from "./pages/temple/bookings/CounterBooking";
 import Attendance from "./pages/temple/bookings/Attendance";
 import BookingReports from "./pages/temple/bookings/BookingReports";
 import SettingsLayout from "./pages/temple/SettingsLayout";
-import TempleProfile from "./pages/temple/settings/TempleProfile";
+import OrganizationSettings from "./pages/temple/settings/OrganizationSettings";
+import AccessControlSettings from "./pages/temple/settings/AccessControlSettings";
+import ModulePoliciesSettings from "./pages/temple/settings/ModulePoliciesSettings";
+import FinancialSettings from "./pages/temple/settings/FinancialSettings";
+import CommunicationSettings from "./pages/temple/settings/CommunicationSettings";
 // Temple Structure Module
 import TempleStructureLayout from "./pages/temple/structure/TempleStructureLayout";
 // Supplier Management Module
@@ -256,12 +260,11 @@ const App = () => {
 
             {/* Settings Module */}
             <Route path="/temple/settings" element={<SettingsLayout />}>
-              <Route index element={<TempleProfile />} />
-              <Route path="subscription" element={<TempleProfile />} />
-              <Route path="payments" element={<TempleProfile />} />
-              <Route path="users" element={<TempleProfile />} />
-              <Route path="notifications" element={<TempleProfile />} />
-              <Route path="security" element={<TempleProfile />} />
+              <Route index element={<OrganizationSettings />} />
+              <Route path="access" element={<AccessControlSettings />} />
+              <Route path="module-policies" element={<ModulePoliciesSettings />} />
+              <Route path="finance" element={<FinancialSettings />} />
+              <Route path="communication" element={<CommunicationSettings />} />
             </Route>
 
             {/* Prasadam & Kitchen (Upcoming) */}
