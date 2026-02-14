@@ -6,42 +6,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Search, Plus, ChevronLeft, ChevronRight, Link2, Zap, ClipboardList, ArrowLeft, User, Calendar as CalendarIcon, IndianRupee, Building2, Clock, FileText, Edit } from "lucide-react";
+import { Search, Plus, ChevronLeft, ChevronRight, Link2, Zap, ClipboardList, ArrowLeft, User, Calendar as CalendarIcon, IndianRupee, Building2, Clock, FileText, Edit, Star } from "lucide-react";
 import { toast } from "sonner";
 import SelectWithAddNew from "@/components/SelectWithAddNew";
-import { eventRefs, freelancerRefs, templeStructures, autoTasks } from "@/data/templeData";
+import { eventRefs, freelancerRefs, templeStructures, autoTasks, freelancerAssignments, type FreelancerAssignment } from "@/data/templeData";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-type AssignmentRow = {
-  id: string;
-  freelancerId: string;
-  freelancerName: string;
-  eventId: string;
-  eventName: string;
-  linkedStructure: string;
-  date: string;
-  duration: string;
-  agreedPayment: number;
-  status: string;
-  taskId: string;
-  paymentId: string;
-};
-
-const seedAssignments: AssignmentRow[] = [
-  { id: "ASN-001", freelancerId: "FRL-0001", freelancerName: "Pixel Studio", eventId: "EVT-002", eventName: "Vaikuntha Ekadasi", linkedStructure: "Main Temple", date: "2026-01-10", duration: "1 day", agreedPayment: 20000, status: "Completed", taskId: "", paymentId: "PAY-001" },
-  { id: "ASN-002", freelancerId: "FRL-0002", freelancerName: "Decor Dreams", eventId: "EVT-002", eventName: "Vaikuntha Ekadasi", linkedStructure: "Main Temple", date: "2026-01-10", duration: "2 days", agreedPayment: 35000, status: "Completed", taskId: "", paymentId: "PAY-002" },
-  { id: "ASN-003", freelancerId: "FRL-0003", freelancerName: "Sound Waves Pro", eventId: "", eventName: "Daily Live Broadcast", linkedStructure: "Main Temple", date: "2026-02-09", duration: "Ongoing", agreedPayment: 18000, status: "Assigned", taskId: "", paymentId: "" },
-  { id: "ASN-004", freelancerId: "FRL-0001", freelancerName: "Pixel Studio", eventId: "EVT-004", eventName: "Maha Shivaratri", linkedStructure: "Main Temple", date: "2026-02-15", duration: "1 day", agreedPayment: 25000, status: "Confirmed", taskId: "TSK-020", paymentId: "" },
-  { id: "ASN-005", freelancerId: "FRL-0003", freelancerName: "Sound Waves Pro", eventId: "EVT-004", eventName: "Maha Shivaratri", linkedStructure: "Main Temple", date: "2026-02-15", duration: "1 day", agreedPayment: 18000, status: "Confirmed", taskId: "TSK-021", paymentId: "" },
-  { id: "ASN-006", freelancerId: "FRL-0002", freelancerName: "Decor Dreams", eventId: "EVT-004", eventName: "Maha Shivaratri", linkedStructure: "Main Temple", date: "2026-02-14", duration: "2 days", agreedPayment: 45000, status: "Assigned", taskId: "TSK-022", paymentId: "" },
-  { id: "ASN-007", freelancerId: "FRL-0007", freelancerName: "Heritage Electricals", eventId: "EVT-004", eventName: "Maha Shivaratri", linkedStructure: "Main Temple", date: "2026-02-14", duration: "2 days", agreedPayment: 28000, status: "Assigned", taskId: "TSK-023", paymentId: "" },
-  { id: "ASN-008", freelancerId: "FRL-0004", freelancerName: "CreativeMinds Design", eventId: "", eventName: "Annual Calendar Design", linkedStructure: "Administration", date: "2026-01-05", duration: "10 days", agreedPayment: 25000, status: "Completed", taskId: "", paymentId: "PAY-004" },
-  { id: "ASN-009", freelancerId: "FRL-0001", freelancerName: "Pixel Studio", eventId: "EVT-001", eventName: "Brahmotsavam 2026", linkedStructure: "Main Temple", date: "2026-03-15", duration: "10 days", agreedPayment: 150000, status: "Assigned", taskId: "", paymentId: "" },
-  { id: "ASN-010", freelancerId: "FRL-0003", freelancerName: "Sound Waves Pro", eventId: "EVT-001", eventName: "Brahmotsavam 2026", linkedStructure: "Main Temple", date: "2026-03-15", duration: "10 days", agreedPayment: 100000, status: "Assigned", taskId: "", paymentId: "" },
-];
+type AssignmentRow = FreelancerAssignment;
 
 const Assignments = () => {
   const [search, setSearch] = useState("");
@@ -51,8 +26,9 @@ const Assignments = () => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [selectedAssignment, setSelectedAssignment] = useState<AssignmentRow | null>(null);
+  const [activeTab, setActiveTab] = useState("all");
 
-  const [allAssignments, setAllAssignments] = useState<AssignmentRow[]>(seedAssignments);
+  const [allAssignments, setAllAssignments] = useState<AssignmentRow[]>(freelancerAssignments);
 
   const [freelancerOptions, setFreelancerOptions] = useState(freelancerRefs.map(f => f.businessName));
   const [eventOptions, setEventOptions] = useState(eventRefs.map(e => `${e.id} — ${e.name}`));
@@ -67,13 +43,26 @@ const Assignments = () => {
   const [addDate, setAddDate] = useState("");
   const [addDuration, setAddDuration] = useState("");
   const [addPayment, setAddPayment] = useState("");
+  const [addTaskName, setAddTaskName] = useState("");
+  const [addTaskDescription, setAddTaskDescription] = useState("");
 
   const filtered = allAssignments.filter(a => {
     if (search && !a.freelancerName.toLowerCase().includes(search.toLowerCase()) && !a.eventName.toLowerCase().includes(search.toLowerCase()) && !a.id.toLowerCase().includes(search.toLowerCase())) return false;
-    if (filterStatus !== "all" && a.status !== filterStatus) return false;
+    // Tab-based filtering (primary filter)
+    if (activeTab !== "all" && a.status !== activeTab) return false;
+    // Event filter
     if (filterEvent !== "all" && a.eventId !== filterEvent) return false;
     return true;
   });
+
+  // Count assignments by status for tab badges
+  const statusCounts = {
+    all: allAssignments.length,
+    Assigned: allAssignments.filter(a => a.status === "Assigned").length,
+    Confirmed: allAssignments.filter(a => a.status === "Confirmed").length,
+    Completed: allAssignments.filter(a => a.status === "Completed").length,
+    Cancelled: allAssignments.filter(a => a.status === "Cancelled").length,
+  };
 
   const totalPages = Math.ceil(filtered.length / perPage) || 1;
   const paged = filtered.slice((page - 1) * perPage, page * perPage);
@@ -97,6 +86,11 @@ const Assignments = () => {
             </div>
             <div className="flex items-center gap-2">
               <Badge variant={viewing.status === "Completed" ? "default" : viewing.status === "Confirmed" ? "default" : "secondary"} className="text-[11px]">{viewing.status}</Badge>
+              {viewing.status === "Completed" && (
+                <Button size="sm" className="gap-1" onClick={() => navigate("/temple/freelancers/performance")}>
+                  <Star className="h-3.5 w-3.5" />Review Performance
+                </Button>
+              )}
               <Button size="sm" variant="outline" onClick={() => {
                 if (viewing.taskId) navigate(`/temple/tasks?taskId=${viewing.taskId}`);
                 else navigate("/temple/tasks");
@@ -140,6 +134,8 @@ const Assignments = () => {
     setAddDate("");
     setAddDuration("");
     setAddPayment("");
+    setAddTaskName("");
+    setAddTaskDescription("");
   };
 
   const handleSaveAssignment = () => {
@@ -193,9 +189,12 @@ const Assignments = () => {
       paymentId: "", // Payment record will be auto-created when assignment is completed
     };
     // Create corresponding auto-task in the shared autoTasks store
+    const taskTitle = addTaskName || `Freelancer Assignment – ${eventName || addFreelancerName}`;
+    const taskNotes = addTaskDescription || "Auto-generated from assignment";
+    
     autoTasks.push({
       id: newTaskId,
-      title: `Freelancer Assignment – ${eventName || addFreelancerName}`,
+      title: taskTitle,
       category: "Event",
       linkedModule: "Freelancer",
       linkedEntityId: freelancerId || "FRL-NEW",
@@ -205,7 +204,7 @@ const Assignments = () => {
       assignee: addFreelancerName,
       assigneeType: "Freelancer",
       status: "Assigned",
-      notes: "Auto-generated from assignment",
+      notes: taskNotes,
       autoGenerated: true,
       sourceType: "Event-Freelancer",
     });
@@ -238,6 +237,11 @@ const Assignments = () => {
             </div>
             <div className="flex gap-2">
               <Button variant="outline" className="gap-2"><Edit className="h-4 w-4" />Edit</Button>
+              {a.status === "Completed" && (
+                <Button className="gap-2" onClick={() => navigate("/temple/freelancers/performance")}>
+                  <Star className="h-4 w-4" />Review Performance
+                </Button>
+              )}
               <Button variant="outline" onClick={() => {
                 const newStatus = a.status === "Cancelled" ? "Assigned" : a.status === "Completed" ? "Cancelled" : "Completed";
                 let updatedAssignment = { ...a, status: newStatus };
@@ -255,6 +259,11 @@ const Assignments = () => {
                 }
 
                 setAllAssignments(prev => prev.map(asn => asn.id === a.id ? updatedAssignment : asn));
+                // Update shared store
+                const idx = freelancerAssignments.findIndex(asn => asn.id === a.id);
+                if (idx >= 0) {
+                  freelancerAssignments[idx] = updatedAssignment;
+                }
                 setSelectedAssignment(updatedAssignment);
               }}>
                 {a.status === "Cancelled" ? "Reactivate" : a.status === "Completed" ? "Cancel" : "Mark Completed"}
@@ -374,32 +383,47 @@ const Assignments = () => {
           <Button onClick={() => setShowAdd(true)} className="gap-2"><Plus className="h-4 w-4" />Add Assignment</Button>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 mb-4">
-          <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search freelancer, event, ID..." className="pl-9" value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
+        {/* Tabs for Status Filtering */}
+        <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setPage(1); }} className="space-y-4">
+          <div className="flex items-center justify-between">
+            <TabsList className="bg-muted/50">
+              <TabsTrigger value="all" className="data-[state=active]:bg-background">
+                All <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-[10px]">{statusCounts.all}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="Assigned" className="data-[state=active]:bg-background">
+                Assigned <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-[10px]">{statusCounts.Assigned}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="Confirmed" className="data-[state=active]:bg-background">
+                Confirmed <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-[10px]">{statusCounts.Confirmed}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="Completed" className="data-[state=active]:bg-background">
+                Completed <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-[10px]">{statusCounts.Completed}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="Cancelled" className="data-[state=active]:bg-background">
+                Cancelled <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-[10px]">{statusCounts.Cancelled}</Badge>
+              </TabsTrigger>
+            </TabsList>
+            <Badge variant="secondary">{filtered.length} assignments</Badge>
           </div>
-          <Select value={filterStatus} onValueChange={v => { setFilterStatus(v); setPage(1); }}>
-            <SelectTrigger className="w-[140px] bg-background"><SelectValue placeholder="Status" /></SelectTrigger>
-            <SelectContent className="bg-popover">
-              <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="Assigned">Assigned</SelectItem>
-              <SelectItem value="Confirmed">Confirmed</SelectItem>
-              <SelectItem value="Completed">Completed</SelectItem>
-              <SelectItem value="Cancelled">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={filterEvent} onValueChange={v => { setFilterEvent(v); setPage(1); }}>
-            <SelectTrigger className="w-[180px] bg-background"><SelectValue placeholder="All Events" /></SelectTrigger>
-            <SelectContent className="bg-popover">
-              <SelectItem value="all">All Events</SelectItem>
-              {eventRefs.map(e => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Badge variant="secondary" className="ml-auto">{filtered.length} assignments</Badge>
-        </div>
 
-        <div className="border rounded-lg overflow-hidden">
+          {/* Search and Filters */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 max-w-xs">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Search freelancer, event, ID..." className="pl-9" value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
+            </div>
+            <Select value={filterEvent} onValueChange={v => { setFilterEvent(v); setPage(1); }}>
+              <SelectTrigger className="w-[180px] bg-background"><SelectValue placeholder="All Events" /></SelectTrigger>
+              <SelectContent className="bg-popover">
+                <SelectItem value="all">All Events</SelectItem>
+                {eventRefs.map(e => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Table Content for All Tabs */}
+          <TabsContent value={activeTab} className="mt-0">
+            <div className="border rounded-lg overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
@@ -452,7 +476,9 @@ const Assignments = () => {
               ))}
             </TableBody>
           </Table>
-        </div>
+            </div>
+          </TabsContent>
+        </Tabs>
 
         <div className="flex items-center justify-between mt-4">
           <div className="flex items-center gap-2">
@@ -481,88 +507,118 @@ const Assignments = () => {
           if (!open) resetAddForm();
         }}
       >
-        <DialogContent className="max-w-lg bg-background">
+        <DialogContent className="max-w-2xl bg-background">
           <DialogHeader><DialogTitle>Add Assignment</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label className="text-xs">Freelancer *</Label>
-              <SelectWithAddNew
-                value={addFreelancerName}
-                onValueChange={v => {
-                  setAddFreelancerName(v);
-                  const ref = freelancerRefs.find(f => f.businessName === v);
-                  setAddFreelancerId(ref?.id || "");
-                }}
-                placeholder="Select freelancer"
-                options={freelancerOptions}
-                onAddNew={v => {
-                  setFreelancerOptions(p => [...p, v]);
-                  setAddFreelancerName(v);
-                }}
-              />
-            </div>
-            <div>
-              <Label className="text-xs">Event (from Event Module)</Label>
-              <Select
-                value={addEventId}
-                onValueChange={v => {
-                  setAddEventId(v);
-                  if (v === "none") {
-                    setAddEventName("");
-                  } else {
-                    const ev = eventRefs.find(e => e.id === v);
-                    setAddEventName(ev?.name || "");
-                  }
-                }}
-              >
-                <SelectTrigger className="bg-background">
-                  <SelectValue placeholder="Select event" />
-                </SelectTrigger>
-                <SelectContent className="bg-popover">
-                  <SelectItem value="none">Non-event assignment</SelectItem>
-                  {eventRefs.map(e => (
-                    <SelectItem key={e.id} value={e.id}>
-                      {e.id} — {e.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-xs">Linked Structure *</Label>
-              <SelectWithAddNew
-                value={addStructure}
-                onValueChange={setAddStructure}
-                placeholder="Select structure"
-                options={structureOptions.slice()}
-                onAddNew={v => setStructureOptions(p => [...p, v])}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+          <Tabs defaultValue="assignment" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-transparent">
+              <TabsTrigger value="assignment" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">Assignment Details</TabsTrigger>
+              <TabsTrigger value="task" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none">Task Details</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="assignment" className="space-y-4 py-4 mt-4">
               <div>
-                <Label className="text-xs">Date *</Label>
-                <Input type="date" value={addDate} onChange={e => setAddDate(e.target.value)} />
+                <Label className="text-xs">Freelancer *</Label>
+                <SelectWithAddNew
+                  value={addFreelancerName}
+                  onValueChange={v => {
+                    setAddFreelancerName(v);
+                    const ref = freelancerRefs.find(f => f.businessName === v);
+                    setAddFreelancerId(ref?.id || "");
+                  }}
+                  placeholder="Select freelancer"
+                  options={freelancerOptions}
+                  onAddNew={v => {
+                    setFreelancerOptions(p => [...p, v]);
+                    setAddFreelancerName(v);
+                  }}
+                />
               </div>
               <div>
-                <Label className="text-xs">Duration *</Label>
-                <Input placeholder="e.g., 2 days" value={addDuration} onChange={e => setAddDuration(e.target.value)} />
+                <Label className="text-xs">Event (from Event Module)</Label>
+                <Select
+                  value={addEventId}
+                  onValueChange={v => {
+                    setAddEventId(v);
+                    if (v === "none") {
+                      setAddEventName("");
+                    } else {
+                      const ev = eventRefs.find(e => e.id === v);
+                      setAddEventName(ev?.name || "");
+                    }
+                  }}
+                >
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="Select event" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover">
+                    <SelectItem value="none">Non-event assignment</SelectItem>
+                    {eventRefs.map(e => (
+                      <SelectItem key={e.id} value={e.id}>
+                        {e.id} — {e.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
-            <div>
-              <Label className="text-xs">Agreed Payment (₹) *</Label>
-              <Input
-                type="number"
-                placeholder="Enter amount"
-                value={addPayment}
-                onChange={e => setAddPayment(e.target.value)}
-              />
-            </div>
-            <div className="border rounded-lg p-3 bg-muted/30 text-xs text-muted-foreground">
-              <Zap className="h-4 w-4 inline mr-1 text-purple-500" />
-              A task will be auto-created in the Task module when this assignment is saved.
-            </div>
-          </div>
-          <DialogFooter>
+              <div>
+                <Label className="text-xs">Linked Structure *</Label>
+                <SelectWithAddNew
+                  value={addStructure}
+                  onValueChange={setAddStructure}
+                  placeholder="Select structure"
+                  options={structureOptions.slice()}
+                  onAddNew={v => setStructureOptions(p => [...p, v])}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Date *</Label>
+                  <Input type="date" value={addDate} onChange={e => setAddDate(e.target.value)} />
+                </div>
+                <div>
+                  <Label className="text-xs">Duration *</Label>
+                  <Input placeholder="e.g., 2 days" value={addDuration} onChange={e => setAddDuration(e.target.value)} />
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs">Agreed Payment (₹) *</Label>
+                <Input
+                  type="number"
+                  placeholder="Enter amount"
+                  value={addPayment}
+                  onChange={e => setAddPayment(e.target.value)}
+                />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="task" className="space-y-4 py-4 mt-4">
+              <div className="border rounded-lg p-3 bg-muted/30 text-xs text-muted-foreground mb-4">
+                <Zap className="h-4 w-4 inline mr-1 text-purple-500" />
+                A task will be auto-created in the Task module when this assignment is saved.
+              </div>
+              <div>
+                <Label className="text-xs">Task Name</Label>
+                <Input
+                  placeholder="Enter task name (optional - auto-generated if empty)"
+                  value={addTaskName}
+                  onChange={e => setAddTaskName(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground mt-1">If empty, will use: "Freelancer Assignment – [Event Name]"</p>
+              </div>
+              <div>
+                <Label className="text-xs">Task Description / Notes</Label>
+                <Textarea
+                  placeholder="Enter task description or notes (optional)"
+                  value={addTaskDescription}
+                  onChange={e => setAddTaskDescription(e.target.value)}
+                  rows={4}
+                />
+                <p className="text-xs text-muted-foreground mt-1">This will be added as notes in the auto-generated task</p>
+              </div>
+            </TabsContent>
+          </Tabs>
+          
+          <DialogFooter className="mt-4">
             <Button
               variant="outline"
               onClick={() => {
@@ -572,7 +628,7 @@ const Assignments = () => {
             >
               Cancel
             </Button>
-            <Button onClick={handleSaveAssignment}>Save</Button>
+            <Button onClick={handleSaveAssignment}>Save Assignment</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

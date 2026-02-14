@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Plus, Download, Upload, Phone, Mail, MapPin, ChevronLeft, ChevronRight, Star, Edit, FileText, Eye, ArrowLeft, Trash2, Replace } from "lucide-react";
+import { Search, Plus, Download, Upload, Phone, Mail, MapPin, ChevronLeft, ChevronRight, Star, Edit, FileText, Eye, ArrowLeft, Trash2, Replace, Key, ExternalLink, Copy, RefreshCw, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 import SelectWithAddNew from "@/components/SelectWithAddNew";
 import CustomFieldsSection, { CustomField } from "@/components/CustomFieldsSection";
@@ -77,9 +77,17 @@ type Freelancer = {
   payments: Payment[];
   performance: PerformanceRecord[];
   customFields: Record<string, string>;
+  // Login Credentials
+  loginUsername?: string;
+  loginPassword?: string;
+  portalAccessEnabled: boolean;
+  portalUrl?: string;
 };
 
-const freelancers: Freelancer[] = [
+// DEMO/SEED DATA - Remove this array for first-time onboarding
+// In production, this would be loaded from a database/API
+// For first-time users, start with empty array: const freelancers: Freelancer[] = [];
+const seedFreelancers: Freelancer[] = [
   {
     id: "FRL-0001", businessName: "Pixel Studio", contactPerson: "Rajesh Kumar", mobile: "+91 98765 43210", email: "rajesh@pixelstudio.com", gstNumber: "29ABCDE1234F1Z5", panNumber: "ABCDE1234F", address: "12, MG Road", city: "Bangalore", state: "Karnataka", country: "India", pincode: "560001",
     serviceCategories: ["Photography", "Videography"], skillsDescription: "Event photography, drone shots, live streaming", equipment: "Canon R5, DJI Mavic 3, Gimbal", availability: "Weekends", pricingModel: "Per Event",
@@ -88,7 +96,8 @@ const freelancers: Freelancer[] = [
     assignments: [{ id: "ASN-001", eventName: "Brahmotsavam 2026", linkedStructure: "Main Temple", date: "2026-02-01", duration: "3 days", agreedPayment: 45000, status: "Completed" }, { id: "ASN-012", eventName: "Ratha Yatra", linkedStructure: "Main Temple", date: "2026-03-15", duration: "1 day", agreedPayment: 15000, status: "Assigned" }],
     payments: [{ id: "PAY-001", eventName: "Brahmotsavam 2026", paymentDate: "2026-02-05", amount: 45000, paymentMode: "Bank Transfer", invoiceFile: "INV-001.pdf", status: "Paid" }],
     performance: [{ eventName: "Brahmotsavam 2026", date: "2026-02-05", rating: 5, reviewNotes: "Excellent coverage, timely delivery", reviewedBy: "Temple Admin" }],
-    customFields: {}
+    customFields: {},
+    loginUsername: "pixelstudio", loginPassword: "****", portalAccessEnabled: true, portalUrl: "https://portal.templeadmin.com/freelancer/pixelstudio"
   },
   {
     id: "FRL-0002", businessName: "Decor Dreams", contactPerson: "Sunita Patel", mobile: "+91 87654 32109", email: "sunita@decordreams.in", gstNumber: "", panNumber: "FGHIJ5678K", address: "45, Jubilee Hills", city: "Hyderabad", state: "Telangana", country: "India", pincode: "500033",
@@ -98,7 +107,8 @@ const freelancers: Freelancer[] = [
     assignments: [{ id: "ASN-002", eventName: "Vaikunta Ekadasi", linkedStructure: "Main Temple", date: "2026-01-10", duration: "2 days", agreedPayment: 35000, status: "Completed" }],
     payments: [{ id: "PAY-002", eventName: "Vaikunta Ekadasi", paymentDate: "2026-01-12", amount: 35000, paymentMode: "UPI", invoiceFile: "INV-002.pdf", status: "Paid" }],
     performance: [{ eventName: "Vaikunta Ekadasi", date: "2026-01-12", rating: 4, reviewNotes: "Good work, slight delay in setup", reviewedBy: "Event Manager" }],
-    customFields: {}
+    customFields: {},
+    loginUsername: "decordreams", loginPassword: "****", portalAccessEnabled: true, portalUrl: "https://portal.templeadmin.com/freelancer/decordreams"
   },
   {
     id: "FRL-0003", businessName: "Sound Waves Pro", contactPerson: "Karthik Menon", mobile: "+91 76543 21098", email: "karthik@soundwaves.com", gstNumber: "32LMNOP9876Q1Z8", panNumber: "LMNOP9876Q", address: "78, MG Road", city: "Kochi", state: "Kerala", country: "India", pincode: "682001",
@@ -108,7 +118,8 @@ const freelancers: Freelancer[] = [
     assignments: [{ id: "ASN-003", eventName: "Daily Live Broadcast", linkedStructure: "Main Temple", date: "2026-02-09", duration: "Ongoing", agreedPayment: 18000, status: "Assigned" }],
     payments: [{ id: "PAY-003", eventName: "January Broadcasting", paymentDate: "2026-02-01", amount: 18000, paymentMode: "Bank Transfer", invoiceFile: "INV-003.pdf", status: "Paid" }],
     performance: [{ eventName: "January Broadcasting", date: "2026-02-01", rating: 5, reviewNotes: "Flawless streaming, zero downtime", reviewedBy: "Temple Admin" }],
-    customFields: {}
+    customFields: {},
+    loginUsername: "soundwaves", loginPassword: "****", portalAccessEnabled: true, portalUrl: "https://portal.templeadmin.com/freelancer/soundwaves"
   },
   {
     id: "FRL-0004", businessName: "CreativeMinds Design", contactPerson: "Ananya Desai", mobile: "+91 65432 10987", email: "ananya@creativeminds.in", gstNumber: "", panNumber: "RSTUV3456W", address: "23, Koramangala", city: "Bangalore", state: "Karnataka", country: "India", pincode: "560034",
@@ -118,7 +129,8 @@ const freelancers: Freelancer[] = [
     assignments: [{ id: "ASN-004", eventName: "Annual Calendar Design", linkedStructure: "Administration", date: "2026-01-05", duration: "10 days", agreedPayment: 25000, status: "Completed" }],
     payments: [{ id: "PAY-004", eventName: "Annual Calendar Design", paymentDate: "2026-01-18", amount: 25000, paymentMode: "UPI", invoiceFile: "INV-004.pdf", status: "Paid" }],
     performance: [{ eventName: "Annual Calendar Design", date: "2026-01-18", rating: 4, reviewNotes: "Creative work, needed minor revisions", reviewedBy: "PR Head" }],
-    customFields: {}
+    customFields: {},
+    portalAccessEnabled: false
   },
   {
     id: "FRL-0005", businessName: "Vastu Consultancy", contactPerson: "Dr. Mohan Rao", mobile: "+91 54321 09876", email: "mohan@vastuconsult.com", gstNumber: "36XYZAB1234C1Z2", panNumber: "XYZAB1234C", address: "56, Banjara Hills", city: "Hyderabad", state: "Telangana", country: "India", pincode: "500034",
@@ -128,7 +140,8 @@ const freelancers: Freelancer[] = [
     assignments: [{ id: "ASN-005", eventName: "New Shrine Consultation", linkedStructure: "Padmavathi Shrine", date: "2026-01-20", duration: "2 days", agreedPayment: 30000, status: "Completed" }],
     payments: [{ id: "PAY-005", eventName: "New Shrine Consultation", paymentDate: "2026-01-25", amount: 30000, paymentMode: "Bank Transfer", invoiceFile: "INV-005.pdf", status: "Paid" }],
     performance: [{ eventName: "New Shrine Consultation", date: "2026-01-25", rating: 5, reviewNotes: "Expert advice, well-documented report", reviewedBy: "Temple Trustee" }],
-    customFields: {}
+    customFields: {},
+    portalAccessEnabled: false
   },
   {
     id: "FRL-0006", businessName: "Digital Stream Co", contactPerson: "Pradeep Singh", mobile: "+91 43210 98765", email: "pradeep@digitalstream.co", gstNumber: "", panNumber: "DEFGH7890I", address: "90, Anna Nagar", city: "Chennai", state: "Tamil Nadu", country: "India", pincode: "600040",
@@ -138,7 +151,8 @@ const freelancers: Freelancer[] = [
     assignments: [{ id: "ASN-006", eventName: "Pongal Celebration", linkedStructure: "Main Temple", date: "2026-01-14", duration: "1 day", agreedPayment: 12000, status: "Completed" }],
     payments: [{ id: "PAY-006", eventName: "Pongal Celebration", paymentDate: "2026-01-16", amount: 12000, paymentMode: "Cash", invoiceFile: "", status: "Paid" }],
     performance: [{ eventName: "Pongal Celebration", date: "2026-01-16", rating: 3.5, reviewNotes: "Audio issues during stream, video quality was good", reviewedBy: "IT Head" }],
-    customFields: {}
+    customFields: {},
+    portalAccessEnabled: false
   },
   {
     id: "FRL-0007", businessName: "Heritage Electricals", contactPerson: "Suresh Babu", mobile: "+91 32109 87654", email: "", gstNumber: "29JKLMN5678O1Z4", panNumber: "JKLMN5678O", address: "34, Chickpet", city: "Bangalore", state: "Karnataka", country: "India", pincode: "560053",
@@ -148,7 +162,8 @@ const freelancers: Freelancer[] = [
     assignments: [],
     payments: [],
     performance: [],
-    customFields: {}
+    customFields: {},
+    portalAccessEnabled: false
   },
   {
     id: "FRL-0008", businessName: "Akash Catering", contactPerson: "Ravi Shankar", mobile: "+91 21098 76543", email: "ravi@akashcatering.com", gstNumber: "", panNumber: "PQRST1234U", address: "67, Jayanagar", city: "Mysore", state: "Karnataka", country: "India", pincode: "570001",
@@ -158,9 +173,54 @@ const freelancers: Freelancer[] = [
     assignments: [],
     payments: [],
     performance: [],
-    customFields: {}
+    customFields: {},
+    portalAccessEnabled: false
   },
 ];
+
+// For first-time onboarding, start with one dummy data example
+// Table will show only freelancers added through the "Add Freelancer" form
+const freelancers: Freelancer[] = [
+  {
+    id: "FRL-0001",
+    businessName: "Example Photography Studio",
+    contactPerson: "John Doe",
+    mobile: "+91 98765 43210",
+    email: "john@examplephotography.com",
+    gstNumber: "29ABCDE1234F1Z5",
+    panNumber: "ABCDE1234F",
+    address: "123, Main Street",
+    city: "Bangalore",
+    state: "Karnataka",
+    country: "India",
+    pincode: "560001",
+    serviceCategories: ["Photography", "Videography"],
+    skillsDescription: "Event photography and videography services",
+    equipment: "Canon R5, DJI Drone",
+    availability: "Weekends",
+    pricingModel: "Per Event",
+    totalAssignments: 0,
+    totalPaid: 0,
+    rating: 0,
+    status: "Active",
+    documents: [],
+    assignments: [],
+    payments: [],
+    performance: [],
+    customFields: {},
+    portalAccessEnabled: false
+  }
+]; // One dummy example - rest added through form popup
+// const freelancers: Freelancer[] = []; // Uncomment for completely empty table
+// const freelancers: Freelancer[] = seedFreelancers; // Uncomment for full demo data
+
+// NOTE: In production, this data would come from a database/API
+// The seed data above is just for demo purposes
+// New freelancers start with empty arrays - data accumulates as you:
+// 1. Create assignments → updates assignments array
+// 2. Complete assignments → creates payment records
+// 3. Add reviews → updates performance array
+// 4. Upload documents → updates documents array
 
 const FreelancersList = () => {
   const [search, setSearch] = useState("");
@@ -170,9 +230,23 @@ const FreelancersList = () => {
   const [viewing, setViewing] = useState<Freelancer | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
+  const [inviteName, setInviteName] = useState("");
+  const [inviteMobile, setInviteMobile] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [allFreelancers, setAllFreelancers] = useState(freelancers);
+
+  // Helper function to sync freelancer stats from actual data sources
+  // In production, this would query assignments, payments, and performance data
+  const syncFreelancerStats = (freelancerId: string) => {
+    // This is a placeholder - in real app, you'd fetch from:
+    // - Assignments module: count assignments for this freelancer
+    // - Payments module: sum payments for this freelancer
+    // - Performance module: calculate average rating
+    // For now, the data is stored in the freelancer object itself
+    return null; // Placeholder
+  };
 
   // Add form state
   const [addBusinessName, setAddBusinessName] = useState("");
@@ -192,6 +266,9 @@ const FreelancersList = () => {
   const [addEquipment, setAddEquipment] = useState("");
   const [addSkillsDescription, setAddSkillsDescription] = useState("");
   const [addCustomFields, setAddCustomFields] = useState<CustomField[]>([]);
+  const [addPortalAccessEnabled, setAddPortalAccessEnabled] = useState(false);
+  const [addLoginUsername, setAddLoginUsername] = useState("");
+  const [addLoginPassword, setAddLoginPassword] = useState("");
   const [cityOptions, setCityOptions] = useState(["Bangalore", "Chennai", "Hyderabad", "Mumbai", "Pune", "Kochi", "Mysore"]);
   const [stateOptions, setStateOptions] = useState(["Karnataka", "Tamil Nadu", "Telangana", "Maharashtra", "Kerala"]);
   const [countryOptions, setCountryOptions] = useState(["India", "USA", "UK", "Singapore", "UAE"]);
@@ -240,6 +317,9 @@ const FreelancersList = () => {
       setAddPricingModel(editing.pricingModel);
       setAddEquipment(editing.equipment);
       setAddSkillsDescription(editing.skillsDescription);
+      setAddPortalAccessEnabled(editing.portalAccessEnabled || false);
+      setAddLoginUsername(editing.loginUsername || "");
+      setAddLoginPassword(editing.loginPassword || "");
       // Custom fields would need to be converted from Record<string, string> to CustomField[]
       setAddCustomFields([]);
     } else {
@@ -265,69 +345,90 @@ const FreelancersList = () => {
     setAddEquipment("");
     setAddSkillsDescription("");
     setAddCustomFields([]);
+    setAddPortalAccessEnabled(false);
+    setAddLoginUsername("");
+    setAddLoginPassword("");
   };
 
   const handleSave = (saveAnother: boolean) => {
-    if (!addBusinessName || !addContactPerson || !addMobile) {
-      toast.error("Business Name, Contact Person, and Mobile are required");
+    // All fields are optional - just need at least one identifier
+    if (!addBusinessName && !addContactPerson && !addMobile) {
+      toast.error("Please provide at least Business Name, Contact Person, or Mobile");
       return;
     }
+    
+    // Generate default values if missing
+    const businessName = addBusinessName || "Freelancer";
+    const contactPerson = addContactPerson || "Contact Person";
+    const mobile = addMobile || `+91 ${String(Math.floor(Math.random() * 10000000000)).padStart(10, "0")}`;
     if (editing) {
       // Update existing freelancer
       const updatedFreelancer: Freelancer = {
         ...editing,
-        businessName: addBusinessName,
-        contactPerson: addContactPerson,
-        mobile: addMobile,
-        email: addEmail,
-        gstNumber: addGstNumber,
-        panNumber: addPanNumber,
-        address: addAddress,
-        city: addCity,
-        state: addState,
-        country: addCountry,
-        pincode: addPincode,
-        serviceCategories: addServiceCategories,
-        availability: addAvailability,
-        pricingModel: addPricingModel,
-        equipment: addEquipment,
-        skillsDescription: addSkillsDescription,
+        businessName: addBusinessName || editing.businessName,
+        contactPerson: addContactPerson || editing.contactPerson,
+        mobile: addMobile || editing.mobile,
+        email: addEmail || "",
+        gstNumber: addGstNumber || "",
+        panNumber: addPanNumber || "",
+        address: addAddress || "",
+        city: addCity || "",
+        state: addState || "",
+        country: addCountry || editing.country || "India",
+        pincode: addPincode || "",
+        serviceCategories: addServiceCategories.length > 0 ? addServiceCategories : editing.serviceCategories,
+        availability: addAvailability || editing.availability || "",
+        pricingModel: addPricingModel || editing.pricingModel || "",
+        equipment: addEquipment || "",
+        skillsDescription: addSkillsDescription || "",
+        portalAccessEnabled: addPortalAccessEnabled,
+        loginUsername: addPortalAccessEnabled ? addLoginUsername : undefined,
+        loginPassword: addPortalAccessEnabled ? addLoginPassword : undefined,
+        portalUrl: addPortalAccessEnabled ? `https://portal.templeadmin.com/freelancer/${addLoginUsername}` : undefined,
         customFields: addCustomFields.reduce((acc, field) => {
           acc[field.name] = field.value;
           return acc;
         }, {} as Record<string, string>),
       };
       setAllFreelancers(prev => prev.map(f => f.id === editing.id ? updatedFreelancer : f));
-      toast.success(`${addBusinessName} updated successfully`);
+      toast.success(`${businessName || addBusinessName || "Freelancer"} updated successfully`);
       if (viewing && viewing.id === editing.id) {
         // Update viewing if it's the same freelancer
         setViewing(updatedFreelancer);
       }
     } else {
       // Create new freelancer
-      if (allFreelancers.some(f => f.mobile === addMobile)) {
+      // Check mobile only if provided
+      if (mobile && allFreelancers.some(f => f.mobile === mobile)) {
         toast.error("Mobile number already exists");
         return;
       }
-      const newId = `FRL-${String(allFreelancers.length + 1).padStart(4, "0")}`;
+      // Generate ID - handles empty array for first-time onboarding
+      const currentMaxId = allFreelancers.length > 0 
+        ? Math.max(...allFreelancers.map(f => {
+            const num = parseInt(f.id.replace("FRL-", "")) || 0;
+            return num;
+          }))
+        : 0;
+      const newId = `FRL-${String(currentMaxId + 1).padStart(4, "0")}`;
       const newFreelancer: Freelancer = {
         id: newId,
-        businessName: addBusinessName,
-        contactPerson: addContactPerson,
-        mobile: addMobile,
-        email: addEmail,
-        gstNumber: addGstNumber,
-        panNumber: addPanNumber,
-        address: addAddress,
-        city: addCity,
-        state: addState,
-        country: addCountry,
-        pincode: addPincode,
-        serviceCategories: addServiceCategories,
-        skillsDescription: addSkillsDescription,
-        equipment: addEquipment,
-        availability: addAvailability,
-        pricingModel: addPricingModel,
+        businessName: businessName,
+        contactPerson: contactPerson,
+        mobile: mobile,
+        email: addEmail || "",
+        gstNumber: addGstNumber || "",
+        panNumber: addPanNumber || "",
+        address: addAddress || "",
+        city: addCity || "",
+        state: addState || "",
+        country: addCountry || "India",
+        pincode: addPincode || "",
+        serviceCategories: addServiceCategories.length > 0 ? addServiceCategories : [],
+        skillsDescription: addSkillsDescription || "",
+        equipment: addEquipment || "",
+        availability: addAvailability || "",
+        pricingModel: addPricingModel || "",
         totalAssignments: 0,
         totalPaid: 0,
         rating: 0,
@@ -336,13 +437,17 @@ const FreelancersList = () => {
         assignments: [],
         payments: [],
         performance: [],
+        portalAccessEnabled: addPortalAccessEnabled,
+        loginUsername: addPortalAccessEnabled ? addLoginUsername : undefined,
+        loginPassword: addPortalAccessEnabled ? addLoginPassword : undefined,
+        portalUrl: addPortalAccessEnabled ? `https://portal.templeadmin.com/freelancer/${addLoginUsername}` : undefined,
         customFields: addCustomFields.reduce((acc, field) => {
           acc[field.name] = field.value;
           return acc;
         }, {} as Record<string, string>),
       };
       setAllFreelancers(prev => [...prev, newFreelancer]);
-      toast.success(`${addBusinessName} added successfully`);
+      toast.success(`${businessName} added successfully`);
     }
     if (!saveAnother) {
       setShowAdd(false);
@@ -459,7 +564,7 @@ const FreelancersList = () => {
                   <div><span className="text-muted-foreground">Email:</span> <span className="ml-2 font-medium">{f.email || "—"}</span></div>
                   <div><span className="text-muted-foreground">GST Number:</span> <span className="ml-2 font-medium">{f.gstNumber || "—"}</span></div>
                   <div><span className="text-muted-foreground">PAN Number:</span> <span className="ml-2 font-medium">{f.panNumber || "—"}</span></div>
-                  <div><span className="text-muted-foreground">Rating:</span> <span className="ml-2">{renderStars(f.rating)}</span></div>
+                  <div><span className="text-muted-foreground">Rating:</span> <span className="ml-2">{f.rating === 0 ? <span className="text-muted-foreground text-xs">No ratings yet</span> : renderStars(f.rating)}</span></div>
                 </div>
               </div>
               <hr className="border-border" />
@@ -467,11 +572,11 @@ const FreelancersList = () => {
               <div>
                 <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Address</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-8 text-sm">
-                  <div><span className="text-muted-foreground">Address:</span> <span className="ml-2 font-medium">{f.address}</span></div>
-                  <div><span className="text-muted-foreground">City:</span> <span className="ml-2 font-medium">{f.city}</span></div>
-                  <div><span className="text-muted-foreground">State:</span> <span className="ml-2 font-medium">{f.state}</span></div>
-                  <div><span className="text-muted-foreground">Country:</span> <span className="ml-2 font-medium">{f.country}</span></div>
-                  <div><span className="text-muted-foreground">Pincode:</span> <span className="ml-2 font-medium">{f.pincode}</span></div>
+                  <div><span className="text-muted-foreground">Address:</span> <span className="ml-2 font-medium">{f.address || "—"}</span></div>
+                  <div><span className="text-muted-foreground">City:</span> <span className="ml-2 font-medium">{f.city || "—"}</span></div>
+                  <div><span className="text-muted-foreground">State:</span> <span className="ml-2 font-medium">{f.state || "—"}</span></div>
+                  <div><span className="text-muted-foreground">Country:</span> <span className="ml-2 font-medium">{f.country || "—"}</span></div>
+                  <div><span className="text-muted-foreground">Pincode:</span> <span className="ml-2 font-medium">{f.pincode || "—"}</span></div>
                 </div>
               </div>
               <hr className="border-border" />
@@ -479,12 +584,70 @@ const FreelancersList = () => {
               <div>
                 <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Service Details</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-8 text-sm">
-                  <div><span className="text-muted-foreground">Categories:</span> <span className="ml-2 font-medium">{f.serviceCategories.join(", ")}</span></div>
-                  <div className="col-span-2"><span className="text-muted-foreground">Skills:</span> <span className="ml-2 font-medium">{f.skillsDescription}</span></div>
+                  <div><span className="text-muted-foreground">Categories:</span> <span className="ml-2 font-medium">{f.serviceCategories.length > 0 ? f.serviceCategories.join(", ") : "—"}</span></div>
+                  <div className="col-span-2"><span className="text-muted-foreground">Skills:</span> <span className="ml-2 font-medium">{f.skillsDescription || "—"}</span></div>
                   <div><span className="text-muted-foreground">Equipment:</span> <span className="ml-2 font-medium">{f.equipment || "—"}</span></div>
-                  <div><span className="text-muted-foreground">Availability:</span> <span className="ml-2 font-medium">{f.availability}</span></div>
-                  <div><span className="text-muted-foreground">Pricing Model:</span> <span className="ml-2 font-medium">{f.pricingModel}</span></div>
+                  <div><span className="text-muted-foreground">Availability:</span> <span className="ml-2 font-medium">{f.availability || "—"}</span></div>
+                  <div><span className="text-muted-foreground">Pricing Model:</span> <span className="ml-2 font-medium">{f.pricingModel || "—"}</span></div>
                 </div>
+              </div>
+              {/* Portal Access & Login Credentials */}
+              <hr className="border-border" />
+              <div>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Portal Access & Login Credentials</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-8 text-sm">
+                  <div><span className="text-muted-foreground">Portal Access:</span> <span className="ml-2"><Badge variant={f.portalAccessEnabled ? "default" : "secondary"}>{f.portalAccessEnabled ? "Enabled" : "Disabled"}</Badge></span></div>
+                  {f.portalAccessEnabled && (
+                    <>
+                      <div><span className="text-muted-foreground">Username:</span> <span className="ml-2 font-medium font-mono">{f.loginUsername || "—"}</span></div>
+                      <div><span className="text-muted-foreground">Password:</span> <span className="ml-2 font-medium font-mono">{f.loginPassword || "—"}</span></div>
+                      {f.portalUrl && (
+                        <div className="col-span-3">
+                          <span className="text-muted-foreground">Portal URL:</span>
+                          <div className="mt-1 flex items-center gap-2">
+                            <a href={f.portalUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm font-mono flex items-center gap-1">
+                              {f.portalUrl} <ExternalLink className="h-3 w-3" />
+                            </a>
+                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { navigator.clipboard.writeText(f.portalUrl || ""); toast.success("URL copied"); }}>
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+                {!f.portalAccessEnabled && (
+                  <div className="mt-3">
+                    <Button variant="outline" size="sm" className="gap-2" onClick={() => {
+                      const username = f.businessName.toLowerCase().replace(/\s+/g, '');
+                      const password = `TempPass${f.id.slice(-4)}!`;
+                      setAllFreelancers(prev => prev.map(fr => fr.id === f.id ? { ...fr, portalAccessEnabled: true, loginUsername: username, loginPassword: password, portalUrl: `https://portal.templeadmin.com/freelancer/${username}` } : fr));
+                      setViewing({ ...f, portalAccessEnabled: true, loginUsername: username, loginPassword: password, portalUrl: `https://portal.templeadmin.com/freelancer/${username}` });
+                      toast.success("Portal access enabled & credentials generated");
+                    }}>
+                      <Key className="h-4 w-4" />Enable Portal Access & Generate Credentials
+                    </Button>
+                  </div>
+                )}
+                {f.portalAccessEnabled && (
+                  <div className="mt-3 flex gap-2">
+                    <Button variant="outline" size="sm" className="gap-2" onClick={() => {
+                      navigator.clipboard.writeText(`Username: ${f.loginUsername}\nPassword: ${f.loginPassword}\nPortal: ${f.portalUrl}`);
+                      toast.success("Credentials copied to clipboard");
+                    }}>
+                      <Copy className="h-4 w-4" />Copy Credentials
+                    </Button>
+                    <Button variant="outline" size="sm" className="gap-2" onClick={() => {
+                      const newPassword = `TempPass${Math.random().toString(36).slice(-8)}!`;
+                      setAllFreelancers(prev => prev.map(fr => fr.id === f.id ? { ...fr, loginPassword: newPassword } : fr));
+                      setViewing({ ...f, loginPassword: newPassword });
+                      toast.success("Password reset successfully");
+                    }}>
+                      <RefreshCw className="h-4 w-4" />Reset Password
+                    </Button>
+                  </div>
+                )}
               </div>
               {Object.keys(f.customFields).length > 0 && (
                 <>
@@ -502,94 +665,109 @@ const FreelancersList = () => {
             </TabsContent>
 
             <TabsContent value="assignments">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Assignment ID</TableHead>
-                    <TableHead>Event Name</TableHead>
-                    <TableHead>Linked Structure</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead className="text-right">Agreed Payment</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {f.assignments.length === 0 ? (
-                    <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">No assignments found</TableCell></TableRow>
-                  ) : f.assignments.map(a => (
-                    <TableRow key={a.id}>
-                      <TableCell className="font-medium">{a.id}</TableCell>
-                      <TableCell>{a.eventName}</TableCell>
-                      <TableCell>{a.linkedStructure}</TableCell>
-                      <TableCell>{a.date}</TableCell>
-                      <TableCell>{a.duration}</TableCell>
-                      <TableCell className="text-right">₹{a.agreedPayment.toLocaleString()}</TableCell>
-                      <TableCell><Badge variant={a.status === "Completed" ? "default" : a.status === "Cancelled" ? "destructive" : "secondary"}>{a.status}</Badge></TableCell>
+              {f.assignments.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <p className="text-sm mb-2">No assignments yet</p>
+                  <p className="text-xs">Assignments will appear here when you create them in the Assignments module</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Assignment ID</TableHead>
+                      <TableHead>Event Name</TableHead>
+                      <TableHead>Linked Structure</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Duration</TableHead>
+                      <TableHead className="text-right">Agreed Payment</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {f.assignments.map(a => (
+                      <TableRow key={a.id}>
+                        <TableCell className="font-medium">{a.id}</TableCell>
+                        <TableCell>{a.eventName}</TableCell>
+                        <TableCell>{a.linkedStructure}</TableCell>
+                        <TableCell>{a.date}</TableCell>
+                        <TableCell>{a.duration}</TableCell>
+                        <TableCell className="text-right">₹{a.agreedPayment.toLocaleString()}</TableCell>
+                        <TableCell><Badge variant={a.status === "Completed" ? "default" : a.status === "Cancelled" ? "destructive" : "secondary"}>{a.status}</Badge></TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </TabsContent>
 
             <TabsContent value="payments" className="space-y-4">
               <p className="text-sm font-medium">Total Paid: <span className="text-lg font-bold">₹{totalPaidCalc.toLocaleString()}</span></p>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Payment ID</TableHead>
-                    <TableHead>Event Name</TableHead>
-                    <TableHead>Payment Date</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead>Payment Mode</TableHead>
-                    <TableHead>Invoice</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {f.payments.length === 0 ? (
-                    <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">No payments found</TableCell></TableRow>
-                  ) : f.payments.map(p => (
-                    <TableRow key={p.id}>
-                      <TableCell className="font-medium">{p.id}</TableCell>
-                      <TableCell>{p.eventName}</TableCell>
-                      <TableCell>{p.paymentDate}</TableCell>
-                      <TableCell className="text-right">₹{p.amount.toLocaleString()}</TableCell>
-                      <TableCell>{p.paymentMode}</TableCell>
-                      <TableCell>{p.invoiceFile ? <Button variant="ghost" size="sm" className="gap-1 h-7 text-xs"><FileText className="h-3 w-3" />{p.invoiceFile}</Button> : "—"}</TableCell>
-                      <TableCell><Badge variant={p.status === "Paid" ? "default" : "secondary"}>{p.status}</Badge></TableCell>
+              {f.payments.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <p className="text-sm mb-2">No payments yet</p>
+                  <p className="text-xs">Payments will appear here when assignments are completed and payments are recorded</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Payment ID</TableHead>
+                      <TableHead>Event Name</TableHead>
+                      <TableHead>Payment Date</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead>Payment Mode</TableHead>
+                      <TableHead>Invoice</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {f.payments.map(p => (
+                      <TableRow key={p.id}>
+                        <TableCell className="font-medium">{p.id}</TableCell>
+                        <TableCell>{p.eventName}</TableCell>
+                        <TableCell>{p.paymentDate}</TableCell>
+                        <TableCell className="text-right">₹{p.amount.toLocaleString()}</TableCell>
+                        <TableCell>{p.paymentMode}</TableCell>
+                        <TableCell>{p.invoiceFile ? <Button variant="ghost" size="sm" className="gap-1 h-7 text-xs"><FileText className="h-3 w-3" />{p.invoiceFile}</Button> : "—"}</TableCell>
+                        <TableCell><Badge variant={p.status === "Paid" ? "default" : "secondary"}>{p.status}</Badge></TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </TabsContent>
 
             <TabsContent value="performance" className="space-y-4">
               <p className="text-sm font-medium">Average Rating: <span className="text-lg font-bold">{avgRating > 0 ? `${avgRating.toFixed(1)} / 5` : "No ratings yet"}</span></p>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Event Name</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Rating</TableHead>
-                    <TableHead>Review Notes</TableHead>
-                    <TableHead>Reviewed By</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {f.performance.length === 0 ? (
-                    <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No performance records</TableCell></TableRow>
-                  ) : f.performance.map((p, i) => (
-                    <TableRow key={i}>
-                      <TableCell>{p.eventName}</TableCell>
-                      <TableCell>{p.date}</TableCell>
-                      <TableCell>{renderStars(p.rating)}</TableCell>
-                      <TableCell>{p.reviewNotes}</TableCell>
-                      <TableCell>{p.reviewedBy}</TableCell>
+              {f.performance.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <p className="text-sm mb-2">No performance reviews yet</p>
+                  <p className="text-xs">Reviews will appear here after you complete assignments and add performance reviews</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Event Name</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Rating</TableHead>
+                      <TableHead>Review Notes</TableHead>
+                      <TableHead>Reviewed By</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {f.performance.map((p, i) => (
+                      <TableRow key={i}>
+                        <TableCell>{p.eventName}</TableCell>
+                        <TableCell>{p.date}</TableCell>
+                        <TableCell>{renderStars(p.rating)}</TableCell>
+                        <TableCell>{p.reviewNotes}</TableCell>
+                        <TableCell>{p.reviewedBy}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </TabsContent>
 
             <TabsContent value="documents">
@@ -640,6 +818,13 @@ const FreelancersList = () => {
             <p className="text-muted-foreground">Manage external service providers and contractors</p>
           </div>
           <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowInvite(true)}
+              className="gap-2"
+            >
+              <HelpCircle className="h-4 w-4" />Invite Freelancer
+            </Button>
             <Button variant="outline" onClick={() => setShowExport(true)} className="gap-2"><Download className="h-4 w-4" />Export</Button>
             <Button onClick={() => { 
               setEditing(null);
@@ -689,29 +874,35 @@ const FreelancersList = () => {
                 <TableHead>Business Name</TableHead>
                 <TableHead>Contact Person</TableHead>
                 <TableHead>Mobile</TableHead>
-                <TableHead>Category</TableHead>
                 <TableHead>City</TableHead>
-                <TableHead className="text-center">Assignments</TableHead>
-                <TableHead className="text-right">Total Paid</TableHead>
-                <TableHead>Rating</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paged.length === 0 ? (
-                <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">No freelancers found</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">No freelancers found. Click "Add Freelancer" to get started.</TableCell></TableRow>
               ) : paged.map(f => (
-                <TableRow key={f.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setViewing(f)}>
+                <TableRow key={f.id} className="hover:bg-muted/50">
                   <TableCell className="font-medium text-primary">{f.id}</TableCell>
                   <TableCell className="font-medium">{f.businessName}</TableCell>
-                  <TableCell>{f.contactPerson}</TableCell>
-                  <TableCell>{f.mobile}</TableCell>
-                  <TableCell><span className="text-xs">{f.serviceCategories.slice(0, 2).join(", ")}{f.serviceCategories.length > 2 ? ` +${f.serviceCategories.length - 2}` : ""}</span></TableCell>
-                  <TableCell>{f.city}</TableCell>
-                  <TableCell className="text-center">{f.totalAssignments}</TableCell>
-                  <TableCell className="text-right">₹{f.totalPaid.toLocaleString()}</TableCell>
-                  <TableCell>{renderStars(f.rating)}</TableCell>
+                  <TableCell>{f.contactPerson || <span className="text-muted-foreground text-xs">—</span>}</TableCell>
+                  <TableCell>{f.mobile || <span className="text-muted-foreground text-xs">—</span>}</TableCell>
+                  <TableCell>{f.city || <span className="text-muted-foreground text-xs">—</span>}</TableCell>
                   <TableCell><Badge variant={f.status === "Active" ? "default" : "secondary"} className="text-[11px]">{f.status}</Badge></TableCell>
+                  <TableCell className="text-right">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-7 text-xs"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setViewing(f);
+                      }}
+                    >
+                      View More
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -757,9 +948,9 @@ const FreelancersList = () => {
             <div>
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Basic Information</p>
               <div className="grid grid-cols-2 gap-3">
-                <div><Label className="text-xs">Business Name / Freelancer Name *</Label><Input value={addBusinessName} onChange={e => setAddBusinessName(e.target.value)} placeholder="Enter business name" /></div>
-                <div><Label className="text-xs">Contact Person Name *</Label><Input value={addContactPerson} onChange={e => setAddContactPerson(e.target.value)} placeholder="Enter contact name" /></div>
-                <div><Label className="text-xs">Mobile *</Label><Input value={addMobile} onChange={e => setAddMobile(e.target.value)} placeholder="+91 XXXXX XXXXX" /></div>
+                <div><Label className="text-xs">Business Name / Freelancer Name</Label><Input value={addBusinessName} onChange={e => setAddBusinessName(e.target.value)} placeholder="Enter business name (optional)" /></div>
+                <div><Label className="text-xs">Contact Person Name</Label><Input value={addContactPerson} onChange={e => setAddContactPerson(e.target.value)} placeholder="Enter contact name (optional)" /></div>
+                <div><Label className="text-xs">Mobile</Label><Input value={addMobile} onChange={e => setAddMobile(e.target.value)} placeholder="+91 XXXXX XXXXX (optional)" /></div>
                 <div><Label className="text-xs">Email</Label><Input value={addEmail} onChange={e => setAddEmail(e.target.value)} placeholder="email@example.com" /></div>
                 <div><Label className="text-xs">GST Number</Label><Input value={addGstNumber} onChange={e => setAddGstNumber(e.target.value)} placeholder="Optional" /></div>
                 <div><Label className="text-xs">PAN Number</Label><Input value={addPanNumber} onChange={e => setAddPanNumber(e.target.value)} placeholder="Optional" /></div>
@@ -839,6 +1030,66 @@ const FreelancersList = () => {
               </div>
             </div>
 
+            {/* Portal Access & Login Credentials */}
+            <div>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Portal Access & Login Credentials</p>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Checkbox 
+                    id="portal-access" 
+                    checked={addPortalAccessEnabled} 
+                    onCheckedChange={(checked) => {
+                      setAddPortalAccessEnabled(checked as boolean);
+                      if (checked) {
+                        const username = addBusinessName.toLowerCase().replace(/\s+/g, '') || `freelancer${Date.now()}`;
+                        const password = `TempPass${Math.random().toString(36).slice(-6).toUpperCase()}!`;
+                        setAddLoginUsername(username);
+                        setAddLoginPassword(password);
+                      } else {
+                        setAddLoginUsername("");
+                        setAddLoginPassword("");
+                      }
+                    }}
+                  />
+                  <Label htmlFor="portal-access" className="text-sm cursor-pointer">Enable Portal Access (Separate Freelancer Application)</Label>
+                </div>
+                {addPortalAccessEnabled && (
+                  <div className="grid grid-cols-2 gap-3 pl-6 border-l-2 border-primary/20">
+                    <div>
+                      <Label className="text-xs">Username (Auto-generated)</Label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Input value={addLoginUsername} onChange={e => setAddLoginUsername(e.target.value)} placeholder="username" className="font-mono" />
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
+                          const username = addBusinessName.toLowerCase().replace(/\s+/g, '') || `freelancer${Date.now()}`;
+                          setAddLoginUsername(username);
+                        }}>
+                          <RefreshCw className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-xs">Password (Auto-generated)</Label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Input type="password" value={addLoginPassword} onChange={e => setAddLoginPassword(e.target.value)} placeholder="password" className="font-mono" />
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
+                          const password = `TempPass${Math.random().toString(36).slice(-6).toUpperCase()}!`;
+                          setAddLoginPassword(password);
+                        }}>
+                          <RefreshCw className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="col-span-2">
+                      <div className="text-xs text-muted-foreground bg-muted/30 p-2 rounded border">
+                        <Key className="h-3 w-3 inline mr-1" />
+                        Portal URL will be: <span className="font-mono">https://portal.templeadmin.com/freelancer/{addLoginUsername || "username"}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Custom Fields */}
             <CustomFieldsSection fields={addCustomFields} onFieldsChange={setAddCustomFields} />
           </div>
@@ -893,6 +1144,62 @@ const FreelancersList = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowExport(false)}>Cancel</Button>
             <Button onClick={handleExport}>Export</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Invite Freelancer Modal */}
+      <Dialog open={showInvite} onOpenChange={setShowInvite}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Invite Freelancer</DialogTitle>
+            <p className="text-sm text-muted-foreground mt-1">Send an invitation to a freelancer via SMS/WhatsApp</p>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label className="text-xs">Name *</Label>
+              <Input
+                placeholder="Enter freelancer name"
+                value={inviteName}
+                onChange={e => setInviteName(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Mobile Number *</Label>
+              <Input
+                type="tel"
+                placeholder="+91 98765 43210"
+                value={inviteMobile}
+                onChange={e => setInviteMobile(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Invitation will be sent via SMS/WhatsApp</p>
+            </div>
+            <div className="bg-muted/30 border rounded-lg p-3 text-xs text-muted-foreground">
+              <p className="font-medium mb-1">Invitation Message Preview:</p>
+              <p>Hi {inviteName || "[Name]"}, you've been invited to join as a freelancer. Please register using this number: {inviteMobile || "[Mobile]"}</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowInvite(false);
+              setInviteName("");
+              setInviteMobile("");
+            }}>Cancel</Button>
+            <Button 
+              onClick={() => {
+                if (!inviteName.trim() || !inviteMobile.trim()) {
+                  toast.error("Please enter both name and mobile number");
+                  return;
+                }
+                // In production, this would send SMS/WhatsApp invitation
+                toast.success(`Invitation sent to ${inviteName} (${inviteMobile})`);
+                setShowInvite(false);
+                setInviteName("");
+                setInviteMobile("");
+              }}
+            >
+              Send Invitation
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

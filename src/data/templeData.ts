@@ -372,3 +372,32 @@ export const supplierRefs = [
   { id: "SUP-005", name: "Devi Decorations", category: "Decoration", contact: "Priya Sharma" },
   { id: "SUP-006", name: "Surya Milk Dairy", category: "Milk & Dairy", contact: "Ganesh Pillai" },
 ];
+
+// ---- FREELANCER ASSIGNMENTS (Shared Store) ----
+export interface FreelancerAssignment {
+  id: string;
+  freelancerId: string;
+  freelancerName: string;
+  eventId: string;
+  eventName: string;
+  linkedStructure: string;
+  date: string;
+  duration: string;
+  agreedPayment: number;
+  status: string;
+  taskId: string;
+  paymentId: string;
+}
+
+export const freelancerAssignments: FreelancerAssignment[] = [
+  { id: "ASN-001", freelancerId: "FRL-0001", freelancerName: "Pixel Studio", eventId: "EVT-002", eventName: "Vaikuntha Ekadasi", linkedStructure: "Main Temple", date: "2026-01-10", duration: "1 day", agreedPayment: 20000, status: "Completed", taskId: "", paymentId: "PAY-001" },
+  { id: "ASN-002", freelancerId: "FRL-0002", freelancerName: "Decor Dreams", eventId: "EVT-002", eventName: "Vaikuntha Ekadasi", linkedStructure: "Main Temple", date: "2026-01-10", duration: "2 days", agreedPayment: 35000, status: "Completed", taskId: "", paymentId: "PAY-002" },
+  { id: "ASN-003", freelancerId: "FRL-0003", freelancerName: "Sound Waves Pro", eventId: "", eventName: "Daily Live Broadcast", linkedStructure: "Main Temple", date: "2026-02-09", duration: "Ongoing", agreedPayment: 18000, status: "Assigned", taskId: "", paymentId: "" },
+  { id: "ASN-004", freelancerId: "FRL-0001", freelancerName: "Pixel Studio", eventId: "EVT-004", eventName: "Maha Shivaratri", linkedStructure: "Main Temple", date: "2026-02-15", duration: "1 day", agreedPayment: 25000, status: "Confirmed", taskId: "TSK-020", paymentId: "" },
+  { id: "ASN-005", freelancerId: "FRL-0003", freelancerName: "Sound Waves Pro", eventId: "EVT-004", eventName: "Maha Shivaratri", linkedStructure: "Main Temple", date: "2026-02-15", duration: "1 day", agreedPayment: 18000, status: "Confirmed", taskId: "TSK-021", paymentId: "" },
+  { id: "ASN-006", freelancerId: "FRL-0002", freelancerName: "Decor Dreams", eventId: "EVT-004", eventName: "Maha Shivaratri", linkedStructure: "Main Temple", date: "2026-02-14", duration: "2 days", agreedPayment: 45000, status: "Assigned", taskId: "TSK-022", paymentId: "" },
+  { id: "ASN-007", freelancerId: "FRL-0007", freelancerName: "Heritage Electricals", eventId: "EVT-004", eventName: "Maha Shivaratri", linkedStructure: "Main Temple", date: "2026-02-14", duration: "2 days", agreedPayment: 28000, status: "Assigned", taskId: "TSK-023", paymentId: "" },
+  { id: "ASN-008", freelancerId: "FRL-0004", freelancerName: "CreativeMinds Design", eventId: "", eventName: "Annual Calendar Design", linkedStructure: "Administration", date: "2026-01-05", duration: "10 days", agreedPayment: 25000, status: "Completed", taskId: "", paymentId: "PAY-004" },
+  { id: "ASN-009", freelancerId: "FRL-0001", freelancerName: "Pixel Studio", eventId: "EVT-001", eventName: "Brahmotsavam 2026", linkedStructure: "Main Temple", date: "2026-03-15", duration: "10 days", agreedPayment: 150000, status: "Assigned", taskId: "", paymentId: "" },
+  { id: "ASN-010", freelancerId: "FRL-0003", freelancerName: "Sound Waves Pro", eventId: "EVT-001", eventName: "Brahmotsavam 2026", linkedStructure: "Main Temple", date: "2026-03-15", duration: "10 days", agreedPayment: 100000, status: "Assigned", taskId: "", paymentId: "" },
+];
