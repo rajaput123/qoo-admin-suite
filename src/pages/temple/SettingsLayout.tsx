@@ -1,11 +1,12 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { Settings, User, CreditCard, Calendar, Users, Shield, LayoutGrid, Cog } from "lucide-react";
+import { Settings, User, CreditCard, Calendar, Users, Shield, LayoutGrid, Cog, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const settingsSections = [
   { label: "Profile", path: "/temple/settings", icon: User, description: "Organization profile & contact details" },
   { label: "Finance", path: "/temple/settings/finance", icon: CreditCard, description: "Bank accounts & tax information" },
   { label: "Subscription", path: "/temple/settings/subscription", icon: Calendar, description: "Plan & billing management" },
+  { label: "Invoice", path: "/temple/settings/invoice", icon: FileText, description: "Invoice management & downloads" },
   { label: "Users", path: "/temple/settings/users", icon: Users, description: "User management & access" },
   { label: "Roles & Permissions", path: "/temple/settings/roles", icon: Shield, description: "Role creation & permissions" },
   { label: "Modules", path: "/temple/settings/modules", icon: LayoutGrid, description: "Module access control" },

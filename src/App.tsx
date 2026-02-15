@@ -32,6 +32,7 @@ import SettingsLayout from "./pages/temple/SettingsLayout";
 import ProfileSettings from "./pages/temple/settings/ProfileSettings";
 import FinanceSettings from "./pages/temple/settings/FinanceSettings";
 import SubscriptionBilling from "./pages/temple/settings/SubscriptionBilling";
+import InvoiceManagement from "./pages/temple/settings/InvoiceManagement";
 import UserManagement from "./pages/temple/settings/UserManagement";
 import RolesPermissions from "./pages/temple/settings/RolesPermissions";
 import ModuleAccessControl from "./pages/temple/settings/ModuleAccessControl";
@@ -263,6 +264,7 @@ const App = () => {
               <Route index element={<ProfileSettings />} />
               <Route path="finance" element={<FinanceSettings />} />
               <Route path="subscription" element={<SubscriptionBilling />} />
+              <Route path="invoice" element={<InvoiceManagement />} />
               <Route path="users" element={<UserManagement />} />
               <Route path="roles" element={<RolesPermissions />} />
               <Route path="modules" element={<ModuleAccessControl />} />
