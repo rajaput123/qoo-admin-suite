@@ -29,11 +29,13 @@ import CounterBooking from "./pages/temple/bookings/CounterBooking";
 import Attendance from "./pages/temple/bookings/Attendance";
 import BookingReports from "./pages/temple/bookings/BookingReports";
 import SettingsLayout from "./pages/temple/SettingsLayout";
-import OrganizationSettings from "./pages/temple/settings/OrganizationSettings";
-import AccessControlSettings from "./pages/temple/settings/AccessControlSettings";
-import ModulePoliciesSettings from "./pages/temple/settings/ModulePoliciesSettings";
-import FinancialSettings from "./pages/temple/settings/FinancialSettings";
-import CommunicationSettings from "./pages/temple/settings/CommunicationSettings";
+import ProfileSettings from "./pages/temple/settings/ProfileSettings";
+import FinanceSettings from "./pages/temple/settings/FinanceSettings";
+import SubscriptionBilling from "./pages/temple/settings/SubscriptionBilling";
+import UserManagement from "./pages/temple/settings/UserManagement";
+import RolesPermissions from "./pages/temple/settings/RolesPermissions";
+import ModuleAccessControl from "./pages/temple/settings/ModuleAccessControl";
+import SystemSettings from "./pages/temple/settings/SystemSettings";
 // Temple Structure Module
 import TempleStructureLayout from "./pages/temple/structure/TempleStructureLayout";
 // Supplier Management Module
@@ -103,16 +105,18 @@ import InstitutionDashboard from "./pages/temple/institutions/Dashboard";
 import AllInstitutions from "./pages/temple/institutions/AllInstitutions";
 import InstitutionDetails from "./pages/temple/institutions/InstitutionDetails";
 import InstitutionReports from "./pages/temple/institutions/InstitutionReports";
-// Crowd & Capacity Management Module
-import CrowdLayout from "./pages/temple/CrowdLayout";
-import ZoneConfiguration from "./pages/temple/crowd/ZoneConfiguration";
-import SlotFlowControl from "./pages/temple/crowd/SlotFlowControl";
-import RealTimeMonitoring from "./pages/temple/crowd/RealTimeMonitoring";
-import CrowdAnalytics from "./pages/temple/crowd/CrowdAnalytics";
-import PredictionRisk from "./pages/temple/crowd/PredictionRisk";
-import CompliancePreparedness from "./pages/temple/crowd/CompliancePreparedness";
-import DroneMonitoring from "./pages/temple/crowd/DroneMonitoring";
-import AlertsEmergency from "./pages/temple/crowd/AlertsEmergency";
+// Crowd & Capacity Management Module (Upcoming - commented out)
+// import CrowdLayout from "./pages/temple/CrowdLayout";
+// import CrowdDashboard from "./pages/temple/crowd/CrowdDashboard";
+// import ZoneDetail from "./pages/temple/crowd/ZoneDetail";
+// import HeatmapView from "./pages/temple/crowd/HeatmapView";
+// import QueueManagement from "./pages/temple/crowd/QueueManagement";
+// import AlertsAutomation from "./pages/temple/crowd/AlertsAutomation";
+// import PredictionForecast from "./pages/temple/crowd/PredictionForecast";
+// import CrowdControlPanel from "./pages/temple/crowd/CrowdControlPanel";
+// import DataCollectionWorkflow from "./pages/temple/crowd/DataCollectionWorkflow";
+// import ImplementationStatus from "./pages/temple/crowd/ImplementationStatus";
+// import PracticalOperations from "./pages/temple/crowd/PracticalOperations";
 // PR & Communication Module
 import CommunicationLayout from "./pages/temple/CommunicationLayout";
 import ControlCenter from "./pages/temple/communication/ControlCenter";
@@ -151,13 +155,9 @@ import VipActivity from "./pages/temple/vip/Activity";
 import VipReports from "./pages/temple/vip/Reports";
 // Finance Module
 import FinanceLayout from "./pages/temple/FinanceLayout";
-import FinanceDashboard from "./pages/temple/finance/FinanceDashboard";
-import ChartOfAccounts from "./pages/temple/finance/ChartOfAccounts";
-import FinanceLedger from "./pages/temple/finance/FinanceLedger";
-import FundManagement from "./pages/temple/finance/FundManagement";
-import ExpensesPayables from "./pages/temple/finance/ExpensesPayables";
-import BankManagement from "./pages/temple/finance/BankManagement";
-import FinancialReports from "./pages/temple/finance/FinancialReports";
+import SimpleFinanceDashboard from "./pages/temple/finance/SimpleFinanceDashboard";
+import EventFinanceDashboard from "./pages/temple/finance/EventFinanceDashboard";
+import SimpleFinanceReports from "./pages/temple/finance/SimpleFinanceReports";
 // Projects & Initiatives Module
 import ProjectsLayout from "./pages/temple/ProjectsLayout";
 import ProjectsDashboard from "./pages/temple/projects/Dashboard";
@@ -260,11 +260,13 @@ const App = () => {
 
             {/* Settings Module */}
             <Route path="/temple/settings" element={<SettingsLayout />}>
-              <Route index element={<OrganizationSettings />} />
-              <Route path="access" element={<AccessControlSettings />} />
-              <Route path="module-policies" element={<ModulePoliciesSettings />} />
-              <Route path="finance" element={<FinancialSettings />} />
-              <Route path="communication" element={<CommunicationSettings />} />
+              <Route index element={<ProfileSettings />} />
+              <Route path="finance" element={<FinanceSettings />} />
+              <Route path="subscription" element={<SubscriptionBilling />} />
+              <Route path="users" element={<UserManagement />} />
+              <Route path="roles" element={<RolesPermissions />} />
+              <Route path="modules" element={<ModuleAccessControl />} />
+              <Route path="system" element={<SystemSettings />} />
             </Route>
 
             {/* Prasadam & Kitchen (Upcoming) */}
@@ -285,13 +287,9 @@ const App = () => {
             </Route>
             {/* Finance & Accounts Module */}
             <Route path="/temple/finance" element={<FinanceLayout />}>
-              <Route index element={<FinanceDashboard />} />
-              <Route path="coa" element={<ChartOfAccounts />} />
-              <Route path="ledger" element={<FinanceLedger />} />
-              <Route path="funds" element={<FundManagement />} />
-              <Route path="expenses" element={<ExpensesPayables />} />
-              <Route path="banking" element={<BankManagement />} />
-              <Route path="reports" element={<FinancialReports />} />
+              <Route index element={<SimpleFinanceDashboard />} />
+              <Route path="event" element={<EventFinanceDashboard />} />
+              <Route path="reports" element={<SimpleFinanceReports />} />
             </Route>
             <Route
               path="/temple/planner"
@@ -350,17 +348,11 @@ const App = () => {
               <Route path="logs" element={<CommLogsReports />} />
             </Route>
             <Route path="/temple/live" element={<TempleHub />} />
-            {/* Crowd & Capacity Management Module */}
-            <Route path="/temple/crowd" element={<CrowdLayout />}>
-              <Route index element={<ZoneConfiguration />} />
-              <Route path="flow" element={<SlotFlowControl />} />
-              <Route path="live" element={<RealTimeMonitoring />} />
-              <Route path="analytics" element={<CrowdAnalytics />} />
-              <Route path="prediction" element={<PredictionRisk />} />
-              <Route path="compliance" element={<CompliancePreparedness />} />
-              <Route path="drone" element={<DroneMonitoring />} />
-              <Route path="alerts" element={<AlertsEmergency />} />
-            </Route>
+            {/* Crowd & Capacity Management Module (Upcoming) */}
+            <Route
+              path="/temple/crowd/*"
+              element={<UpcomingModule moduleTitle="Crowd & Capacity Management" />}
+            />
             <Route path="/temple/people" element={<TempleHub />} />
             <Route
               path="/temple/assets"

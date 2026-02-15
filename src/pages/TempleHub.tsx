@@ -174,7 +174,7 @@ const allModules = [
     id: "crowd",
     title: "Crowd & Capacity Management",
     icon: MapPin,
-    enabled: true,
+    enabled: false,
     path: "/temple/crowd",
     description: "Real-time crowd monitoring",
     category: "operations",
