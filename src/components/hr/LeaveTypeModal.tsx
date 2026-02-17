@@ -1,3 +1,3 @@
-export function LeaveTypeModal() {
-  return <div>LeaveTypeModal - Placeholder</div>;
+export function LeaveTypeModal(props: any) {
+  return null;
 }

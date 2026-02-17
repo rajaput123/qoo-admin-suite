@@ -8,7 +8,7 @@ export interface Employee {
   phone: string;
   department: string;
   designation: string;
-  status: 'active' | 'inactive' | 'terminated';
+  status: 'active' | 'inactive' | 'terminated' | 'on_leave';
   joiningDate: string;
   [key: string]: any;
 }
@@ -19,7 +19,7 @@ export interface Attendance {
   date: string;
   clockIn?: string;
   clockOut?: string;
-  status: 'present' | 'absent' | 'leave' | 'half-day';
+  status: 'present' | 'absent' | 'leave' | 'half-day' | 'half_day' | 'on_leave' | 'holiday' | 'late';
   [key: string]: any;
 }
 
@@ -40,9 +40,17 @@ export interface AttendancePolicy {
 }
 
 export interface AttendanceReport {
-  id: string;
+  id?: string;
   employeeId: string;
-  period: string;
+  period?: string;
+  employeeName?: string;
+  month?: string;
+  totalDays?: number;
+  presentDays?: number;
+  absentDays?: number;
+  leaveDays?: number;
+  lateArrivals?: number;
+  overtimeHours?: number;
   [key: string]: any;
 }
 

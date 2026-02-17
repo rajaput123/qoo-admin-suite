@@ -1,3 +1,3 @@
-export function DepartmentModal() {
-  return <div>DepartmentModal - Placeholder</div>;
+export function DepartmentModal(props: any) {
+  return null;
 }

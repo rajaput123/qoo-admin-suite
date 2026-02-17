@@ -1,17 +1,6 @@
 // HR Employee Store - Local storage based employee management
-
-export interface Employee {
-  id: string;
-  employeeId: string;
-  name: string;
-  email: string;
-  phone: string;
-  department: string;
-  designation: string;
-  status: 'active' | 'inactive' | 'terminated';
-  joiningDate: string;
-  [key: string]: any;
-}
+import type { Employee } from '@/types/hr';
+export type { Employee } from '@/types/hr';
 
 const STORAGE_KEY = 'hr_employees';
 

@@ -341,7 +341,7 @@ export default function DailyAttendance() {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => handleBulkStatusChange('half_day')}
+              onClick={() => handleBulkStatusChange('half_day' as any)}
             >
               <Clock className="h-4 w-4 mr-2" />
               Mark Half Day
@@ -369,9 +369,7 @@ export default function DailyAttendance() {
       {/* Attendance Table */}
       <DataTable
         data={attendanceRecords}
-        columns={columns}
-        searchable={false}
-        viewToggle={false}
+        columns={columns as any}
       />
     </div>
   );

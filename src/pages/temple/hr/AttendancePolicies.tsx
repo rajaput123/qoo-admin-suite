@@ -95,9 +95,7 @@ export default function AttendancePolicies() {
 
       <DataTable
         data={policies}
-        columns={columns}
-        searchable={false}
-        viewToggle={false}
+        columns={columns as any}
         onRowClick={(row) => {
           setViewingPolicy(row);
           setViewOpen(true);

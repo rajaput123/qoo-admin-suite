@@ -22,13 +22,14 @@ interface Option {
   label: string;
 }
 
-interface SearchableSelectProps {
+export interface SearchableSelectProps {
   options: Option[];
   value?: string;
-  onValueChange: (value: string) => void;
+  onValueChange?: (value: string) => void;
+  onChange?: (value: string) => void;
   placeholder?: string;
   searchPlaceholder?: string;
-  onAddNew?: () => void;
+  onAddNew?: (...args: any[]) => void;
   addNewLabel?: string;
   className?: string;
 }
@@ -37,12 +38,14 @@ const SearchableSelect = ({
   options,
   value,
   onValueChange,
+  onChange,
   placeholder = "Select...",
   searchPlaceholder = "Search...",
   onAddNew,
   addNewLabel = "Add New",
   className,
 }: SearchableSelectProps) => {
+  const handleChange = onValueChange || onChange || (() => {});
   const [open, setOpen] = useState(false);
 
   const selectedOption = options.find((opt) => opt.value === value);
@@ -71,7 +74,7 @@ const SearchableSelect = ({
                   key={option.value}
                   value={option.value}
                   onSelect={() => {
-                    onValueChange(option.value);
+                    handleChange(option.value);
                     setOpen(false);
                   }}
                 >

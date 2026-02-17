@@ -1437,7 +1437,7 @@ function LeavePoliciesTab({
     {
       key: 'maxConsecutiveDays',
       label: 'Max Days',
-      render: (value: unknown) => value ? `${value} days` : '-',
+      render: (value: unknown) => value ? `${value} days` : '-' as React.ReactNode,
     },
     {
       key: 'autoApprove',
@@ -1463,7 +1463,7 @@ function LeavePoliciesTab({
     <>
       <DataTable
         data={policies}
-        columns={columns}
+        columns={columns as any}
         searchable={false}
         viewToggle={false}
         selectable={false}

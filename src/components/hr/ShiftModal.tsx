@@ -1,3 +1,3 @@
-export function ShiftModal() {
-  return <div>ShiftModal - Placeholder</div>;
+export function ShiftModal(props: any) {
+  return null;
 }
