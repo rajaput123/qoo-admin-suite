@@ -518,10 +518,32 @@ const TempleHub = () => {
           </div>
         </motion.div>
 
-        {/* Credit Widget */}
-        <div className="mb-8 max-w-sm">
-          <CreditWidget planName={tenantData.plan} creditsRemaining={68} totalCredits={100} renewalDate="2026-03-15" />
-        </div>
+        {/* Inline Credit Balance */}
+        <motion.div
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="mb-8 flex items-center gap-4 border rounded-xl px-4 py-2.5 bg-card"
+        >
+          <div className="flex items-center gap-2">
+            <Wallet className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium text-foreground">Credits</span>
+          </div>
+          <div className="flex items-center gap-2 flex-1">
+            <span className="text-lg font-bold text-foreground">68</span>
+            <span className="text-xs text-muted-foreground">/ 100</span>
+            <div className="flex-1 max-w-[200px] h-1.5 bg-muted rounded-full overflow-hidden">
+              <div className="h-full bg-primary rounded-full" style={{ width: "68%" }} />
+            </div>
+          </div>
+          <span className="text-xs text-muted-foreground hidden sm:inline">Renews 2026-03-15</span>
+          <Button size="sm" variant="outline" className="text-xs h-7 gap-1" onClick={() => navigate("/temple/settings/subscription")}>
+            <Wallet className="h-3 w-3" /> View
+          </Button>
+          <Button size="sm" className="text-xs h-7 gap-1" onClick={() => navigate("/temple/settings/upgrade")}>
+            Buy Credits
+          </Button>
+        </motion.div>
 
         {/* Module Grid - Enabled */}
         {!isSuspended && (
