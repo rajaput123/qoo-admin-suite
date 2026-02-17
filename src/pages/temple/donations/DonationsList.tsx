@@ -3,13 +3,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Filter, FileDown, ListFilter, ArrowUpDown } from "lucide-react";
+import { Search, Filter, FileDown, Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { useDonations, useAllocations } from "@/modules/donations/hooks";
-import type { DonationSourceModule } from "@/modules/donations/types";
+import { recordDonation } from "@/modules/donations/donationsStore";
 
 const formatCurrency = (val: number) => {
   if (val >= 10000000) return `₹${(val / 10000000).toFixed(1)} Cr`;
@@ -29,10 +32,25 @@ const sourceModuleBadgeVariant = (src: string) => {
   }
 };
 
+const emptyForm = {
+  donorName: "",
+  phone: "",
+  amount: "",
+  channel: "" as "" | "Cash" | "UPI" | "Bank Transfer" | "Online" | "Cheque" | "In-Kind",
+  purpose: "",
+  mode: "",
+  referenceNo: "",
+  remarks: "",
+  sourceModule: "Manual" as string,
+  sourceRecordId: "",
+  counterId: "",
+};
+
 const DonationsList = () => {
   const donations = useDonations();
   const allocations = useAllocations();
   const allocatedSet = new Set(allocations.map(a => a.donationId));
+  const { toast } = useToast();
 
   const [search, setSearch] = useState("");
   const [filterChannel, setFilterChannel] = useState("all");
@@ -43,6 +61,8 @@ const DonationsList = () => {
   const [filterDateTo, setFilterDateTo] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedDonation, setSelectedDonation] = useState<(typeof donations)[number] | null>(null);
+  const [showAdd, setShowAdd] = useState(false);
+  const [form, setForm] = useState({ ...emptyForm });
 
   const channels = [...new Set(donations.map(d => d.channel))];
   const purposes = [...new Set(donations.map(d => d.purpose))];
@@ -68,14 +88,44 @@ const DonationsList = () => {
   const totalFiltered = filtered.reduce((s, d) => s + d.amount, 0);
   const activeFilterCount = [filterChannel, filterPurpose, filterSource, filterBranch].filter(f => f !== "all").length + (filterDateFrom ? 1 : 0) + (filterDateTo ? 1 : 0);
 
+  const handleRecord = () => {
+    if (!form.donorName.trim()) return;
+    const amt = Number(form.amount);
+    if (!Number.isFinite(amt) || amt <= 0) return;
+    if (!form.channel) return;
+    if (!form.purpose) return;
+    if (!form.mode.trim()) return;
+
+    const d = recordDonation({
+      donorName: form.donorName.trim(),
+      phone: form.phone.trim() || undefined,
+      amount: amt,
+      purpose: form.purpose,
+      channel: form.channel as any,
+      mode: form.mode.trim(),
+      referenceNo: form.referenceNo.trim() || undefined,
+      remarks: form.remarks.trim() || undefined,
+      sourceModule: (form.sourceModule as any) || "Manual",
+      sourceRecordId: form.sourceRecordId.trim() || undefined,
+      counterId: form.counterId.trim() || undefined,
+      createdBy: "System",
+    });
+    toast({ title: "Donation Recorded", description: `Receipt ${d.receiptNo} generated automatically.` });
+    setShowAdd(false);
+    setForm({ ...emptyForm });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">All Donations</h1>
-          <p className="text-sm text-muted-foreground mt-1">Complete donation register with source traceability and advanced filters</p>
+          <h1 className="text-2xl font-bold text-foreground">Donations</h1>
+          <p className="text-sm text-muted-foreground mt-1">Complete donation register with source traceability</p>
         </div>
-        <Button variant="outline" size="sm"><FileDown className="h-4 w-4 mr-1" /> Export</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm"><FileDown className="h-4 w-4 mr-1" /> Export</Button>
+          <Button size="sm" onClick={() => setShowAdd(true)}><Plus className="h-4 w-4 mr-1" /> Add Donation</Button>
+        </div>
       </div>
 
       {/* Summary Bar */}
@@ -197,7 +247,7 @@ const DonationsList = () => {
         </CardContent>
       </Card>
 
-      {/* Detail Modal */}
+      {/* Donation Detail Modal */}
       <Dialog open={!!selectedDonation} onOpenChange={() => setSelectedDonation(null)}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Donation Details</DialogTitle></DialogHeader>
@@ -267,6 +317,81 @@ const DonationsList = () => {
               </TabsContent>
             </Tabs>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Donation Modal */}
+      <Dialog open={showAdd} onOpenChange={(open) => { setShowAdd(open); if (!open) setForm({ ...emptyForm }); }}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add Donation</DialogTitle>
+            <p className="text-sm text-muted-foreground mt-1">Record a new donation with auto-receipt generation</p>
+          </DialogHeader>
+          <div className="grid gap-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Donor Name</Label><Input placeholder="Donor name or Anonymous" value={form.donorName} onChange={e => setForm(p => ({ ...p, donorName: e.target.value }))} /></div>
+              <div><Label>Phone (optional)</Label><Input placeholder="+91 XXXXX XXXXX" value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Amount (₹)</Label><Input type="number" placeholder="e.g. 50000" value={form.amount} onChange={e => setForm(p => ({ ...p, amount: e.target.value }))} /></div>
+              <div><Label>Channel</Label>
+                <Select value={form.channel} onValueChange={(v) => setForm(p => ({ ...p, channel: v as any }))}>
+                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Cash">Cash / Counter</SelectItem>
+                    <SelectItem value="UPI">UPI</SelectItem>
+                    <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                    <SelectItem value="Online">Online Payment</SelectItem>
+                    <SelectItem value="Cheque">Cheque / DD</SelectItem>
+                    <SelectItem value="In-Kind">In-Kind</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div><Label>Purpose</Label>
+              <Select value={form.purpose} onValueChange={(v) => setForm(p => ({ ...p, purpose: v }))}>
+                <SelectTrigger><SelectValue placeholder="Select purpose" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="General / Hundi">General / Hundi</SelectItem>
+                  <SelectItem value="Annadanam Sponsorship">Annadanam Sponsorship</SelectItem>
+                  <SelectItem value="Prasadam Sponsorship">Prasadam Sponsorship</SelectItem>
+                  <SelectItem value="Seva Sponsorship">Seva Sponsorship</SelectItem>
+                  <SelectItem value="Project-linked">Project-linked</SelectItem>
+                  <SelectItem value="Event-linked">Event-linked</SelectItem>
+                  <SelectItem value="Corpus Fund">Corpus Fund</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Payment Mode</Label><Input placeholder="e.g. GPay, NEFT, Cash" value={form.mode} onChange={e => setForm(p => ({ ...p, mode: e.target.value }))} /></div>
+              <div><Label>Reference No.</Label><Input placeholder="Transaction ref (optional)" value={form.referenceNo} onChange={e => setForm(p => ({ ...p, referenceNo: e.target.value }))} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Source Module</Label>
+                <Select value={form.sourceModule} onValueChange={(v) => setForm(p => ({ ...p, sourceModule: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Source" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Manual">Manual Entry</SelectItem>
+                    <SelectItem value="Booking">Booking</SelectItem>
+                    <SelectItem value="Event">Event</SelectItem>
+                    <SelectItem value="Online Portal">Online Portal</SelectItem>
+                    <SelectItem value="Campaign">Campaign</SelectItem>
+                    <SelectItem value="Seva">Seva</SelectItem>
+                    <SelectItem value="Counter">Counter</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>Source Record ID</Label><Input placeholder="e.g. BKG-001, EVT-005" value={form.sourceRecordId} onChange={e => setForm(p => ({ ...p, sourceRecordId: e.target.value }))} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Counter ID (optional)</Label><Input placeholder="e.g. CTR-001" value={form.counterId} onChange={e => setForm(p => ({ ...p, counterId: e.target.value }))} /></div>
+            </div>
+            <div><Label>Remarks</Label><Textarea placeholder="Any special instructions or donor intent..." rows={2} value={form.remarks} onChange={e => setForm(p => ({ ...p, remarks: e.target.value }))} /></div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowAdd(false); setForm({ ...emptyForm }); }}>Cancel</Button>
+            <Button onClick={handleRecord}>Record & Generate Receipt</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
