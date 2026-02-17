@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, Building2, MapPin, FileText, User, Shield, CreditCard, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Building2, MapPin, FileText, User, Shield, CreditCard, CheckCircle2, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -180,13 +180,14 @@ const initialForm: RegistrationFormState = {
 };
 
 const steps = [
-  { id: 1, title: "Entity Type", icon: User },
-  { id: 2, title: "Temple Details", icon: Building2 },
-  { id: 3, title: "Location", icon: MapPin },
-  { id: 4, title: "Trust & Legal", icon: FileText },
-  { id: 5, title: "Admin + OTP", icon: User },
-  { id: 6, title: "Documents", icon: FileText },
-  { id: 7, title: "Confirmation", icon: Shield },
+  { id: 1, title: "Mobile Verify", icon: Phone },
+  { id: 2, title: "Entity Type", icon: User },
+  { id: 3, title: "Temple Details", icon: Building2 },
+  { id: 4, title: "Location", icon: MapPin },
+  { id: 5, title: "Trust & Legal", icon: FileText },
+  { id: 6, title: "Admin Details", icon: User },
+  { id: 7, title: "Documents", icon: FileText },
+  { id: 8, title: "Confirmation", icon: Shield },
 ];
 
 const TempleRegister = () => {
@@ -197,7 +198,7 @@ const TempleRegister = () => {
   const [submitted, setSubmitted] = useState(false);
 
   const goNext = () => {
-    if (currentStep < 7) setCurrentStep(currentStep + 1);
+    if (currentStep < 8) setCurrentStep(currentStep + 1);
   };
 
   const goPrev = () => {
@@ -345,64 +346,49 @@ const TempleRegister = () => {
         <form onSubmit={handleSubmit}>
           <div className="glass-card rounded-2xl p-8">
             {currentStep === 1 && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-              >
-                <StepRoleSelection form={form} updateForm={updateForm} />
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+                <StepMobileVerification form={form} updateForm={updateForm} />
               </motion.div>
             )}
 
             {currentStep === 2 && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-              >
-                <StepTempleDetails form={form} updateForm={updateForm} />
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+                <StepRoleSelection form={form} updateForm={updateForm} />
               </motion.div>
             )}
 
             {currentStep === 3 && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-              >
-                <StepLocationDetails form={form} updateForm={updateForm} />
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+                <StepTempleDetails form={form} updateForm={updateForm} />
               </motion.div>
             )}
 
             {currentStep === 4 && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-              >
-                <StepLegalDetails form={form} updateForm={updateForm} />
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+                <StepLocationDetails form={form} updateForm={updateForm} />
               </motion.div>
             )}
 
             {currentStep === 5 && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-              >
-                <StepAdminDetails form={form} updateForm={updateForm} />
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+                <StepLegalDetails form={form} updateForm={updateForm} />
               </motion.div>
             )}
 
             {currentStep === 6 && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-              >
-                <StepDocumentUpload form={form} updateForm={updateForm} />
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+                <StepAdminDetails form={form} updateForm={updateForm} />
               </motion.div>
             )}
 
             {currentStep === 7 && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-              >
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
+                <StepDocumentUpload form={form} updateForm={updateForm} />
+              </motion.div>
+            )}
+
+            {currentStep === 8 && (
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
                 <StepReviewSubmit form={form} updateForm={updateForm} />
               </motion.div>
             )}
@@ -421,7 +407,7 @@ const TempleRegister = () => {
               Previous
             </Button>
 
-            {currentStep < 7 ? (
+            {currentStep < 8 ? (
               <Button type="button" onClick={goNext} className="gap-2">
                 Next
                 <ArrowRight className="h-4 w-4" />
@@ -454,6 +440,98 @@ interface StepProps {
     value: RegistrationFormState[K]
   ) => void;
 }
+
+const StepMobileVerification = ({ form, updateForm }: StepProps) => {
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otp, setOtp] = useState("");
+
+  const handleSendOtp = () => setOtpSent(true);
+  const handleVerify = () => {
+    if (otp.length === 6) setOtpVerified(true);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold text-foreground mb-1">Mobile Verification</h2>
+        <p className="text-sm text-muted-foreground">Verify your mobile number to begin registration</p>
+      </div>
+
+      <div className="max-w-md space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="reg-mobile">
+            <div className="flex items-center gap-2">
+              <Phone className="h-4 w-4" />
+              Mobile Number *
+            </div>
+          </Label>
+          <div className="flex gap-2">
+            <div className="flex">
+              <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-muted-foreground text-sm">
+                +91
+              </span>
+              <Input
+                id="reg-mobile"
+                placeholder="98765 43210"
+                className="rounded-l-none w-44"
+                value={form.admin.mobile}
+                onChange={(e) => updateForm("admin", { ...form.admin, mobile: e.target.value })}
+                disabled={otpVerified}
+              />
+            </div>
+            {!otpVerified && (
+              <Button
+                type="button"
+                variant={otpSent ? "outline" : "default"}
+                onClick={handleSendOtp}
+                disabled={!form.admin.mobile || form.admin.mobile.length < 10}
+              >
+                {otpSent ? "Resend OTP" : "Send OTP"}
+              </Button>
+            )}
+            {otpVerified && (
+              <div className="flex items-center gap-2 px-3 bg-green-50 border border-green-200 rounded-lg">
+                <Check className="h-4 w-4 text-green-600" />
+                <span className="text-sm text-green-700 font-medium">Verified</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {otpSent && !otpVerified && (
+          <div className="space-y-3">
+            <Label>Enter 6-digit OTP sent to your mobile</Label>
+            <div className="flex items-center gap-3">
+              <Input
+                placeholder="Enter OTP"
+                className="max-w-[200px] text-center tracking-widest"
+                maxLength={6}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+              />
+              <Button type="button" onClick={handleVerify} disabled={otp.length < 6}>
+                Verify
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Didn't receive?{" "}
+              <button type="button" className="text-primary underline" onClick={handleSendOtp}>
+                Resend OTP
+              </button>
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md">
+        <p className="text-sm text-blue-800">
+          <strong>Important:</strong> This mobile number will be your primary login ID. It cannot be changed after registration.
+        </p>
+      </div>
+    </div>
+  );
+};
 
 const StepRoleSelection = ({ form, updateForm }: StepProps) => {
   return (
@@ -943,11 +1021,11 @@ const StepAdminDetails = ({ form, updateForm }: StepProps) => {
           />
         </div>
         <div className="space-y-2">
-          <Label>Mobile Number *</Label>
+          <Label>Mobile Number (Verified)</Label>
           <Input
             value={admin.mobile}
-            onChange={e => update({ mobile: e.target.value })}
-            placeholder="+91 ..."
+            disabled
+            className="bg-muted"
           />
         </div>
         <div className="space-y-2">
@@ -1010,36 +1088,6 @@ const StepAdminDetails = ({ form, updateForm }: StepProps) => {
             <UploadCloud className="h-3.5 w-3.5" />
             Upload file
           </button>
-        </div>
-      </div>
-      <Separator />
-      {/* OTP Verification */}
-      <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-foreground">Mobile OTP Verification</h3>
-        <div className="flex items-center gap-3">
-          <Input value={admin.mobile} disabled className="max-w-[200px] text-sm" />
-          <Button type="button" variant="outline" size="sm">Send OTP</Button>
-        </div>
-        <div className="flex items-center gap-2">
-          <Input placeholder="Enter 6-digit OTP" className="max-w-[200px] text-sm" maxLength={6} />
-          <Button type="button" variant="outline" size="sm">Verify</Button>
-        </div>
-        <p className="text-xs text-muted-foreground">A one-time password will be sent to your registered mobile number</p>
-      </div>
-      <Separator />
-      {/* MPIN Setup */}
-      <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-foreground">Set 4-Digit MPIN</h3>
-        <p className="text-xs text-muted-foreground mb-2">Quick login PIN for mobile access</p>
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>MPIN *</Label>
-            <Input type="password" placeholder="4-digit PIN" maxLength={4} className="max-w-[150px]" />
-          </div>
-          <div className="space-y-2">
-            <Label>Confirm MPIN *</Label>
-            <Input type="password" placeholder="Re-enter PIN" maxLength={4} className="max-w-[150px]" />
-          </div>
         </div>
       </div>
     </div>

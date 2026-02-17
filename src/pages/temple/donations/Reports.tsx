@@ -105,7 +105,7 @@ const Reports = () => {
           fund.utilized += utilized;
           fundMap.set(a.purpose, fund);
         } catch (err) {
-          console.warn('Error processing allocation:', a?.id, err);
+          console.warn('Error processing allocation:', a?.donationId, err);
         }
       });
 
