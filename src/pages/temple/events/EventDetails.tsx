@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,29 +31,7 @@ const statusColors: Record<string, string> = {
   Archived: "bg-gray-200 text-gray-600",
 };
 
-// Auto-update event status based on dates
-function getAutoStatus(event: { startDate: string; endDate: string; status: string }): string | null {
-  const today = new Date().toISOString().slice(0, 10);
-  const startDate = event.startDate;
-  const endDate = event.endDate;
-
-  // Don't auto-update if manually set to Cancelled or Archived
-  if (event.status === "Cancelled" || event.status === "Archived") {
-    return null;
-  }
-
-  // Auto-update to Ongoing if today is between start and end date
-  if (today >= startDate && today <= endDate && event.status !== "Ongoing") {
-    return "Ongoing";
-  }
-
-  // Auto-update to Completed if today is after end date
-  if (today > endDate && event.status !== "Completed" && event.status !== "Archived") {
-    return "Completed";
-  }
-
-  return null;
-}
+// No auto-update — lifecycle is fully manual via action buttons
 
 const priorityColors: Record<string, string> = {
   Low: "bg-muted text-muted-foreground",
@@ -103,53 +81,81 @@ const EventDetails = () => {
   const materialShortages = materials.filter(m => m.allocatedQty < m.requiredQty);
   const openTasks = tasks.filter(t => t.status === "Open" || t.status === "In Progress" || t.status === "Overdue");
 
-  // Auto-update status on mount and when dates change
-  useEffect(() => {
-    if (!event) return;
-    const autoStatus = getAutoStatus(event);
-    if (autoStatus && autoStatus !== event.status) {
-      eventActions.updateEvent(event.id, { status: autoStatus as any });
-      if (autoStatus === "Ongoing") {
-        toast.info("Event status updated to Ongoing (event has started)");
-      } else if (autoStatus === "Completed") {
-        toast.info("Event status updated to Completed (event has ended)");
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [event?.startDate, event?.endDate]);
+  // No auto-update — lifecycle is controlled by manual action buttons
 
-  // Workflow phase detection
+  // ── Lifecycle state machine ──
   const getWorkflowPhase = () => {
-    if (event.status === "Draft") return "Phase 1: Event Creation";
-    if (event.status === "Scheduled" || event.status === "Published") return "Phase 2: Operational Preparation";
-    if (event.status === "Ongoing") return "Phase 4: Live Event Execution";
-    if (event.status === "Completed") return "Phase 5: Event Completion";
-    if (event.status === "Archived") return "Phase 7: Archived";
-    return "Event Management";
+    switch (event.status) {
+      case "Draft": return { label: "Draft — Event saved, not visible to devotees", step: 1 };
+      case "Published": return { label: "Published — Bookings, sevas & donations open", step: 2 };
+      case "Scheduled": return { label: "Scheduled — Awaiting start date", step: 2 };
+      case "Ongoing": return { label: "Ongoing — Event in execution", step: 3 };
+      case "Completed": return { label: "Completed — Read-only except reports", step: 4 };
+      case "Archived": return { label: "Archived — History & reporting only", step: 5 };
+      case "Cancelled": return { label: "Cancelled", step: 0 };
+      default: return { label: "Unknown", step: 0 };
+    }
   };
 
+  const phase = getWorkflowPhase();
   const canPublish = event.status === "Draft" || event.status === "Scheduled";
+  const canStart = event.status === "Published";
+  const canComplete = event.status === "Ongoing";
   const canArchive = event.status === "Completed";
-  const isReadOnly = event.status === "Archived";
+  const isReadOnly = event.status === "Archived" || event.status === "Completed";
 
   const handlePublish = () => {
     if (!canPublish) return;
-    // Check for resource conflicts
     const hasConflicts = sevas.some(s => s.conflict);
     if (hasConflicts) {
       toast.warning("Resource conflicts detected. Please resolve before publishing.");
       return;
     }
     eventActions.updateEvent(event.id, { status: "Published" });
-    toast.success("Event published! Now visible to devotees and registrations are open.");
+    toast.success("Event published! Bookings, sevas & donations are now open.");
+  };
+
+  const handleStartEvent = () => {
+    if (!canStart) return;
+    eventActions.updateEvent(event.id, { status: "Ongoing" });
+    toast.success("Event started! Expenses and manpower are now active.");
+  };
+
+  const handleCompleteEvent = () => {
+    if (!canComplete) return;
+    if (!confirm("Mark event as completed? This will lock bookings, stop donations, freeze manpower, release unused resources, and send data to Finance.")) return;
+
+    // System actions on completion
+    const completionActions = [
+      "✓ Bookings locked",
+      "✓ Donations stopped",
+      "✓ Manpower frozen",
+      "✓ Unused resources released",
+      `✓ Income vs Expense: ₹${(event.estimatedBudget / 100000).toFixed(1)}L budget / ₹${(totalExpenses / 100000).toFixed(1)}L spent`,
+      "✓ Data sent to Finance module",
+    ];
+
+    eventActions.updateEvent(event.id, {
+      status: "Completed",
+      actualSpend: totalExpenses,
+    });
+
+    toast.success(
+      <div className="space-y-1">
+        <p className="font-medium">Event completed!</p>
+        {completionActions.map((a, i) => (
+          <p key={i} className="text-xs">{a}</p>
+        ))}
+      </div>,
+      { duration: 8000 }
+    );
   };
 
   const handleArchive = () => {
     if (!canArchive) return;
-    if (confirm("Are you sure you want to archive this event? It will become read-only.")) {
-      eventActions.updateEvent(event.id, { status: "Archived" });
-      toast.success("Event archived");
-    }
+    if (!confirm("Archive this event? It will be moved to history for reporting only.")) return;
+    eventActions.updateEvent(event.id, { status: "Archived" });
+    toast.success("Event archived — moved to history.");
   };
 
   const handleDuplicate = () => {
@@ -242,35 +248,69 @@ const EventDetails = () => {
                 <Send className="h-4 w-4 mr-2" />Publish Event
               </Button>
             )}
+            {canStart && (
+              <Button onClick={handleStartEvent} className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Clock className="h-4 w-4 mr-2" />Start Event
+              </Button>
+            )}
+            {canComplete && (
+              <Button onClick={handleCompleteEvent} className="bg-amber-600 hover:bg-amber-700 text-white">
+                <CheckCircle2 className="h-4 w-4 mr-2" />Mark Completed
+              </Button>
+            )}
             {canArchive && (
               <Button variant="outline" onClick={handleArchive}>
                 <Archive className="h-4 w-4 mr-2" />Archive
               </Button>
             )}
-            {event.status === "Completed" && (
-              <Button variant="outline" onClick={handleDuplicate}>
-                <Copy className="h-4 w-4 mr-2" />Duplicate
-              </Button>
+            {(event.status === "Completed" || event.status === "Archived") && (
+              <>
+                <Button variant="outline" onClick={handleDuplicate}>
+                  <Copy className="h-4 w-4 mr-2" />Duplicate
+                </Button>
+                <Button variant="outline" onClick={handleExportReport}>
+                  <Download className="h-4 w-4 mr-2" />Export Report
+                </Button>
+              </>
             )}
-            {event.status === "Completed" || event.status === "Archived" ? (
-              <Button variant="outline" onClick={handleExportReport}>
-                <Download className="h-4 w-4 mr-2" />Export Report
-              </Button>
-            ) : null}
           </div>
         </div>
 
-        {/* Workflow Phase Indicator */}
+        {/* Lifecycle Progress */}
         <Card className="bg-muted/30">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-between">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">{getWorkflowPhase()}</span>
+                <span className="text-sm font-medium">{phase.label}</span>
               </div>
               {isReadOnly && (
-                <Badge variant="outline" className="text-xs">Read-Only (Archived)</Badge>
+                <Badge variant="outline" className="text-xs">Read-Only</Badge>
               )}
+            </div>
+            {/* Status stepper */}
+            <div className="flex items-center gap-1">
+              {[
+                { step: 1, label: "Draft" },
+                { step: 2, label: "Published" },
+                { step: 3, label: "Ongoing" },
+                { step: 4, label: "Completed" },
+                { step: 5, label: "Archived" },
+              ].map((s, i) => (
+                <div key={s.step} className="flex items-center flex-1">
+                  <div className={`flex flex-col items-center flex-1`}>
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                      phase.step >= s.step ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                    }`}>
+                      {phase.step > s.step ? "✓" : s.step}
+                    </div>
+                    <span className={`text-[10px] mt-1 ${phase.step >= s.step ? "text-foreground font-medium" : "text-muted-foreground"}`}>{s.label}</span>
+                  </div>
+                  {i < 4 && (
+                    <div className={`h-0.5 flex-1 mx-1 ${phase.step > s.step ? "bg-primary" : "bg-border"}`} />
+                  )}
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
