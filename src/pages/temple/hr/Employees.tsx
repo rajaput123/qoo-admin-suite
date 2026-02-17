@@ -176,11 +176,10 @@ export default function Employees() {
     }
 
     try {
-      navigate('/hr/employees/new');
+      navigate('/temple/people/onboarding');
     } catch (error) {
       console.error('Error navigating to employee onboarding:', error);
-      // Fallback: try direct window location if navigate fails
-      window.location.href = '/hr/employees/new';
+      window.location.href = '/temple/people/onboarding';
     }
   };
 
