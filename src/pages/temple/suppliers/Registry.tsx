@@ -169,7 +169,7 @@ const Registry = () => {
                     <TableRow key={i}>
                       <TableCell>{eventRefs.find(e => e.id === m.eventId)?.name || m.eventId}</TableCell>
                       <TableCell>{m.inventoryName}</TableCell>
-                      <TableCell className="text-sm">{m.qty}</TableCell>
+                      <TableCell className="text-sm">{m.requiredQty}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

@@ -503,9 +503,9 @@ const DevoteeExperience = () => {
                 </TabsContent>
 
                 <TabsContent value="custom" className="mt-4">
-                  <CustomFieldsSection fields={selected.customFields ? Object.entries(selected.customFields).map(([label]) => ({ label, type: "text" })) : []} onFieldsChange={(fields) => {
+                  <CustomFieldsSection fields={selected.customFields ? Object.entries(selected.customFields).map(([name]) => ({ name, value: "", type: "text" as const })) : []} onFieldsChange={(fields) => {
                     const cf: Record<string, string> = {};
-                    fields.forEach(f => { cf[f.label] = ""; });
+                    fields.forEach(f => { cf[f.name] = f.value || ""; });
                     const updated = { ...selected, customFields: cf };
                     setSelected(updated);
                     setPosts(prev => prev.map(p => p.id === updated.id ? updated : p));

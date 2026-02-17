@@ -84,7 +84,7 @@ const PERMISSION_LABELS: Record<Permission, string> = {
 const AccessControlSettings = () => {
     const [roles, setRoles] = useState<Role[]>(INITIAL_SYSTEM_ROLES);
     const [selectedRole, setSelectedRole] = useState<string>('owner');
-    const [permissions, setPermissions] = useState<Record<string, Record<string, Record<Permission, boolean>>>>({
+    const [permissions, setPermissions] = useState<Record<string, Record<string, Record<string, boolean>>>>({
         owner: Object.fromEntries(MODULES.map(m => [m.id, Object.fromEntries(m.permissions.map(p => [p, true]))])),
         admin: Object.fromEntries(MODULES.map(m => [m.id, Object.fromEntries(m.permissions.map(p => [p, p !== 'delete']))])),
         operations: Object.fromEntries(MODULES.map(m => [m.id, Object.fromEntries(m.permissions.map(p => [p, ['view', 'create', 'update'].includes(p)]))])),

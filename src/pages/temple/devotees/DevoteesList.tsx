@@ -544,7 +544,7 @@ const DevoteesList = () => {
                                 variant="outline"
                                 className="text-[10px]"
                               >
-                                {d.mode}
+                                {d.purpose}
                               </Badge>
                             </TableCell>
                             <TableCell className="text-sm text-muted-foreground">
@@ -581,12 +581,12 @@ const DevoteesList = () => {
                             <TableCell className="text-sm text-muted-foreground">
                               {v.date}
                             </TableCell>
-                            <TableCell className="text-sm">{v.occasion}</TableCell>
+                            <TableCell className="text-sm">{v.type}</TableCell>
                             <TableCell className="text-sm">
-                              {v.withFamily ? "Yes" : "No"}
+                              {v.duration}
                             </TableCell>
                             <TableCell className="text-xs text-muted-foreground">
-                              {v.notes || "—"}
+                              {"—"}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -610,7 +610,7 @@ const DevoteesList = () => {
                               <div className="flex items-center gap-1.5">
                                 <Star className="h-3 w-3 text-yellow-500" />
                                 <span className="text-xs font-medium">
-                                  {p.title}
+                                  {p.content.substring(0, 30)}
                                 </span>
                               </div>
                               <span className="text-[11px] text-muted-foreground">
@@ -618,7 +618,7 @@ const DevoteesList = () => {
                               </span>
                             </div>
                             <p className="text-xs text-muted-foreground">
-                              {p.summary}
+                              {p.content}
                             </p>
                           </CardContent>
                         </Card>
@@ -648,7 +648,7 @@ const DevoteesList = () => {
                                 </span>
                               </div>
                               <p className="text-xs text-muted-foreground">
-                                {c.summary}
+                                {c.subject}
                               </p>
                             </div>
                           </CardContent>

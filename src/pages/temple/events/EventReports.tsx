@@ -72,7 +72,7 @@ const EventReports = () => {
                   <TableCell className="font-medium">{e.name}</TableCell>
                   <TableCell><Badge variant="outline" className="text-xs">{e.type}</Badge></TableCell>
                   <TableCell><Badge className={`text-xs border-0 ${
-                    e.status === "In Progress" ? "bg-green-100 text-green-700" :
+                    e.status === "Ongoing" ? "bg-green-100 text-green-700" :
                     e.status === "Scheduled" ? "bg-blue-100 text-blue-700" :
                     e.status === "Completed" ? "bg-amber-100 text-amber-700" :
                     "bg-muted text-muted-foreground"

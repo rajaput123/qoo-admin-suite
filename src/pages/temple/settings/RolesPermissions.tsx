@@ -236,7 +236,7 @@ const RolesPermissions = () => {
                             <Switch
                               checked={role.permissions[module]?.[action as keyof typeof role.permissions[string]] || false}
                               onCheckedChange={() => handleTogglePermission(role.id, module, action)}
-                              size="sm"
+                              className="scale-75"
                             />
                           </div>
                         ))}
