@@ -56,7 +56,7 @@ export default function ChildTempleDetail() {
         title="Child Temples"
         actions={
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => navigate('/structure/child-temples')}>
+            <Button variant="outline" onClick={() => navigate('/temple/structure/child-temples')}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>

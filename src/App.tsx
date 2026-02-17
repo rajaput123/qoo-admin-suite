@@ -79,6 +79,11 @@ import HallsRooms from "./pages/temple/structure/HallsRooms";
 import Counters from "./pages/temple/structure/Counters";
 import StructureHierarchy from "./pages/temple/structure/StructureHierarchy";
 import Zones from "./pages/temple/structure/Zones";
+import ChildTempleDetail from "./pages/temple/structure/ChildTempleDetail";
+import SacredDetail from "./pages/temple/structure/SacredDetail";
+import HallRoomDetail from "./pages/temple/structure/HallRoomDetail";
+import CounterDetail from "./pages/temple/structure/CounterDetail";
+import ZoneDetail from "./pages/temple/structure/ZoneDetail";
 // Event Management Module
 import EventsLayout from "./pages/temple/EventsLayout";
 import AllEvents from "./pages/temple/events/AllEvents";
@@ -220,11 +225,16 @@ const App = () => {
             <Route path="/temple/structure" element={<TempleStructureLayout />}>
               <Route index element={<Temples />} />
               <Route path="child-temples" element={<ChildTemples />} />
+              <Route path="child-temples/:id" element={<ChildTempleDetail />} />
               <Route path="sacred" element={<Sacred />} />
+              <Route path="sacred/:id" element={<SacredDetail />} />
               <Route path="halls" element={<HallsRooms />} />
+              <Route path="halls/:id" element={<HallRoomDetail />} />
               <Route path="counters" element={<Counters />} />
+              <Route path="counters/:id" element={<CounterDetail />} />
               <Route path="hierarchy" element={<StructureHierarchy />} />
               <Route path="zones" element={<Zones />} />
+              <Route path="zones/:id" element={<ZoneDetail />} />
             </Route>
 
             {/* Supplier Management Module */}
