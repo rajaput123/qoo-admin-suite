@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Switch } from '@/components/ui/switch';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Edit, Sparkles, Calendar, Clock } from 'lucide-react';
@@ -106,15 +106,16 @@ export default function Sacred() {
               imageKey="image"
               onRowClick={(row) => {
                 setSelectedSacred(row);
-                navigate(`/structure/sacred/${row.id}`);
+                navigate(`/temple/structure/sacred/${row.id}`);
               }}
               actions={(row) => (
-                <>
-                  <DropdownMenuItem onClick={() => { setEditingSacred(row); setSacredModalOpen(true); }}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </DropdownMenuItem>
-                </>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingSacred(row);
+                  setSacredModalOpen(true);
+                }}>
+                  <Edit className="h-4 w-4" />
+                </Button>
               )}
             />
           </TabsContent>

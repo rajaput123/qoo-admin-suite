@@ -5,7 +5,7 @@ import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { Switch } from '@/components/ui/switch';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Edit, DoorOpen, Calendar, DollarSign } from 'lucide-react';
@@ -105,14 +105,15 @@ export default function HallsRooms() {
               searchPlaceholder="Search halls & rooms..."
               defaultViewMode="grid"
               imageKey="image"
-              onRowClick={(row) => navigate(`/structure/halls-rooms/${row.id}`)}
+              onRowClick={(row) => navigate(`/temple/structure/halls-rooms/${row.id}`)}
               actions={(row) => (
-                <>
-                  <DropdownMenuItem onClick={() => { setEditingHallRoom(row); setHallRoomModalOpen(true); }}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </DropdownMenuItem>
-                </>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => {
+                  e.stopPropagation();
+                  setEditingHallRoom(row);
+                  setHallRoomModalOpen(true);
+                }}>
+                  <Edit className="h-4 w-4" />
+                </Button>
               )}
             />
           </TabsContent>

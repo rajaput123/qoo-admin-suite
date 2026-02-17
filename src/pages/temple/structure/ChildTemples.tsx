@@ -5,8 +5,6 @@ import { PageHeader } from '@/components/ui/page-header';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { Switch } from '@/components/ui/switch';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Edit, Home, ArrowUp } from 'lucide-react';
 import { ChildTemple, Temple } from '@/types/temple-structure';
 import { ChildTempleModal } from '@/components/structure/ChildTempleModal';
@@ -126,18 +124,23 @@ export default function ChildTemples() {
           searchPlaceholder="Search child temples..."
           defaultViewMode="grid"
           imageKey="image"
-          onRowClick={(row) => navigate(`/structure/child-temples/${row.id}`)}
+          onRowClick={(row) => navigate(`/temple/structure/child-temples/${row.id}`)}
           actions={(row) => (
-            <>
-              <DropdownMenuItem onClick={() => { setEditingChildTemple(row); setChildTempleModalOpen(true); }}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handlePromoteToMain(row)}>
-                <ArrowUp className="h-4 w-4 mr-2" />
-                Promote to Main Temple
-              </DropdownMenuItem>
-            </>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => {
+                e.stopPropagation();
+                setEditingChildTemple(row);
+                setChildTempleModalOpen(true);
+              }}>
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => {
+                e.stopPropagation();
+                handlePromoteToMain(row);
+              }}>
+                <ArrowUp className="h-4 w-4" />
+              </Button>
+            </div>
           )}
         />
       </div>
