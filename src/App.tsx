@@ -149,6 +149,7 @@ import CommLogsReports from "./pages/temple/communication/LogsReports";
 // Donation Management Module
 import DonationsLayout from "./pages/temple/DonationsLayout";
 import DonationDashboard from "./pages/temple/donations/Dashboard";
+import DonationsList from "./pages/temple/donations/DonationsList";
 import DonorRegistry from "./pages/temple/donations/DonorRegistry";
 import RecordDonation from "./pages/temple/donations/RecordDonation";
 import Receipts80G from "./pages/temple/donations/Receipts80G";
@@ -309,6 +310,7 @@ const App = () => {
             {/* Donation Management Module */}
             <Route path="/temple/donations" element={<DonationsLayout />}>
               <Route index element={<DonationDashboard />} />
+              <Route path="list" element={<DonationsList />} />
               <Route path="donors" element={<DonorRegistry />} />
               <Route path="record" element={<RecordDonation />} />
               <Route path="receipts" element={<Receipts80G />} />

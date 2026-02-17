@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Heart, IndianRupee, Users, Receipt, TrendingUp, TrendingDown, Calendar, Eye } from "lucide-react";
+import { Heart, IndianRupee, Users, Receipt, TrendingUp, TrendingDown, Calendar, Eye, Link2, Globe } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { useAllocations, useDonations, useDonors } from "@/modules/donations/hooks";
 
@@ -19,18 +19,20 @@ const purposeData = [
   { name: "Prasadam Sponsorship", value: 10, color: "hsl(346, 77%, 50%)" },
 ];
 
-const channelData = [
-  { channel: "Counter / Cash", count: 1245, amount: "₹1.2 Cr" },
-  { channel: "Online / UPI", count: 892, amount: "₹1.8 Cr" },
-  { channel: "Bank Transfer", count: 156, amount: "₹1.1 Cr" },
-  { channel: "Hundi Collection", count: 48, amount: "₹52 L" },
-  { channel: "Event-linked", count: 312, amount: "₹28 L" },
-];
-
 const formatCurrency = (val: number) => {
   if (val >= 10000000) return `₹${(val / 10000000).toFixed(1)} Cr`;
   if (val >= 100000) return `₹${(val / 100000).toFixed(1)} L`;
   return `₹${val.toLocaleString()}`;
+};
+
+const sourceColors: Record<string, string> = {
+  Manual: "hsl(var(--primary))",
+  "Online Portal": "hsl(210, 76%, 50%)",
+  Booking: "hsl(142, 76%, 36%)",
+  Event: "hsl(25, 95%, 53%)",
+  Counter: "hsl(262, 83%, 58%)",
+  Campaign: "hsl(346, 77%, 50%)",
+  Seva: "hsl(45, 93%, 47%)",
 };
 
 const Dashboard = () => {
@@ -46,6 +48,32 @@ const Dashboard = () => {
   const activeDonors = new Set(donations.map(d => d.donorId)).size;
   const receiptsIssued = donations.length;
 
+  // Source-wise aggregation
+  const sourceAgg = new Map<string, { count: number; total: number }>();
+  for (const d of donations) {
+    const src = d.sourceModule || "Manual";
+    const s = sourceAgg.get(src) ?? { count: 0, total: 0 };
+    s.count += 1;
+    s.total += d.amount;
+    sourceAgg.set(src, s);
+  }
+  const sourceData = Array.from(sourceAgg.entries()).map(([name, { count, total }]) => ({
+    name,
+    count,
+    total,
+    color: sourceColors[name] || "hsl(var(--muted-foreground))",
+  }));
+
+  // Branch-wise aggregation
+  const branchAgg = new Map<string, { count: number; total: number }>();
+  for (const d of donations) {
+    const branch = d.branchId || "Unassigned";
+    const s = branchAgg.get(branch) ?? { count: 0, total: 0 };
+    s.count += 1;
+    s.total += d.amount;
+    branchAgg.set(branch, s);
+  }
+
   const stats = [
     { label: "Total Donations (FY)", value: formatCurrency(fyTotal), change: `${donations.length} donations`, up: true, icon: IndianRupee },
     { label: "Active Donors", value: activeDonors.toLocaleString(), change: `${donors.length} in registry`, up: true, icon: Users },
@@ -53,12 +81,14 @@ const Dashboard = () => {
     { label: "Pending Allocation", value: formatCurrency(pendingAllocAmount), change: `${pendingAllocDonations.length} donations`, up: false, icon: Eye },
   ];
 
-  const recentDonations = donations.slice(0, 5).map(d => ({
+  const recentDonations = donations.slice(0, 6).map(d => ({
     id: d.donationId,
     donor: d.donorName,
     amount: d.amount,
     purpose: d.purpose,
     channel: d.channel,
+    sourceModule: d.sourceModule || "Manual",
+    sourceRecordId: d.sourceRecordId,
     date: d.date,
     status: allocatedSet.has(d.donationId) ? "Allocated" : "Pending",
   }));
@@ -67,7 +97,7 @@ const Dashboard = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Donation Dashboard</h1>
-        <p className="text-sm text-muted-foreground mt-1">Real-time overview of donation activity, fund allocation, and donor engagement</p>
+        <p className="text-sm text-muted-foreground mt-1">Real-time overview of donation activity, source traceability, and fund allocation</p>
       </div>
 
       {/* KPI Cards */}
@@ -133,43 +163,66 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Channel Breakdown + Recent */}
-      <div className="grid md:grid-cols-3 gap-4">
+      {/* Source Module + Branch Breakdown */}
+      <div className="grid md:grid-cols-2 gap-4">
         <Card>
-          <CardHeader className="pb-2"><CardTitle className="text-base">By Channel</CardTitle></CardHeader>
+          <CardHeader className="pb-2"><CardTitle className="text-base flex items-center gap-2"><Link2 className="h-4 w-4" /> By Source Module</CardTitle></CardHeader>
           <CardContent className="space-y-3">
-            {channelData.map(c => (
-              <div key={c.channel} className="flex items-center justify-between text-sm">
-                <div>
-                  <p className="font-medium text-foreground">{c.channel}</p>
-                  <p className="text-xs text-muted-foreground">{c.count} transactions</p>
+            {sourceData.map(s => (
+              <div key={s.name} className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="h-2.5 w-2.5 rounded-full shrink-0" style={{ background: s.color }} />
+                  <div>
+                    <p className="font-medium text-foreground">{s.name}</p>
+                    <p className="text-xs text-muted-foreground">{s.count} donations</p>
+                  </div>
                 </div>
-                <span className="font-mono font-medium">{c.amount}</span>
+                <span className="font-mono font-medium">{formatCurrency(s.total)}</span>
               </div>
             ))}
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-2">
-          <CardHeader className="pb-2"><CardTitle className="text-base">Recent Donations</CardTitle></CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {recentDonations.map(d => (
-                <div key={d.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm">{d.donor}</span>
-                      <Badge variant={d.status === "Utilized" ? "default" : d.status === "Allocated" ? "outline" : "secondary"} className="text-[10px]">{d.status}</Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground">{d.purpose} · {d.channel} · {d.date}</p>
-                  </div>
-                  <span className="font-mono font-bold text-sm">{formatCurrency(d.amount)}</span>
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-base flex items-center gap-2"><Globe className="h-4 w-4" /> By Branch / Location</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            {Array.from(branchAgg.entries()).map(([branch, data]) => (
+              <div key={branch} className="flex items-center justify-between text-sm">
+                <div>
+                  <p className="font-medium text-foreground font-mono">{branch}</p>
+                  <p className="text-xs text-muted-foreground">{data.count} donations</p>
                 </div>
-              ))}
-            </div>
+                <span className="font-mono font-medium">{formatCurrency(data.total)}</span>
+              </div>
+            ))}
           </CardContent>
         </Card>
       </div>
+
+      {/* Recent Donations */}
+      <Card>
+        <CardHeader className="pb-2"><CardTitle className="text-base">Recent Donations</CardTitle></CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {recentDonations.map(d => (
+              <div key={d.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-sm">{d.donor}</span>
+                    <Badge variant={d.status === "Allocated" ? "outline" : "secondary"} className="text-[10px]">{d.status}</Badge>
+                    <Badge variant="outline" className="text-[10px] bg-muted/50">{d.sourceModule}</Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {d.purpose} · {d.channel} · {d.date}
+                    {d.sourceRecordId && <span className="font-mono"> · {d.sourceRecordId}</span>}
+                  </p>
+                </div>
+                <span className="font-mono font-bold text-sm">{formatCurrency(d.amount)}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Utilization Summary */}
       <Card>
@@ -177,9 +230,9 @@ const Dashboard = () => {
         <CardContent>
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { label: "Total Received", value: "₹4.82 Cr", pct: 100 },
-              { label: "Allocated to Purpose", value: "₹4.44 Cr", pct: 92 },
-              { label: "Utilized / Spent", value: "₹3.18 Cr", pct: 66 },
+              { label: "Total Received", value: formatCurrency(fyTotal), pct: 100 },
+              { label: "Allocated to Purpose", value: formatCurrency(allocations.reduce((s, a) => s + a.allocated, 0)), pct: fyTotal > 0 ? Math.round((allocations.reduce((s, a) => s + a.allocated, 0) / fyTotal) * 100) : 0 },
+              { label: "Utilized / Spent", value: formatCurrency(allocations.reduce((s, a) => s + a.utilized, 0)), pct: fyTotal > 0 ? Math.round((allocations.reduce((s, a) => s + a.utilized, 0) / fyTotal) * 100) : 0 },
             ].map(u => (
               <div key={u.label}>
                 <div className="flex justify-between text-sm mb-1">

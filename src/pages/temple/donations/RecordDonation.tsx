@@ -43,6 +43,9 @@ const RecordDonation = () => {
     mode: "",
     referenceNo: "",
     remarks: "",
+    sourceModule: "Manual" as "" | "Manual" | "Booking" | "Event" | "Online Portal" | "Campaign" | "Seva" | "Counter",
+    sourceRecordId: "",
+    counterId: "",
   });
 
   const filtered = donations.filter(r =>
@@ -66,11 +69,14 @@ const RecordDonation = () => {
       mode: form.mode.trim(),
       referenceNo: form.referenceNo.trim() || undefined,
       remarks: form.remarks.trim() || undefined,
+      sourceModule: (form.sourceModule as any) || "Manual",
+      sourceRecordId: form.sourceRecordId.trim() || undefined,
+      counterId: form.counterId.trim() || undefined,
       createdBy: "System",
     });
     toast({ title: "Donation Recorded", description: `Receipt ${d.receiptNo} generated automatically.` });
     setShowRecord(false);
-    setForm({ donorName: "", phone: "", amount: "", channel: "", purpose: "", mode: "", referenceNo: "", remarks: "" });
+    setForm({ donorName: "", phone: "", amount: "", channel: "", purpose: "", mode: "", referenceNo: "", remarks: "", sourceModule: "Manual", sourceRecordId: "", counterId: "" });
   };
 
   return (
@@ -155,24 +161,29 @@ const RecordDonation = () => {
                 <TabsTrigger value="receipt" className="flex-1">Receipt</TabsTrigger>
                 <TabsTrigger value="allocation" className="flex-1">Allocation</TabsTrigger>
               </TabsList>
-              <TabsContent value="details" className="mt-4 space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    ["Donation ID", selectedRecord.donationId],
-                    ["Donor", selectedRecord.donorName],
-                    ["Amount", formatCurrency(selectedRecord.amount)],
-                    ["Purpose", selectedRecord.purpose],
-                    ["Channel", selectedRecord.channel],
-                    ["Mode", selectedRecord.mode],
-                    ["Date", selectedRecord.date],
-                    ["Time", selectedRecord.time],
-                  ].map(([label, value]) => (
-                    <div key={label} className="p-2 rounded bg-muted/50">
-                      <p className="text-[10px] text-muted-foreground">{label}</p>
-                      <p className="text-sm font-medium">{value}</p>
-                    </div>
-                  ))}
-                </div>
+               <TabsContent value="details" className="mt-4 space-y-3">
+                 <div className="grid grid-cols-2 gap-3">
+                   {[
+                     ["Donation ID", selectedRecord.donationId],
+                     ["Donor", selectedRecord.donorName],
+                     ["Amount", formatCurrency(selectedRecord.amount)],
+                     ["Purpose", selectedRecord.purpose],
+                     ["Channel", selectedRecord.channel],
+                     ["Mode", selectedRecord.mode],
+                     ["Date", selectedRecord.date],
+                     ["Time", selectedRecord.time],
+                     ["Source Module", selectedRecord.sourceModule || "Manual"],
+                     ["Source Record", selectedRecord.sourceRecordId || "—"],
+                     ["Counter", selectedRecord.counterId || "—"],
+                     ["Temple ID", selectedRecord.templeId],
+                     ["Branch", selectedRecord.branchId || "—"],
+                   ].map(([label, value]) => (
+                     <div key={label} className="p-2 rounded bg-muted/50">
+                       <p className="text-[10px] text-muted-foreground">{label}</p>
+                       <p className="text-sm font-medium">{value}</p>
+                     </div>
+                   ))}
+                 </div>
               </TabsContent>
               <TabsContent value="receipt" className="mt-4">
                 <div className="p-4 rounded-lg border bg-muted/30 text-center">
@@ -235,6 +246,26 @@ const RecordDonation = () => {
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Payment Mode</Label><Input placeholder="e.g. GPay, NEFT, Cash" value={form.mode} onChange={e => setForm(p => ({ ...p, mode: e.target.value }))} /></div>
               <div><Label>Reference No.</Label><Input placeholder="Transaction ref (optional)" value={form.referenceNo} onChange={e => setForm(p => ({ ...p, referenceNo: e.target.value }))} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Source Module</Label>
+                <Select value={form.sourceModule} onValueChange={(v) => setForm(p => ({ ...p, sourceModule: v as any }))}>
+                  <SelectTrigger><SelectValue placeholder="Source" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Manual">Manual Entry</SelectItem>
+                    <SelectItem value="Booking">Booking</SelectItem>
+                    <SelectItem value="Event">Event</SelectItem>
+                    <SelectItem value="Online Portal">Online Portal</SelectItem>
+                    <SelectItem value="Campaign">Campaign</SelectItem>
+                    <SelectItem value="Seva">Seva</SelectItem>
+                    <SelectItem value="Counter">Counter</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label>Source Record ID</Label><Input placeholder="e.g. BKG-001, EVT-005" value={form.sourceRecordId} onChange={e => setForm(p => ({ ...p, sourceRecordId: e.target.value }))} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Counter ID (optional)</Label><Input placeholder="e.g. CTR-001" value={form.counterId} onChange={e => setForm(p => ({ ...p, counterId: e.target.value }))} /></div>
             </div>
             <div><Label>Remarks</Label><Textarea placeholder="Any special instructions or donor intent..." rows={2} value={form.remarks} onChange={e => setForm(p => ({ ...p, remarks: e.target.value }))} /></div>
           </div>
