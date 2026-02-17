@@ -135,7 +135,7 @@ export default function Shifts() {
       key: 'applicableDepartments',
       label: 'Departments',
       render: (value: unknown) => {
-        const depts = value as string[];
+        const depts = (value as string[]) || [];
         return (
           <div className="flex flex-wrap gap-1">
             {depts.slice(0, 2).map(dept => (
