@@ -11,7 +11,7 @@ export const dummyTemples: Temple[] = [
     contactPhone: '+91 877 223 1234',
     contactEmail: 'info@tirumala.org',
     contactAddress: 'Tirumala, Chittoor District, Andhra Pradesh',
-    image: '/placeholder-temple.jpg',
+    image: '/placeholder.svg',
     status: 'active',
     isPrimary: true,
     operationalStatus: 'open',
@@ -41,7 +41,7 @@ export const dummyChildTemples: ChildTemple[] = [
     parentTempleId: 'temple-1',
     location: 'Tiruchanur, Andhra Pradesh',
     description: 'Temple dedicated to Goddess Padmavathi',
-    image: '/placeholder-child-temple.jpg',
+    image: '/placeholder.svg',
     status: 'active',
     distance: 5.2,
     gpsCoordinates: {
@@ -61,7 +61,7 @@ export const dummySacreds: Sacred[] = [
     associatedTempleId: 'temple-1',
     associatedTempleType: 'temple',
     description: 'Main deity of the temple',
-    image: '/placeholder-deity.jpg',
+    image: '/placeholder.svg',
     status: 'active',
     festivals: [
       { name: 'Brahmotsavam', date: '2024-10-15' },
@@ -83,7 +83,7 @@ export const dummyZones: Zone[] = [
     capacity: 500,
     description: 'Main darshan area',
     status: 'active',
-    image: '/placeholder-zone.jpg',
+    image: '/placeholder.svg',
     createdAt: '2024-01-01T00:00:00Z',
   },
 ];
@@ -97,7 +97,7 @@ export const dummyHallRooms: HallRoom[] = [
     capacity: 350,
     description: 'Main hall for darshan',
     status: 'active',
-    image: '/placeholder-hall.jpg',
+    image: '/placeholder.svg',
     maintenanceSchedule: [],
     createdAt: '2024-01-01T00:00:00Z',
   },
@@ -118,7 +118,7 @@ export const dummyCounters: Counter[] = [
     ],
     paymentMethods: ['cash', 'card', 'upi'],
     status: 'active',
-    image: '/placeholder-counter.jpg',
+    image: '/placeholder.svg',
     createdAt: '2024-01-01T00:00:00Z',
   },
 ];
