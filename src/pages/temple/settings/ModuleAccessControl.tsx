@@ -1,299 +1,213 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Settings, CheckCircle2, XCircle } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import {
+  Lock,
+  CheckCircle2,
+  Zap,
+  Crown,
+  Landmark,
+  Megaphone,
+  Sparkles,
+  Calendar,
+  Boxes,
+  UtensilsCrossed,
+  ClipboardList,
+  GitBranch,
+  Building2,
+  BookOpen,
+  Package,
+  MapPin,
+  UserCheck,
+  Briefcase,
+  CalendarDays,
+  BarChart3,
+  Heart,
+  IndianRupee,
+  FolderKanban,
+  Settings,
+  ArrowUpRight,
+  type LucideIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 
-interface Module {
+interface ModuleItem {
   id: string;
   name: string;
   description: string;
-  enabled: boolean;
-  defaultRole: string;
-  accessLevel: "Full Access" | "View Only" | "Restricted";
+  icon: LucideIcon;
+  tier: "free" | "standard" | "premium";
 }
 
-const ModuleAccessControl = () => {
-  const [modules, setModules] = useState<Module[]>([
-    {
-      id: "MOD-001",
-      name: "Temple Structure",
-      description: "Manage zones, halls, counters, and temple hierarchy",
-      enabled: true,
-      defaultRole: "Temple Admin",
-      accessLevel: "Full Access",
-    },
-    {
-      id: "MOD-002",
-      name: "Booking & Seva",
-      description: "Manage seva bookings, slots, and reservations",
-      enabled: true,
-      defaultRole: "Temple Admin",
-      accessLevel: "Full Access",
-    },
-    {
-      id: "MOD-003",
-      name: "Donations",
-      description: "Track donations, donor registry, and 80G certificates",
-      enabled: true,
-      defaultRole: "Finance Manager",
-      accessLevel: "Full Access",
-    },
-    {
-      id: "MOD-004",
-      name: "Events",
-      description: "Plan and manage temple events and festivals",
-      enabled: true,
-      defaultRole: "Event Manager",
-      accessLevel: "Full Access",
-    },
-    {
-      id: "MOD-005",
-      name: "Finance",
-      description: "Financial operations, accounts, and reports",
-      enabled: true,
-      defaultRole: "Finance Manager",
-      accessLevel: "Full Access",
-    },
-    {
-      id: "MOD-006",
-      name: "Crowd Management",
-      description: "Monitor and manage crowd capacity and flow",
-      enabled: false,
-      defaultRole: "Temple Admin",
-      accessLevel: "View Only",
-    },
-    {
-      id: "MOD-007",
-      name: "Volunteers",
-      description: "Manage volunteer assignments and schedules",
-      enabled: true,
-      defaultRole: "Volunteer Manager",
-      accessLevel: "Full Access",
-    },
-    {
-      id: "MOD-008",
-      name: "Freelancers",
-      description: "Manage freelancer services and assignments",
-      enabled: true,
-      defaultRole: "Temple Admin",
-      accessLevel: "Full Access",
-    },
-    {
-      id: "MOD-009",
-      name: "Communication",
-      description: "Send notifications, announcements, and messages",
-      enabled: true,
-      defaultRole: "Temple Admin",
-      accessLevel: "Full Access",
-    },
-    {
-      id: "MOD-010",
-      name: "Reports",
-      description: "Generate and view system reports and analytics",
-      enabled: true,
-      defaultRole: "Super Admin",
-      accessLevel: "Full Access",
-    },
-    {
-      id: "MOD-011",
-      name: "Inventory",
-      description: "Manage temple inventory and stock",
-      enabled: true,
-      defaultRole: "Inventory Manager",
-      accessLevel: "Full Access",
-    },
-    {
-      id: "MOD-012",
-      name: "Projects",
-      description: "Track temple projects and funding",
-      enabled: true,
-      defaultRole: "Project Manager",
-      accessLevel: "Full Access",
-    },
-  ]);
+const modules: ModuleItem[] = [
+  // Free Tier
+  { id: "temple-structure", name: "Temple Structure", description: "Hierarchy, shrines, halls & counters", icon: Landmark, tier: "free" },
+  { id: "offerings", name: "Offerings & Sevas", description: "Rituals, darshan, slots & bookings", icon: Sparkles, tier: "free" },
+  { id: "bookings", name: "Booking Management", description: "Online & counter bookings", icon: Calendar, tier: "free" },
+  { id: "donations", name: "Donation Management", description: "Donor records, receipts & 80G", icon: Heart, tier: "free" },
+  { id: "devotees", name: "Devotee Management", description: "Devotee database & volunteers", icon: UserCheck, tier: "free" },
+  { id: "tasks", name: "Task Management", description: "Operational task tracking", icon: ClipboardList, tier: "free" },
+  { id: "communication", name: "PR & Communication", description: "Announcements & notifications", icon: Megaphone, tier: "free" },
+  { id: "settings", name: "Settings", description: "Temple profile & configuration", icon: Settings, tier: "free" },
 
-  const roles = ["Super Admin", "Temple Admin", "Finance Manager", "Event Manager", "Volunteer Manager", "Inventory Manager", "Project Manager"];
+  // Standard Tier
+  { id: "inventory", name: "Stock / Inventory", description: "Stock management & transactions", icon: Boxes, tier: "standard" },
+  { id: "finance", name: "Finance & Accounts", description: "Budget, expenses & reports", icon: IndianRupee, tier: "standard" },
+  { id: "events", name: "Event Management", description: "Event creation & registration", icon: CalendarDays, tier: "standard" },
+  { id: "feedback", name: "Feedback & Analytics", description: "Ratings & sentiment analysis", icon: BarChart3, tier: "standard" },
+  { id: "freelancer", name: "Freelancer Management", description: "Freelance workers & payments", icon: Briefcase, tier: "standard" },
+  { id: "branches", name: "Branch Management", description: "Multi-branch operations", icon: GitBranch, tier: "standard" },
 
-  const handleToggleModule = (id: string) => {
-    setModules(modules.map(module => 
-      module.id === id ? { ...module, enabled: !module.enabled } : module
-    ));
-    const module = modules.find(m => m.id === id);
-    toast.success(`${module?.name} ${module?.enabled ? "disabled" : "enabled"}`);
-  };
+  // Premium Tier
+  { id: "prasadam", name: "Prasadam & Kitchen", description: "Production, recipes & distribution", icon: UtensilsCrossed, tier: "premium" },
+  { id: "projects", name: "Projects & Initiatives", description: "Strategic projects & milestones", icon: FolderKanban, tier: "premium" },
+  { id: "institution", name: "Institutions", description: "Schools, hospitals & trust entities", icon: Building2, tier: "premium" },
+  { id: "crowd", name: "Crowd Management", description: "Real-time crowd monitoring", icon: MapPin, tier: "premium" },
+  { id: "knowledge", name: "Knowledge Management", description: "Documents, SOPs & knowledge base", icon: BookOpen, tier: "premium" },
+  { id: "assets", name: "Asset Management", description: "Asset tracking & maintenance", icon: Package, tier: "premium" },
+];
 
-  const handleUpdateDefaultRole = (id: string, role: string) => {
-    setModules(modules.map(module => 
-      module.id === id ? { ...module, defaultRole: role } : module
-    ));
-    toast.success("Default role updated");
-  };
+const currentTier = "free"; // Simulates a free-tier temple after registration
 
-  const handleUpdateAccessLevel = (id: string, level: string) => {
-    setModules(modules.map(module => 
-      module.id === id ? { ...module, accessLevel: level as Module["accessLevel"] } : module
-    ));
-    toast.success("Access level updated");
-  };
+const tierOrder = { free: 0, standard: 1, premium: 2 };
+const isUnlocked = (tier: string) => tierOrder[tier as keyof typeof tierOrder] <= tierOrder[currentTier as keyof typeof tierOrder];
 
-  const enabledCount = modules.filter(m => m.enabled).length;
-  const disabledCount = modules.filter(m => !m.enabled).length;
+const tierConfig = {
+  free: { label: "Free", badge: "bg-emerald-100 text-emerald-800 border-emerald-200", color: "text-emerald-600" },
+  standard: { label: "Standard", badge: "bg-blue-100 text-blue-800 border-blue-200", color: "text-blue-600" },
+  premium: { label: "Premium", badge: "bg-amber-100 text-amber-800 border-amber-200", color: "text-amber-600" },
+};
+
+const ModuleCard = ({ module, unlocked }: { module: ModuleItem; unlocked: boolean }) => {
+  const Icon = module.icon;
+  const config = tierConfig[module.tier];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Module Access Control</h1>
-        <p className="text-sm text-muted-foreground mt-1">Enable/disable modules and configure default access levels</p>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold">{modules.length}</p>
-                <p className="text-xs text-muted-foreground">Total Modules</p>
-              </div>
-              <Settings className="h-8 w-8 text-muted-foreground" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-green-600">{enabledCount}</p>
-                <p className="text-xs text-muted-foreground">Enabled</p>
-              </div>
-              <CheckCircle2 className="h-8 w-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-2xl font-bold text-red-600">{disabledCount}</p>
-                <p className="text-xs text-muted-foreground">Disabled</p>
-              </div>
-              <XCircle className="h-8 w-8 text-red-600" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Modules Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">All Modules</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Module</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Default Role</TableHead>
-                <TableHead>Access Level</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {modules.map(module => (
-                <TableRow key={module.id}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{module.name}</p>
-                      <p className="text-xs text-muted-foreground">{module.description}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={module.enabled}
-                        onCheckedChange={() => handleToggleModule(module.id)}
-                      />
-                      {module.enabled ? (
-                        <Badge variant="default" className="gap-1">
-                          <CheckCircle2 className="h-3 w-3" /> Enabled
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary" className="gap-1">
-                          <XCircle className="h-3 w-3" /> Disabled
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      value={module.defaultRole}
-                      onValueChange={(value) => handleUpdateDefaultRole(module.id, value)}
-                      disabled={!module.enabled}
-                    >
-                      <SelectTrigger className="w-40">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {roles.map(role => (
-                          <SelectItem key={role} value={role}>{role}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      value={module.accessLevel}
-                      onValueChange={(value) => handleUpdateAccessLevel(module.id, value)}
-                      disabled={!module.enabled}
-                    >
-                      <SelectTrigger className="w-36">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Full Access">Full Access</SelectItem>
-                        <SelectItem value="View Only">View Only</SelectItem>
-                        <SelectItem value="Restricted">Restricted</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => toast.info(`Configure ${module.name} permissions in Roles & Permissions`)}
-                    >
-                      Configure
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      {/* Info Card */}
-      <Card className="bg-muted/30">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <Settings className="h-5 w-5 text-muted-foreground mt-0.5" />
-            <div>
-              <p className="text-sm font-medium mb-1">Module Access Control</p>
-              <p className="text-xs text-muted-foreground">
-                Disabled modules will be hidden from all users. Default roles determine which role has primary access to each module.
-                For detailed permission configuration, use the Roles & Permissions section.
-              </p>
-            </div>
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={`relative rounded-xl border p-4 transition-all ${
+        unlocked
+          ? "bg-card border-border hover:shadow-md hover:border-primary/20 cursor-pointer"
+          : "bg-muted/30 border-border/50 opacity-70"
+      }`}
+    >
+      {!unlocked && (
+        <div className="absolute top-3 right-3">
+          <Lock className="h-3.5 w-3.5 text-muted-foreground" />
+        </div>
+      )}
+      <div className="flex items-start gap-3">
+        <div className={`p-2 rounded-lg ${unlocked ? "bg-primary/10" : "bg-muted"}`}>
+          <Icon className={`h-4.5 w-4.5 ${unlocked ? "text-primary" : "text-muted-foreground"}`} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <h4 className={`text-sm font-semibold ${unlocked ? "text-foreground" : "text-muted-foreground"}`}>
+              {module.name}
+            </h4>
           </div>
-        </CardContent>
-      </Card>
+          <p className={`text-xs ${unlocked ? "text-muted-foreground" : "text-muted-foreground/70"}`}>
+            {module.description}
+          </p>
+        </div>
+      </div>
+      {unlocked && (
+        <div className="mt-3 flex items-center gap-1.5">
+          <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+          <span className="text-[11px] text-emerald-700 font-medium">Active</span>
+        </div>
+      )}
+    </motion.div>
+  );
+};
+
+const ModuleAccessControl = () => {
+  const freeModules = modules.filter(m => m.tier === "free");
+  const standardModules = modules.filter(m => m.tier === "standard");
+  const premiumModules = modules.filter(m => m.tier === "premium");
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Modules</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Your current plan: <Badge variant="outline" className="ml-1 text-emerald-700 border-emerald-300 bg-emerald-50">Free Tier</Badge>
+        </p>
+      </div>
+
+      {/* Active Modules — Free Tier */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+          <h2 className="text-base font-semibold text-foreground">Active Modules</h2>
+          <Badge variant="outline" className="text-[11px] bg-emerald-50 text-emerald-700 border-emerald-200">{freeModules.length} included</Badge>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {freeModules.map(m => (
+            <ModuleCard key={m.id} module={m} unlocked={true} />
+          ))}
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Upgrade Banner */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 via-primary/3 to-transparent p-5 flex items-center justify-between gap-4 flex-wrap"
+      >
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-full bg-primary/10">
+            <Zap className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-foreground text-sm">Unlock more modules</h3>
+            <p className="text-xs text-muted-foreground">Upgrade your plan to access Standard & Premium modules</p>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          className="gap-1.5"
+          onClick={() => toast.info("Upgrade flow coming soon")}
+        >
+          <Crown className="h-3.5 w-3.5" />
+          Upgrade Plan
+          <ArrowUpRight className="h-3.5 w-3.5" />
+        </Button>
+      </motion.div>
+
+      {/* Standard Tier — Locked */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <Lock className="h-4 w-4 text-blue-500" />
+          <h2 className="text-base font-semibold text-foreground">Standard Modules</h2>
+          <Badge variant="outline" className="text-[11px] bg-blue-50 text-blue-700 border-blue-200">Upgrade Required</Badge>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {standardModules.map(m => (
+            <ModuleCard key={m.id} module={m} unlocked={isUnlocked(m.tier)} />
+          ))}
+        </div>
+      </div>
+
+      {/* Premium Tier — Locked */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <Crown className="h-4 w-4 text-amber-500" />
+          <h2 className="text-base font-semibold text-foreground">Premium Modules</h2>
+          <Badge variant="outline" className="text-[11px] bg-amber-50 text-amber-700 border-amber-200">Premium Plan</Badge>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {premiumModules.map(m => (
+            <ModuleCard key={m.id} module={m} unlocked={isUnlocked(m.tier)} />
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
