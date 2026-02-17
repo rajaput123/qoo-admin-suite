@@ -1,469 +1,386 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Filter, FileDown, Plus } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Search, Plus, Download, Eye, FileDown, Printer, Mail, MoreVertical } from "lucide-react";
 import { useDonations, useDonors } from "@/modules/donations/hooks";
-import { recordDonation } from "@/modules/donations/donationsStore";
-import SelectWithAddNew from "@/components/SelectWithAddNew";
-import CustomFieldsSection, { CustomField } from "@/components/CustomFieldsSection";
-
-const formatCurrency = (val: number) => {
-  if (val >= 10000000) return `₹${(val / 10000000).toFixed(1)} Cr`;
-  if (val >= 100000) return `₹${(val / 100000).toFixed(1)} L`;
-  return `₹${val.toLocaleString()}`;
+import { downloadReceipt, printReceipt, sendReceiptEmail } from "@/lib/receiptGenerator";
+import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+const formatCurrency = (val: number | undefined | null): string => {
+  try {
+    if (val == null || typeof val !== 'number' || !Number.isFinite(val)) {
+      return "₹0";
+    }
+    return `₹${val.toLocaleString('en-IN')}`;
+  } catch {
+    return "₹0";
+  }
 };
 
-const emptyForm = {
-  amount: "",
-  date: new Date().toISOString().slice(0, 10),
-  fund: "",
-  channel: "",
-  // Counter fields
-  counterName: "",
-  paymentMode: "",
-  // Online fields
-  paymentId: "",
-  gatewayName: "",
-  // Bank fields
-  bankRefNo: "",
-  // Donor fields
-  donorName: "",
-  mobile: "",
-  email: "",
-  address: "",
-  // Receipt
-  generateReceipt: true,
-  sendNotification: false,
-  remarks: "",
-};
+type DonationType = "All" | "Counter" | "Online/Booking" | "Event" | "Project" | "Other";
 
 const DonationsList = () => {
+  const navigate = useNavigate();
+  // Hooks must be called unconditionally
   const donations = useDonations();
   const donors = useDonors();
   const { toast } = useToast();
-
-  const [search, setSearch] = useState("");
-  const [filterChannel, setFilterChannel] = useState("all");
-  const [filterFund, setFilterFund] = useState("all");
-  const [filterSource, setFilterSource] = useState("all");
-  const [filterDateFrom, setFilterDateFrom] = useState("");
-  const [filterDateTo, setFilterDateTo] = useState("");
-  const [filterDonor, setFilterDonor] = useState("all");
-  const [showFilters, setShowFilters] = useState(false);
+  const [activeTab, setActiveTab] = useState<DonationType>("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [selectedDonation, setSelectedDonation] = useState<(typeof donations)[number] | null>(null);
-  const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ ...emptyForm });
-  const [customFields, setCustomFields] = useState<CustomField[]>([]);
-  const [fundOptions, setFundOptions] = useState(["General / Hundi", "Annadanam Sponsorship", "Prasadam Sponsorship", "Seva Sponsorship", "Project-linked", "Event-linked", "Corpus Fund"]);
-  const [channelOptions, setChannelOptions] = useState(["Counter", "Online", "Bank Transfer", "Event", "Campaign"]);
+  const [emailAddress, setEmailAddress] = useState("");
 
-  const channels = [...new Set(donations.map(d => d.channel))];
-  const funds = [...new Set(donations.map(d => d.purpose))];
-  const sources = [...new Set(donations.map(d => d.sourceModule))];
-  const donorNames = [...new Set(donations.map(d => d.donorName))];
-
-  const filtered = donations.filter(d => {
-    if (search && !(
-      d.donorName.toLowerCase().includes(search.toLowerCase()) ||
-      d.donationId.toLowerCase().includes(search.toLowerCase()) ||
-      d.receiptNo.toLowerCase().includes(search.toLowerCase())
-    )) return false;
-    if (filterChannel !== "all" && d.channel !== filterChannel) return false;
-    if (filterFund !== "all" && d.purpose !== filterFund) return false;
-    if (filterSource !== "all" && d.sourceModule !== filterSource) return false;
-    if (filterDonor !== "all" && d.donorName !== filterDonor) return false;
-    if (filterDateFrom && d.date < filterDateFrom) return false;
-    if (filterDateTo && d.date > filterDateTo) return false;
-    return true;
-  });
-
-  const activeFilterCount = [filterChannel, filterFund, filterSource, filterDonor].filter(f => f !== "all").length + (filterDateFrom ? 1 : 0) + (filterDateTo ? 1 : 0);
-
-  const getMode = () => {
-    if (form.channel === "Counter") return form.paymentMode || "Cash";
-    if (form.channel === "Online") return form.gatewayName || "Online";
-    if (form.channel === "Bank Transfer") return "Bank Transfer";
-    return form.channel || "Manual";
+  // Get donation type from donation record
+  const getDonationType = (donation: any): DonationType | "Other" => {
+    if (donation.sourceModule === "Counter" || donation.counterId) return "Counter";
+    if (donation.sourceModule === "Online Portal" || donation.sourceModule === "Booking") return "Online/Booking";
+    if (donation.sourceModule === "Event" || donation.sourceRecordId?.startsWith("EVT")) return "Event";
+    if (donation.purpose?.includes("Project") || donation.sourceRecordId?.startsWith("PRJ")) return "Project";
+    return "Other"; // Default to Other for unknown types
   };
 
-  const handleRecord = () => {
-    const amt = Number(form.amount);
-    if (!Number.isFinite(amt) || amt <= 0) return;
+  // Filter donations by type and search
+  const filteredDonations = useMemo(() => {
+    let filtered = donations;
 
-    const channelMap: Record<string, string> = {
-      "Counter": "Cash",
-      "Online": "Online",
-      "Bank Transfer": "Bank Transfer",
-      "Event": "Cash",
-      "Campaign": "Cash",
-    };
+    // Filter by type
+    if (activeTab !== "All") {
+      filtered = filtered.filter(d => {
+        const type = getDonationType(d);
+        return type === activeTab;
+      });
+    }
 
-    const d = recordDonation({
-      donorName: form.donorName.trim() || "Anonymous Devotee",
-      phone: form.mobile.trim() || undefined,
-      email: form.email.trim() || undefined,
-      amount: amt,
-      purpose: form.fund || "General / Hundi",
-      channel: (channelMap[form.channel] || form.channel || "Cash") as any,
-      mode: getMode(),
-      referenceNo: form.bankRefNo.trim() || form.paymentId.trim() || undefined,
-      remarks: form.remarks.trim() || undefined,
-      sourceModule: form.channel === "Counter" ? "Counter" : form.channel === "Online" ? "Online Portal" : "Manual",
-      counterId: form.counterName.trim() || undefined,
-      date: form.date || undefined,
-      createdBy: "System",
+    // Filter by search
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(d => {
+        if (!d) return false;
+        return (
+          (d.donorName && typeof d.donorName === 'string' && d.donorName.toLowerCase().includes(query)) ||
+          (d.donationId && typeof d.donationId === 'string' && d.donationId.toLowerCase().includes(query)) ||
+          (d.receiptNo && typeof d.receiptNo === 'string' && d.receiptNo.toLowerCase().includes(query)) ||
+          (d.purpose && typeof d.purpose === 'string' && d.purpose.toLowerCase().includes(query))
+        );
+      });
+    }
+
+    // Sort by date (newest first) - with safe date handling
+    return filtered.sort((a, b) => {
+      try {
+        const dateA = a?.date ? new Date(a.date).getTime() : 0;
+        const dateB = b?.date ? new Date(b.date).getTime() : 0;
+        return dateB - dateA;
+      } catch {
+        return 0;
+      }
     });
-    toast({ title: "Donation Recorded", description: `Receipt ${d.receiptNo} generated.` });
-    setShowAdd(false);
-    setForm({ ...emptyForm });
-    setCustomFields([]);
+  }, [donations, activeTab, searchQuery]);
+
+  const getDonorInfo = (donorId: string) => {
+    return donors.find(d => d.donorId === donorId);
+  };
+
+  const handleDownloadReceipt = (donation: (typeof donations)[number]) => {
+    try {
+      const donor = getDonorInfo(donation.donorId);
+      downloadReceipt(donation, donor || null, donation.is80G || false);
+      toast({ title: "Success", description: "Receipt download initiated" });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to download receipt", variant: "destructive" });
+    }
+  };
+
+  const handlePrintReceipt = (donation: (typeof donations)[number]) => {
+    try {
+      const donor = getDonorInfo(donation.donorId);
+      printReceipt(donation, donor || null, donation.is80G || false);
+      toast({ title: "Success", description: "Print dialog opened" });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to print receipt", variant: "destructive" });
+    }
+  };
+
+  const handleSendReceipt = (donation: (typeof donations)[number]) => {
+    setSelectedDonation(donation);
+    const donor = getDonorInfo(donation.donorId);
+    if (donor?.email && donor.email !== "-") {
+      setEmailAddress(donor.email);
+    }
+    setShowEmailDialog(true);
+  };
+
+  const handleSendEmail = async () => {
+    if (!selectedDonation || !emailAddress.trim()) {
+      toast({ title: "Error", description: "Please enter a valid email address", variant: "destructive" });
+      return;
+    }
+
+    try {
+      const donor = getDonorInfo(selectedDonation.donorId);
+      await sendReceiptEmail(selectedDonation, donor || null, emailAddress.trim(), selectedDonation.is80G || false);
+      toast({ title: "Success", description: "Receipt email sent" });
+      setShowEmailDialog(false);
+      setEmailAddress("");
+      setSelectedDonation(null);
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to send email", variant: "destructive" });
+    }
+  };
+
+  const handleExport = () => {
+    // Export logic
+    const csv = [
+      ["Date", "Donor Name", "Amount", "Fund", "Donation Type", "Receipt Number"].join(","),
+      ...filteredDonations.map(d => [
+        d.date,
+        d.donorName,
+        d.amount,
+        d.purpose,
+        getDonationType(d),
+        d.receiptNo
+      ].join(","))
+    ].join("\n");
+    
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `donations-${activeTab.toLowerCase()}-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">All Donations</h1>
-          <p className="text-sm text-muted-foreground mt-1">Complete donation register with source traceability</p>
+          <h1 className="text-2xl font-bold">Donations</h1>
+          <p className="text-sm text-muted-foreground mt-1">View and manage all donations</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm"><FileDown className="h-4 w-4 mr-1" /> Export</Button>
-          <Button size="sm" onClick={() => setShowAdd(true)}><Plus className="h-4 w-4 mr-1" /> Add Donation</Button>
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          <Button onClick={() => navigate("/temple/donations/add")}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Donation
+          </Button>
         </div>
       </div>
 
-      <Card>
-        <CardContent className="p-4">
-          {/* Search + Filter Toggle */}
-          <div className="flex items-center gap-3 mb-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search by donor, ID, or receipt..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9" />
-            </div>
-            <Button variant={showFilters ? "default" : "outline"} size="sm" onClick={() => setShowFilters(!showFilters)}>
-              <Filter className="h-4 w-4 mr-1" />
-              Filters
-              {activeFilterCount > 0 && <Badge variant="secondary" className="ml-1.5 text-[10px] h-4 px-1">{activeFilterCount}</Badge>}
-            </Button>
-          </div>
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search by donor name, receipt number, or donation ID..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9"
+        />
+      </div>
 
-          {/* Filter Panel */}
-          {showFilters && (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-4 p-3 rounded-lg bg-muted/30 border">
-              <div>
-                <p className="text-[10px] text-muted-foreground mb-1 font-medium">Date From</p>
-                <Input type="date" className="h-8 text-xs" value={filterDateFrom} onChange={e => setFilterDateFrom(e.target.value)} />
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as DonationType)}>
+        <TabsList>
+          <TabsTrigger value="All">All</TabsTrigger>
+          <TabsTrigger value="Counter">Counter</TabsTrigger>
+          <TabsTrigger value="Online/Booking">Online/Booking</TabsTrigger>
+          <TabsTrigger value="Event">Event</TabsTrigger>
+          <TabsTrigger value="Project">Project</TabsTrigger>
+          <TabsTrigger value="Other">Other</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value={activeTab} className="mt-4">
+          <Card>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Donor Name</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead>Fund</TableHead>
+                      <TableHead>Donation Type</TableHead>
+                      <TableHead>Receipt Number</TableHead>
+                      <TableHead className="w-[100px]">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredDonations.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                          No donations found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredDonations.map((donation) => {
+                        const donationType = getDonationType(donation);
+                        const typeColors: Record<string, string> = {
+                          Counter: "bg-blue-100 text-blue-700",
+                          "Online/Booking": "bg-green-100 text-green-700",
+                          Event: "bg-amber-100 text-amber-700",
+                          Project: "bg-purple-100 text-purple-700",
+                          Other: "bg-gray-100 text-gray-700",
+                        };
+
+                        return (
+                          <TableRow key={donation.donationId} className="cursor-pointer hover:bg-muted/50">
+                            <TableCell>
+                              {donation.date ? new Date(donation.date).toLocaleDateString('en-IN', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                              }) : "—"}
+                            </TableCell>
+                            <TableCell className="font-medium">{donation.donorName || "—"}</TableCell>
+                            <TableCell className="text-right font-semibold">
+                              {formatCurrency(donation.amount)}
+                            </TableCell>
+                            <TableCell>{donation.purpose || "—"}</TableCell>
+                            <TableCell>
+                              <Badge className={typeColors[donationType] || "bg-gray-100 text-gray-700"}>
+                                {donationType}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="font-mono text-sm">
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  className="h-auto p-0 font-mono text-sm text-primary hover:underline"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDownloadReceipt(donation);
+                                  }}
+                                >
+                                  <FileDown className="h-3 w-3 mr-1" />
+                                  {donation.receiptNo}
+                                </Button>
+                                {donation.is80G && (
+                                  <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
+                                    80G
+                                  </Badge>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDownloadReceipt(donation);
+                                  }}>
+                                    <FileDown className="h-4 w-4 mr-2" />
+                                    Download PDF
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={(e) => {
+                                    e.stopPropagation();
+                                    handlePrintReceipt(donation);
+                                  }}>
+                                    <Printer className="h-4 w-4 mr-2" />
+                                    Print
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSendReceipt(donation);
+                                  }}>
+                                    <Mail className="h-4 w-4 mr-2" />
+                                    Send via Email
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
               </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground mb-1 font-medium">Date To</p>
-                <Input type="date" className="h-8 text-xs" value={filterDateTo} onChange={e => setFilterDateTo(e.target.value)} />
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground mb-1 font-medium">Fund</p>
-                <Select value={filterFund} onValueChange={setFilterFund}>
-                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Funds</SelectItem>
-                    {funds.map(f => <SelectItem key={f} value={f}>{f}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground mb-1 font-medium">Channel</p>
-                <Select value={filterChannel} onValueChange={setFilterChannel}>
-                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Channels</SelectItem>
-                    {channels.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground mb-1 font-medium">Donor</p>
-                <Select value={filterDonor} onValueChange={setFilterDonor}>
-                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Donors</SelectItem>
-                    {donorNames.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground mb-1 font-medium">Source Module</p>
-                <Select value={filterSource} onValueChange={setFilterSource}>
-                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Sources</SelectItem>
-                    {sources.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
+            </CardContent>
+          </Card>
+
+          {/* Summary */}
+          {filteredDonations.length > 0 && (
+            <div className="mt-4 text-sm text-muted-foreground">
+              Showing {filteredDonations.length} donation{filteredDonations.length !== 1 ? 's' : ''} • 
+              Total: <span className="font-semibold text-foreground">
+                {formatCurrency(filteredDonations.reduce((sum, d) => {
+                  const amount = typeof d?.amount === 'number' && Number.isFinite(d.amount) ? d.amount : 0;
+                  return sum + amount;
+                }, 0))}
+              </span>
             </div>
           )}
+        </TabsContent>
+      </Tabs>
 
-          {/* Table */}
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Donation ID</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Donor Name</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Fund</TableHead>
-                <TableHead>Channel</TableHead>
-                <TableHead>Location/Counter</TableHead>
-                <TableHead>Receipt No</TableHead>
-                <TableHead>Created By</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={9} className="text-center text-muted-foreground py-8">No donations match the selected filters</TableCell>
-                </TableRow>
-              )}
-              {filtered.map(d => (
-                <TableRow key={d.donationId} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedDonation(d)}>
-                  <TableCell className="font-mono text-xs">{d.donationId}</TableCell>
-                  <TableCell className="text-sm">{d.date}</TableCell>
-                  <TableCell className="font-medium text-sm">{d.donorName}</TableCell>
-                  <TableCell className="text-right font-mono font-medium">{formatCurrency(d.amount)}</TableCell>
-                  <TableCell className="text-sm">{d.purpose}</TableCell>
-                  <TableCell><Badge variant="outline" className="text-[10px]">{d.channel}</Badge></TableCell>
-                  <TableCell className="text-xs font-mono">{d.counterId || d.branchId || "—"}</TableCell>
-                  <TableCell className="font-mono text-xs">{d.receiptNo}</TableCell>
-                  <TableCell className="text-xs">System</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      {/* Donation Detail Modal */}
-      <Dialog open={!!selectedDonation} onOpenChange={() => setSelectedDonation(null)}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Donation Details</DialogTitle></DialogHeader>
-          {selectedDonation && (
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  ["Donation ID", selectedDonation.donationId],
-                  ["Date", selectedDonation.date],
-                  ["Donor", selectedDonation.donorName],
-                  ["Amount", formatCurrency(selectedDonation.amount)],
-                  ["Fund", selectedDonation.purpose],
-                  ["Channel", selectedDonation.channel],
-                  ["Mode", selectedDonation.mode],
-                  ["Receipt No", selectedDonation.receiptNo],
-                  ["Location/Counter", selectedDonation.counterId || selectedDonation.branchId || "—"],
-                  ["Source Module", selectedDonation.sourceModule],
-                  ["Reference No", selectedDonation.referenceNo || "—"],
-                  ["Created At", new Date(selectedDonation.createdAt).toLocaleString()],
-                ].map(([label, value]) => (
-                  <div key={label} className="p-2 rounded bg-muted/50">
-                    <p className="text-[10px] text-muted-foreground">{label}</p>
-                    <p className="text-sm font-medium">{value}</p>
-                  </div>
-                ))}
-              </div>
-              {selectedDonation.remarks && (
-                <div className="p-2 rounded bg-muted/50">
-                  <p className="text-[10px] text-muted-foreground">Remarks</p>
-                  <p className="text-sm">{selectedDonation.remarks}</p>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Donation Modal */}
-      <Dialog open={showAdd} onOpenChange={(open) => { setShowAdd(open); if (!open) { setForm({ ...emptyForm }); setCustomFields([]); } }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      {/* Send Email Dialog */}
+      <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Donation</DialogTitle>
-            <p className="text-sm text-muted-foreground mt-1">Record a new donation with auto-receipt generation</p>
+            <DialogTitle>Send Receipt via Email</DialogTitle>
           </DialogHeader>
-
-          <Tabs defaultValue="donation" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 bg-transparent">
-              <TabsTrigger value="donation" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none text-xs">Donation Info</TabsTrigger>
-              <TabsTrigger value="channel" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none text-xs">Channel Details</TabsTrigger>
-              <TabsTrigger value="donor" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none text-xs">Donor Info</TabsTrigger>
-              <TabsTrigger value="receipt" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none text-xs">Receipt</TabsTrigger>
-            </TabsList>
-
-            {/* Section A — Donation Info */}
-            <TabsContent value="donation" className="space-y-4 mt-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs">Amount (₹)</Label>
-                  <Input type="number" placeholder="e.g. 50000" value={form.amount} onChange={e => setForm(p => ({ ...p, amount: e.target.value }))} className="mt-1" />
-                </div>
-                <div>
-                  <Label className="text-xs">Donation Date</Label>
-                  <Input type="date" value={form.date} onChange={e => setForm(p => ({ ...p, date: e.target.value }))} className="mt-1" />
-                </div>
+          <div className="space-y-4 py-4">
+            {selectedDonation && (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Receipt: <span className="font-mono font-semibold">{selectedDonation.receiptNo}</span>
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Donor: <span className="font-semibold">{selectedDonation.donorName}</span>
+                </p>
               </div>
-              <div>
-                <Label className="text-xs">Fund / Category</Label>
-                <SelectWithAddNew
-                  value={form.fund}
-                  onValueChange={(v) => setForm(p => ({ ...p, fund: v }))}
-                  placeholder="Select fund"
-                  options={fundOptions}
-                  onAddNew={(v) => { setFundOptions(p => [...p, v]); setForm(p => ({ ...p, fund: v })); }}
-                  className="mt-1 bg-background"
-                />
-              </div>
-              <div>
-                <Label className="text-xs">Channel</Label>
-                <SelectWithAddNew
-                  value={form.channel}
-                  onValueChange={(v) => setForm(p => ({ ...p, channel: v }))}
-                  placeholder="Select channel"
-                  options={channelOptions}
-                  onAddNew={(v) => { setChannelOptions(p => [...p, v]); setForm(p => ({ ...p, channel: v })); }}
-                  className="mt-1 bg-background"
-                />
-              </div>
-            </TabsContent>
-
-            {/* Section B — Channel-Specific */}
-            <TabsContent value="channel" className="space-y-4 mt-4">
-              {form.channel === "Counter" && (
-                <>
-                  <div>
-                    <Label className="text-xs">Counter Name</Label>
-                    <Input placeholder="e.g. CTR-001" value={form.counterName} onChange={e => setForm(p => ({ ...p, counterName: e.target.value }))} className="mt-1" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Payment Mode</Label>
-                    <Select value={form.paymentMode} onValueChange={(v) => setForm(p => ({ ...p, paymentMode: v }))}>
-                      <SelectTrigger className="mt-1"><SelectValue placeholder="Select mode" /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Cash">Cash</SelectItem>
-                        <SelectItem value="UPI">UPI</SelectItem>
-                        <SelectItem value="Card">Card</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
-              {form.channel === "Online" && (
-                <>
-                  <div>
-                    <Label className="text-xs">Payment ID</Label>
-                    <Input placeholder="e.g. pay_abc123" value={form.paymentId} onChange={e => setForm(p => ({ ...p, paymentId: e.target.value }))} className="mt-1" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Gateway Name</Label>
-                    <Input placeholder="e.g. Razorpay, Paytm" value={form.gatewayName} onChange={e => setForm(p => ({ ...p, gatewayName: e.target.value }))} className="mt-1" />
-                  </div>
-                </>
-              )}
-              {form.channel === "Bank Transfer" && (
-                <>
-                  <div>
-                    <Label className="text-xs">Bank Reference Number</Label>
-                    <Input placeholder="e.g. NEFT/RTGS ref" value={form.bankRefNo} onChange={e => setForm(p => ({ ...p, bankRefNo: e.target.value }))} className="mt-1" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Upload Proof</Label>
-                    <Input type="file" accept=".pdf,.jpg,.png" className="mt-1" />
-                  </div>
-                </>
-              )}
-              {!["Counter", "Online", "Bank Transfer"].includes(form.channel) && (
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  {form.channel ? `No additional fields for "${form.channel}" channel.` : "Select a channel in Donation Info tab to see channel-specific fields."}
-                </div>
-              )}
-            </TabsContent>
-
-            {/* Section C — Donor Info */}
-            <TabsContent value="donor" className="space-y-4 mt-4">
-              <p className="text-xs text-muted-foreground">Donor information is optional. Leave blank for anonymous donations.</p>
-              <div>
-                <Label className="text-xs">Search Existing Donor</Label>
-                <Select value="" onValueChange={(v) => {
-                  const donor = donors.find(d => d.donorId === v);
-                  if (donor) {
-                    setForm(p => ({
-                      ...p,
-                      donorName: donor.name,
-                      mobile: donor.phone !== "-" ? donor.phone : "",
-                      email: donor.email !== "-" ? donor.email : "",
-                      address: donor.city !== "-" ? donor.city : "",
-                    }));
-                  }
-                }}>
-                  <SelectTrigger className="mt-1"><SelectValue placeholder="Search donor..." /></SelectTrigger>
-                  <SelectContent>
-                    {donors.map(d => <SelectItem key={d.donorId} value={d.donorId}>{d.name} ({d.donorId})</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs">Donor Name</Label>
-                  <Input placeholder="Name or Anonymous" value={form.donorName} onChange={e => setForm(p => ({ ...p, donorName: e.target.value }))} className="mt-1" />
-                </div>
-                <div>
-                  <Label className="text-xs">Mobile</Label>
-                  <Input placeholder="+91 XXXXX XXXXX" value={form.mobile} onChange={e => setForm(p => ({ ...p, mobile: e.target.value }))} className="mt-1" />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-xs">Email</Label>
-                  <Input type="email" placeholder="email@example.com" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} className="mt-1" />
-                </div>
-                <div>
-                  <Label className="text-xs">Address</Label>
-                  <Input placeholder="Address" value={form.address} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} className="mt-1" />
-                </div>
-              </div>
-            </TabsContent>
-
-            {/* Section E — Receipt */}
-            <TabsContent value="receipt" className="space-y-4 mt-4">
-              <div className="flex items-center justify-between p-3 rounded-lg border">
-                <div>
-                  <p className="text-sm font-medium">Generate Receipt</p>
-                  <p className="text-xs text-muted-foreground">Auto-generate receipt on save</p>
-                </div>
-                <Switch checked={form.generateReceipt} onCheckedChange={(v) => setForm(p => ({ ...p, generateReceipt: v }))} />
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-lg border">
-                <div>
-                  <p className="text-sm font-medium">Send SMS / Email Notification</p>
-                  <p className="text-xs text-muted-foreground">Notify donor about the receipt</p>
-                </div>
-                <Switch checked={form.sendNotification} onCheckedChange={(v) => setForm(p => ({ ...p, sendNotification: v }))} />
-              </div>
-              <div>
-                <Label className="text-xs">Remarks</Label>
-                <Textarea placeholder="Any special instructions or donor intent..." rows={2} value={form.remarks} onChange={e => setForm(p => ({ ...p, remarks: e.target.value }))} className="mt-1" />
-              </div>
-              <CustomFieldsSection fields={customFields} onFieldsChange={setCustomFields} editable={true} />
-            </TabsContent>
-          </Tabs>
-
-          <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => { setShowAdd(false); setForm({ ...emptyForm }); setCustomFields([]); }}>Cancel</Button>
-            <Button onClick={handleRecord}>Record & Generate Receipt</Button>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address *</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter email address"
+                value={emailAddress}
+                onChange={(e) => setEmailAddress(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowEmailDialog(false);
+              setEmailAddress("");
+              setSelectedDonation(null);
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={handleSendEmail}>
+              <Mail className="h-4 w-4 mr-2" />
+              Send Receipt
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -6,22 +6,36 @@ export function useDonationsState() {
 }
 
 export function useDonors() {
-  return useSyncExternalStore(subscribeDonationsStore, donationSelectors.getDonors, donationSelectors.getDonors);
+  const result = useSyncExternalStore(subscribeDonationsStore, donationSelectors.getDonors, donationSelectors.getDonors);
+  return Array.isArray(result) ? result : [];
 }
 
 export function useDonations() {
-  return useSyncExternalStore(subscribeDonationsStore, donationSelectors.getDonations, donationSelectors.getDonations);
+  const result = useSyncExternalStore(subscribeDonationsStore, donationSelectors.getDonations, donationSelectors.getDonations);
+  return Array.isArray(result) ? result : [];
 }
 
 export function useAllocations() {
-  return useSyncExternalStore(subscribeDonationsStore, donationSelectors.getAllocations, donationSelectors.getAllocations);
+  const result = useSyncExternalStore(subscribeDonationsStore, donationSelectors.getAllocations, donationSelectors.getAllocations);
+  return Array.isArray(result) ? result : [];
 }
 
 export function useCertificates80G() {
-  return useSyncExternalStore(subscribeDonationsStore, donationSelectors.getCertificates, donationSelectors.getCertificates);
+  const result = useSyncExternalStore(subscribeDonationsStore, donationSelectors.getCertificates, donationSelectors.getCertificates);
+  return Array.isArray(result) ? result : [];
 }
 
 export function useDonationAudit() {
-  return useSyncExternalStore(subscribeDonationsStore, donationSelectors.getAudit, donationSelectors.getAudit);
+  const result = useSyncExternalStore(subscribeDonationsStore, donationSelectors.getAudit, donationSelectors.getAudit);
+  return Array.isArray(result) ? result : [];
 }
 
+export function useFunds() {
+  const result = useSyncExternalStore(subscribeDonationsStore, donationSelectors.getFunds, donationSelectors.getFunds);
+  return Array.isArray(result) ? result : [];
+}
+
+export function useFundExpenses() {
+  const result = useSyncExternalStore(subscribeDonationsStore, donationSelectors.getFundExpenses, donationSelectors.getFundExpenses);
+  return Array.isArray(result) ? result : [];
+}

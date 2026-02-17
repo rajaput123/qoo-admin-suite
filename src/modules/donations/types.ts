@@ -1,5 +1,14 @@
 export type DonorCategory = "Patron" | "Trust" | "Regular" | "Organization" | "Walk-in" | "Anonymous";
 
+export interface DonorVipInfo {
+  level: string; // e.g., "Platinum", "Gold", "Silver"
+  validFrom: string; // ISO date
+  validTill: string; // ISO date
+  status: "Active" | "Expired" | "Inactive";
+  approvedBy?: string;
+  notes?: string;
+}
+
 export interface Donor {
   donorId: string; // e.g. DNR-001
   name: string;
@@ -9,6 +18,7 @@ export interface Donor {
   pan: string; // may be "-"
   category: DonorCategory;
   eligible80G: boolean;
+  vipInfo?: DonorVipInfo; // VIP information if donor is marked as VIP
   createdAt: string; // ISO datetime
 }
 
@@ -44,6 +54,8 @@ export interface Donation {
   date: string; // ISO date (yyyy-mm-dd)
   time: string; // display time
   status: "Recorded";
+  receiptFilePath?: string; // Path to generated PDF receipt
+  is80G?: boolean; // Whether this donation is eligible for 80G
   createdAt: string; // ISO datetime
 }
 
@@ -80,10 +92,34 @@ export interface DonationAuditEntry {
   details: string;
 }
 
+export interface Fund {
+  id: string;
+  name: string;
+  description?: string;
+  openingBalance?: number; // Opening balance when fund is created
+  createdAt: string; // ISO datetime
+  isActive: boolean;
+}
+
+export interface FundExpense {
+  id: string;
+  fundId: string;
+  fundName: string;
+  description: string;
+  amount: number;
+  date: string; // ISO date (yyyy-mm-dd)
+  category?: string;
+  vendor?: string;
+  referenceNo?: string;
+  createdAt: string; // ISO datetime
+}
+
 export interface DonationsState {
   donors: Donor[];
   donations: Donation[];
   allocations: Allocation[];
   certificates80G: Certificate80G[];
   audit: DonationAuditEntry[];
+  funds: Fund[]; // Managed funds list
+  fundExpenses: FundExpense[]; // Expenses linked to funds
 }

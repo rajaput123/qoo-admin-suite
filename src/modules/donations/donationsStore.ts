@@ -1,4 +1,4 @@
-import { DonationsState, Donor, Donation, Allocation, Certificate80G, DonationAuditEntry, DonationChannel, DonationSourceModule } from "./types";
+import { DonationsState, Donor, Donation, Allocation, Certificate80G, DonationAuditEntry, DonationChannel, DonationSourceModule, Fund, FundExpense, DonorCategory, DonorVipInfo } from "./types";
 
 const LS_KEY = "qoo.donations.v1";
 
@@ -119,7 +119,20 @@ function seedState(): DonationsState {
     { id: "AUD-003", action: "Receipt Generated", entity: "REC-2025-0891", user: "System", timestamp: "2025-02-10 10:30", details: "Auto-generated receipt for DON-2025-0891" },
   ];
 
-  return { donors, donations, allocations, certificates80G, audit };
+  // Seed funds from existing donation purposes
+  const funds: Fund[] = [
+    { id: "fund-general-hundi", name: "General / Hundi", description: "General donations and hundi collections", openingBalance: 0, createdAt, isActive: true },
+    { id: "fund-annadanam", name: "Annadanam Sponsorship", description: "Food sponsorship and feeding programs", openingBalance: 0, createdAt, isActive: true },
+    { id: "fund-prasadam", name: "Prasadam Sponsorship", description: "Prasadam distribution sponsorship", openingBalance: 0, createdAt, isActive: true },
+    { id: "fund-seva", name: "Seva Sponsorship", description: "Seva and ritual sponsorship", openingBalance: 0, createdAt, isActive: true },
+    { id: "fund-project", name: "Project-linked", description: "Donations for specific projects", openingBalance: 0, createdAt, isActive: true },
+    { id: "fund-event", name: "Event-linked", description: "Donations for events and festivals", openingBalance: 0, createdAt, isActive: true },
+    { id: "fund-corpus", name: "Corpus Fund", description: "Corpus and endowment funds", openingBalance: 0, createdAt, isActive: true },
+  ];
+
+  const fundExpenses: FundExpense[] = [];
+
+  return { donors, donations, allocations, certificates80G, audit, funds, fundExpenses };
 }
 
 let stateCache: DonationsState | null = null;
@@ -137,11 +150,39 @@ function persist() {
   }
 }
 
+function isValidDonationsState(state: any): state is DonationsState {
+  if (!state || typeof state !== 'object') return false;
+  // Check if all required properties exist and are arrays
+  return (
+    Array.isArray(state.donors) &&
+    Array.isArray(state.donations) &&
+    Array.isArray(state.allocations) &&
+    Array.isArray(state.certificates80G) &&
+    Array.isArray(state.audit) &&
+    Array.isArray(state.funds) &&
+    Array.isArray(state.fundExpenses)
+  );
+}
+
 export function getDonationsState(): DonationsState {
   if (stateCache) return stateCache;
-  const fromLS = safeJsonParse<DonationsState>(typeof window !== "undefined" ? localStorage.getItem(LS_KEY) : null);
-  stateCache = fromLS ?? seedState();
-  return stateCache;
+  try {
+    const fromLS = safeJsonParse<DonationsState>(typeof window !== "undefined" ? localStorage.getItem(LS_KEY) : null);
+    // Validate the structure before using it
+    if (fromLS && isValidDonationsState(fromLS)) {
+      stateCache = fromLS;
+      return stateCache;
+    } else {
+      // If corrupted, reset to seed state
+      console.warn('Donations state in localStorage is corrupted, resetting to default');
+      stateCache = seedState();
+      return stateCache;
+    }
+  } catch (error) {
+    console.error('Error loading donations state from localStorage:', error);
+    stateCache = seedState();
+    return stateCache;
+  }
 }
 
 export function subscribeDonationsStore(listener: () => void) {
@@ -155,21 +196,82 @@ function setState(next: DonationsState) {
   emit();
 }
 
+// Safe wrapper to get state with fallback - prevents crashes
+function getSafeDonationsState(): DonationsState {
+  try {
+    return getDonationsState();
+  } catch (error) {
+    console.error('Critical error getting donations state, using seed state:', error);
+    // Reset cache and return seed state
+    stateCache = null;
+    try {
+      return seedState();
+    } catch (seedError) {
+      console.error('Critical error creating seed state:', seedError);
+      // Return minimal valid state as last resort
+      const createdAt = nowIso();
+      return {
+        donors: [],
+        donations: [],
+        allocations: [],
+        certificates80G: [],
+        audit: [],
+        funds: [],
+        fundExpenses: [],
+      };
+    }
+  }
+}
+
 export const donationSelectors = {
   getDonors(): Donor[] {
-    return getDonationsState().donors;
+    try {
+      const state = getSafeDonationsState();
+      return Array.isArray(state?.donors) ? state.donors : [];
+    } catch (error) {
+      console.error('Error in getDonors selector:', error);
+      return [];
+    }
   },
   getDonations(): Donation[] {
-    return getDonationsState().donations;
+    try {
+      const state = getSafeDonationsState();
+      return Array.isArray(state?.donations) ? state.donations : [];
+    } catch {
+      return [];
+    }
   },
   getAllocations(): Allocation[] {
-    return getDonationsState().allocations;
+    try {
+      const state = getSafeDonationsState();
+      return Array.isArray(state?.allocations) ? state.allocations : [];
+    } catch {
+      return [];
+    }
   },
   getCertificates(): Certificate80G[] {
-    return getDonationsState().certificates80G;
+    try {
+      const state = getSafeDonationsState();
+      return Array.isArray(state?.certificates80G) ? state.certificates80G : [];
+    } catch {
+      return [];
+    }
   },
   getAudit(): DonationAuditEntry[] {
-    return getDonationsState().audit;
+    try {
+      const state = getSafeDonationsState();
+      return Array.isArray(state?.audit) ? state.audit : [];
+    } catch {
+      return [];
+    }
+  },
+  getFunds(): Fund[] {
+    try {
+      const state = getSafeDonationsState();
+      return Array.isArray(state?.funds) ? state.funds : [];
+    } catch {
+      return [];
+    }
   },
   getDonorById(donorId: string) {
     return getDonationsState().donors.find(d => d.donorId === donorId) ?? null;
@@ -188,20 +290,33 @@ export const donationSelectors = {
     const allocatedSet = new Set(st.allocations.map(a => a.donationId));
     return st.donations.filter(d => !allocatedSet.has(d.donationId)).reduce((sum, d) => sum + d.amount, 0);
   },
+  getFundExpenses(): FundExpense[] {
+    try {
+      const state = getSafeDonationsState();
+      return Array.isArray(state?.fundExpenses) ? state.fundExpenses : [];
+    } catch {
+      return [];
+    }
+  },
+  getExpensesForFund(fundId: string): FundExpense[] {
+    return getDonationsState().fundExpenses.filter(e => e.fundId === fundId);
+  },
 };
 
 function normalizePhone(phone: string) {
   return phone.replace(/\s+/g, "").trim();
 }
 
-function findOrCreateDonor(params: { name: string; phone?: string; email?: string; city?: string; pan?: string }): { nextState: DonationsState; donor: Donor } {
+function findOrCreateDonor(params: { name: string; phone?: string; email?: string; city?: string; pan?: string; category?: DonorCategory }): { nextState: DonationsState; donor: Donor } {
   const st = getDonationsState();
   const name = params.name.trim() || "Anonymous Devotee";
   const phone = params.phone?.trim() || "-";
   const pan = params.pan?.trim() || "-";
 
   const isAnonymous = name.toLowerCase() === "anonymous" || name.toLowerCase().includes("anonymous");
-  if (isAnonymous) {
+  let category: DonorCategory = params.category || (isAnonymous ? "Anonymous" : "Regular");
+
+  if (isAnonymous && !params.category) {
     const anon = st.donors.find(d => d.category === "Anonymous") ?? st.donors.find(d => d.name.toLowerCase().includes("anonymous"));
     if (anon) return { nextState: st, donor: anon };
   }
@@ -218,6 +333,7 @@ function findOrCreateDonor(params: { name: string; phone?: string; email?: strin
       email: params.email?.trim() || existing.email,
       city: params.city?.trim() || existing.city,
       pan: pan === "-" ? existing.pan : pan,
+      category: params.category || existing.category,
       eligible80G: (pan !== "-" && pan.length >= 10) ? true : existing.eligible80G,
     };
     const nextState: DonationsState = {
@@ -235,7 +351,7 @@ function findOrCreateDonor(params: { name: string; phone?: string; email?: strin
     email: params.email?.trim() || "-",
     city: params.city?.trim() || "-",
     pan,
-    category: isAnonymous ? "Anonymous" : "Regular",
+    category,
     eligible80G: pan !== "-" && pan.length >= 10,
     createdAt: nowIso(),
   };
@@ -257,6 +373,7 @@ export function recordDonation(input: {
   email?: string;
   city?: string;
   pan?: string;
+  category?: DonorCategory;
   amount: number;
   purpose: string;
   channel: DonationChannel;
@@ -283,9 +400,13 @@ export function recordDonation(input: {
     email: input.email,
     city: input.city,
     pan: input.pan,
+    category: input.category,
   });
 
   const ids = nextDonationPair(afterDonor, year);
+  const is80G = input.pan !== undefined && input.pan !== "-" && input.pan.length >= 10;
+  const receiptFilePath = `/receipts/${ids.receiptNo}.pdf`;
+  
   const donation: Donation = {
     donationId: ids.donationId,
     receiptNo: ids.receiptNo,
@@ -305,6 +426,8 @@ export function recordDonation(input: {
     date,
     time,
     status: "Recorded",
+    receiptFilePath,
+    is80G,
     createdAt: nowIso(),
   };
 
@@ -417,3 +540,360 @@ export function generate80GCertificate(input: { donorId: string; fy: string; cre
   return cert;
 }
 
+function nextFundId(state: DonationsState) {
+  const prefix = "fund-";
+  const existing = state.funds.map(f => f.id).filter(id => id.startsWith(prefix));
+  const max = getMaxNumericSuffix(existing, prefix);
+  return `fund-${String(max + 1).padStart(3, "0")}`;
+}
+
+export function createFund(input: { name: string; description?: string; openingBalance?: number; isActive?: boolean; createdBy?: string }) {
+  const st = getDonationsState();
+  
+  // Check if fund with same name already exists
+  const existing = st.funds.find(f => f.name.toLowerCase() === input.name.toLowerCase().trim());
+  if (existing) {
+    throw new Error(`Fund "${input.name}" already exists`);
+  }
+
+  const fund: Fund = {
+    id: nextFundId(st),
+    name: input.name.trim(),
+    description: input.description?.trim(),
+    openingBalance: input.openingBalance ?? 0,
+    createdAt: nowIso(),
+    isActive: input.isActive ?? true,
+  };
+
+  const audit: DonationAuditEntry = {
+    id: nextAuditId(st),
+    timestamp: displayTimestamp(),
+    action: "Fund Created",
+    entity: fund.id,
+    user: input.createdBy ?? "System",
+    details: `Created fund: ${fund.name}`,
+  };
+
+  const nextState: DonationsState = {
+    ...st,
+    funds: [fund, ...st.funds],
+    audit: [audit, ...st.audit],
+  };
+
+  setState(nextState);
+  return fund;
+}
+
+export function updateFund(fundId: string, input: { name?: string; description?: string; openingBalance?: number; isActive?: boolean; updatedBy?: string }) {
+  const st = getDonationsState();
+  const existing = st.funds.find(f => f.id === fundId);
+  if (!existing) {
+    throw new Error(`Fund with ID ${fundId} not found`);
+  }
+
+  // Check if name change conflicts with another fund
+  if (input.name && input.name.trim().toLowerCase() !== existing.name.toLowerCase()) {
+    const nameConflict = st.funds.find(f => f.id !== fundId && f.name.toLowerCase() === input.name.toLowerCase().trim());
+    if (nameConflict) {
+      throw new Error(`Fund "${input.name}" already exists`);
+    }
+  }
+
+  const updated: Fund = {
+    ...existing,
+    ...(input.name !== undefined && { name: input.name.trim() }),
+    ...(input.description !== undefined && { description: input.description.trim() || undefined }),
+    ...(input.openingBalance !== undefined && { openingBalance: input.openingBalance }),
+    ...(input.isActive !== undefined && { isActive: input.isActive }),
+  };
+
+  const audit: DonationAuditEntry = {
+    id: nextAuditId(st),
+    timestamp: displayTimestamp(),
+    action: "Fund Updated",
+    entity: fundId,
+    user: input.updatedBy ?? "System",
+    details: `Updated fund: ${updated.name}`,
+  };
+
+  const nextState: DonationsState = {
+    ...st,
+    funds: st.funds.map(f => f.id === fundId ? updated : f),
+    audit: [audit, ...st.audit],
+  };
+
+  setState(nextState);
+  return updated;
+}
+
+export function deleteFund(fundId: string, deletedBy?: string) {
+  const st = getDonationsState();
+  const fund = st.funds.find(f => f.id === fundId);
+  if (!fund) {
+    throw new Error(`Fund with ID ${fundId} not found`);
+  }
+
+  // Check if fund is used in any donations
+  const hasDonations = st.donations.some(d => d.purpose === fund.name);
+  if (hasDonations) {
+    // Deactivate instead of delete
+    return updateFund(fundId, { isActive: false, updatedBy: deletedBy });
+  }
+
+  const audit: DonationAuditEntry = {
+    id: nextAuditId(st),
+    timestamp: displayTimestamp(),
+    action: "Fund Deleted",
+    entity: fundId,
+    user: deletedBy ?? "System",
+    details: `Deleted fund: ${fund.name}`,
+  };
+
+  const nextState: DonationsState = {
+    ...st,
+    funds: st.funds.filter(f => f.id !== fundId),
+    audit: [audit, ...st.audit],
+  };
+
+  setState(nextState);
+  return fund;
+}
+
+function nextExpenseId(state: DonationsState) {
+  const prefix = "EXP-";
+  const existing = state.fundExpenses.map(e => e.id).filter(id => id.startsWith(prefix));
+  const max = getMaxNumericSuffix(existing, prefix);
+  return `EXP-${String(max + 1).padStart(3, "0")}`;
+}
+
+export function createFundExpense(input: {
+  fundId: string;
+  fundName: string;
+  description: string;
+  amount: number;
+  date?: string;
+  category?: string;
+  vendor?: string;
+  referenceNo?: string;
+  createdBy?: string;
+}) {
+  const st = getDonationsState();
+  const fund = st.funds.find(f => f.id === input.fundId);
+  if (!fund) {
+    throw new Error(`Fund with ID ${input.fundId} not found`);
+  }
+
+  const expense: FundExpense = {
+    id: nextExpenseId(st),
+    fundId: input.fundId,
+    fundName: input.fundName,
+    description: input.description.trim(),
+    amount: input.amount,
+    date: input.date ?? isoDate(),
+    category: input.category?.trim(),
+    vendor: input.vendor?.trim(),
+    referenceNo: input.referenceNo?.trim(),
+    createdAt: nowIso(),
+  };
+
+  const audit: DonationAuditEntry = {
+    id: nextAuditId(st),
+    timestamp: displayTimestamp(),
+    action: "Fund Expense Recorded",
+    entity: expense.id,
+    user: input.createdBy ?? "System",
+    details: `₹${expense.amount.toLocaleString()} expense for ${fund.name}: ${expense.description}`,
+  };
+
+  const nextState: DonationsState = {
+    ...st,
+    fundExpenses: [expense, ...st.fundExpenses],
+    audit: [audit, ...st.audit],
+  };
+
+  setState(nextState);
+  return expense;
+}
+
+export function updateFundExpense(expenseId: string, input: {
+  description?: string;
+  amount?: number;
+  date?: string;
+  category?: string;
+  vendor?: string;
+  referenceNo?: string;
+  updatedBy?: string;
+}) {
+  const st = getDonationsState();
+  const existing = st.fundExpenses.find(e => e.id === expenseId);
+  if (!existing) {
+    throw new Error(`Expense with ID ${expenseId} not found`);
+  }
+
+  const updated: FundExpense = {
+    ...existing,
+    ...(input.description !== undefined && { description: input.description.trim() }),
+    ...(input.amount !== undefined && { amount: input.amount }),
+    ...(input.date !== undefined && { date: input.date }),
+    ...(input.category !== undefined && { category: input.category.trim() }),
+    ...(input.vendor !== undefined && { vendor: input.vendor.trim() }),
+    ...(input.referenceNo !== undefined && { referenceNo: input.referenceNo.trim() }),
+  };
+
+  const audit: DonationAuditEntry = {
+    id: nextAuditId(st),
+    timestamp: displayTimestamp(),
+    action: "Fund Expense Updated",
+    entity: expenseId,
+    user: input.updatedBy ?? "System",
+    details: `Updated expense: ${updated.description}`,
+  };
+
+  const nextState: DonationsState = {
+    ...st,
+    fundExpenses: st.fundExpenses.map(e => e.id === expenseId ? updated : e),
+    audit: [audit, ...st.audit],
+  };
+
+  setState(nextState);
+  return updated;
+}
+
+export function deleteFundExpense(expenseId: string, deletedBy?: string) {
+  const st = getDonationsState();
+  const expense = st.fundExpenses.find(e => e.id === expenseId);
+  if (!expense) {
+    throw new Error(`Expense with ID ${expenseId} not found`);
+  }
+
+  const audit: DonationAuditEntry = {
+    id: nextAuditId(st),
+    timestamp: displayTimestamp(),
+    action: "Fund Expense Deleted",
+    entity: expenseId,
+    user: deletedBy ?? "System",
+    details: `Deleted expense: ${expense.description}`,
+  };
+
+  const nextState: DonationsState = {
+    ...st,
+    fundExpenses: st.fundExpenses.filter(e => e.id !== expenseId),
+    audit: [audit, ...st.audit],
+  };
+
+  setState(nextState);
+  return expense;
+}
+
+export function markDonorAsVip(input: {
+  donorId: string;
+  level: string;
+  validFrom: string;
+  validTill: string;
+  approvedBy?: string;
+  notes?: string;
+}) {
+  const st = getDonationsState();
+  const donor = st.donors.find(d => d.donorId === input.donorId);
+  if (!donor) {
+    throw new Error(`Donor with ID ${input.donorId} not found`);
+  }
+
+  const now = new Date();
+  const validFrom = new Date(input.validFrom);
+  const validTill = new Date(input.validTill);
+  
+  let status: "Active" | "Expired" | "Inactive" = "Active";
+  if (validTill < now) {
+    status = "Expired";
+  }
+
+  const vipInfo: DonorVipInfo = {
+    level: input.level,
+    validFrom: input.validFrom,
+    validTill: input.validTill,
+    status,
+    approvedBy: input.approvedBy,
+    notes: input.notes,
+  };
+
+  const updated: Donor = {
+    ...donor,
+    vipInfo,
+  };
+
+  const audit: DonationAuditEntry = {
+    id: nextAuditId(st),
+    timestamp: displayTimestamp(),
+    action: "Donor Marked as VIP",
+    entity: input.donorId,
+    user: input.approvedBy ?? "System",
+    details: `Marked as VIP ${input.level} (valid till ${input.validTill})`,
+  };
+
+  const nextState: DonationsState = {
+    ...st,
+    donors: st.donors.map(d => d.donorId === input.donorId ? updated : d),
+    audit: [audit, ...st.audit],
+  };
+
+  setState(nextState);
+  return updated;
+}
+
+export function updateDonorVip(input: {
+  donorId: string;
+  level?: string;
+  validFrom?: string;
+  validTill?: string;
+  status?: "Active" | "Expired" | "Inactive";
+  approvedBy?: string;
+  notes?: string;
+}) {
+  const st = getDonationsState();
+  const donor = st.donors.find(d => d.donorId === input.donorId);
+  if (!donor || !donor.vipInfo) {
+    throw new Error(`Donor with ID ${input.donorId} is not marked as VIP`);
+  }
+
+  const now = new Date();
+  const validTill = input.validTill ? new Date(input.validTill) : new Date(donor.vipInfo.validTill);
+  
+  let status = input.status || donor.vipInfo.status;
+  if (!input.status && validTill < now) {
+    status = "Expired";
+  }
+
+  const updatedVipInfo: DonorVipInfo = {
+    ...donor.vipInfo,
+    ...(input.level && { level: input.level }),
+    ...(input.validFrom && { validFrom: input.validFrom }),
+    ...(input.validTill && { validTill: input.validTill }),
+    status,
+    ...(input.approvedBy && { approvedBy: input.approvedBy }),
+    ...(input.notes !== undefined && { notes: input.notes }),
+  };
+
+  const updated: Donor = {
+    ...donor,
+    vipInfo: updatedVipInfo,
+  };
+
+  const audit: DonationAuditEntry = {
+    id: nextAuditId(st),
+    timestamp: displayTimestamp(),
+    action: "VIP Information Updated",
+    entity: input.donorId,
+    user: input.approvedBy ?? "System",
+    details: `Updated VIP information for ${donor.name}`,
+  };
+
+  const nextState: DonationsState = {
+    ...st,
+    donors: st.donors.map(d => d.donorId === input.donorId ? updated : d),
+    audit: [audit, ...st.audit],
+  };
+
+  setState(nextState);
+  return updated;
+}

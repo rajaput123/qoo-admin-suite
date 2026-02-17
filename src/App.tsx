@@ -150,11 +150,12 @@ import CommLogsReports from "./pages/temple/communication/LogsReports";
 import DonationsLayout from "./pages/temple/DonationsLayout";
 import DonationDashboard from "./pages/temple/donations/Dashboard";
 import DonationsList from "./pages/temple/donations/DonationsList";
+import AddDonation from "./pages/temple/donations/AddDonation";
 import DonorRegistry from "./pages/temple/donations/DonorRegistry";
-import RecordDonation from "./pages/temple/donations/RecordDonation";
+import Funds from "./pages/temple/donations/Funds";
+import FundDetails from "./pages/temple/donations/FundDetails";
+import Reports from "./pages/temple/donations/Reports";
 import Receipts80G from "./pages/temple/donations/Receipts80G";
-import FundAllocation from "./pages/temple/donations/FundAllocation";
-import DonationReportsGovernance from "./pages/temple/donations/ReportsGovernance";
 // Feedback & Analytics Module
 import FeedbackLayout from "./pages/temple/FeedbackLayout";
 import FeedbackDashboard from "./pages/temple/feedback/Dashboard";
@@ -189,6 +190,7 @@ import ProjectsTimeline from "./pages/temple/projects/Timeline";
 import ProjectsReports from "./pages/temple/projects/Reports";
 import ProjectsArchive from "./pages/temple/projects/Archive";
 import NotFound from "./pages/NotFound";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
@@ -308,14 +310,19 @@ const App = () => {
 
             {/* Placeholder routes for other Temple modules */}
             {/* Donation Management Module */}
-            <Route path="/temple/donations" element={<DonationsLayout />}>
-              <Route index element={<DonationDashboard />} />
-              <Route path="list" element={<DonationsList />} />
-              <Route path="donors" element={<DonorRegistry />} />
-              <Route path="record" element={<RecordDonation />} />
-              <Route path="receipts" element={<Receipts80G />} />
-              <Route path="allocation" element={<FundAllocation />} />
-              <Route path="reports" element={<DonationReportsGovernance />} />
+            <Route path="/temple/donations" element={
+              <ErrorBoundary>
+                <DonationsLayout />
+              </ErrorBoundary>
+            }>
+              <Route index element={<ErrorBoundary><DonationDashboard /></ErrorBoundary>} />
+              <Route path="list" element={<ErrorBoundary><DonationsList /></ErrorBoundary>} />
+              <Route path="add" element={<ErrorBoundary><AddDonation /></ErrorBoundary>} />
+              <Route path="donors" element={<ErrorBoundary><DonorRegistry /></ErrorBoundary>} />
+              <Route path="funds" element={<ErrorBoundary><Funds /></ErrorBoundary>} />
+              <Route path="funds/:fundId" element={<ErrorBoundary><FundDetails /></ErrorBoundary>} />
+              <Route path="reports" element={<ErrorBoundary><Reports /></ErrorBoundary>} />
+              <Route path="receipts" element={<ErrorBoundary><Receipts80G /></ErrorBoundary>} />
             </Route>
             {/* Finance & Accounts Module */}
             <Route path="/temple/finance" element={<FinanceLayout />}>

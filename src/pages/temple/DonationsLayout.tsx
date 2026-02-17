@@ -2,11 +2,11 @@ import { Heart, LayoutDashboard, Users, Wallet, FileBarChart, IndianRupee } from
 import TempleLayout from "@/components/TempleLayout";
 
 const navItems = [
-  { label: "Dashboard", path: "/temple/donations", icon: LayoutDashboard, description: "Donation overview & KPIs" },
-  { label: "Donations", path: "/temple/donations/list", icon: IndianRupee, description: "All donations & add new" },
-  { label: "Donors", path: "/temple/donations/donors", icon: Users, description: "Donor registry & profiles" },
-  { label: "Funds", path: "/temple/donations/allocation", icon: Wallet, description: "Fund allocation & utilization" },
-  { label: "Reports", path: "/temple/donations/reports", icon: FileBarChart, description: "Reports, audit & governance" },
+  { label: "Dashboard", path: "/temple/donations", icon: LayoutDashboard, description: "Donation overview & summary" },
+  { label: "Donations", path: "/temple/donations/list", icon: IndianRupee, description: "View all donations by type" },
+  { label: "Donors", path: "/temple/donations/donors", icon: Users, description: "Donor list & donation history" },
+  { label: "Funds", path: "/temple/donations/funds", icon: Wallet, description: "Fund balances & management" },
+  { label: "Reports", path: "/temple/donations/reports", icon: FileBarChart, description: "Generate reports & export" },
 ];
 
 const DonationsLayout = () => {

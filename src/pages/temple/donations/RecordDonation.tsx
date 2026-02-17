@@ -9,10 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Plus, IndianRupee, Banknote, Smartphone, Building2, Gift, Calendar } from "lucide-react";
+import { Search, Plus, IndianRupee, Banknote, Smartphone, Building2, Gift, Calendar, FileDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useDonations } from "@/modules/donations/hooks";
+import { useDonations, useDonors } from "@/modules/donations/hooks";
 import { recordDonation } from "@/modules/donations/donationsStore";
+import { downloadReceipt } from "@/lib/receiptGenerator";
 
 const formatCurrency = (val: number) => {
   if (val >= 10000000) return `₹${(val / 10000000).toFixed(1)} Cr`;
@@ -30,6 +31,7 @@ const channelIcons: Record<string, typeof IndianRupee> = {
 
 const RecordDonation = () => {
   const donations = useDonations();
+  const donors = useDonors();
   const [showRecord, setShowRecord] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedRecord, setSelectedRecord] = useState<(typeof donations)[number] | null>(null);
@@ -142,7 +144,29 @@ const RecordDonation = () => {
                   <TableCell className="text-xs">{r.mode}</TableCell>
                   <TableCell className="text-right font-mono font-medium">{formatCurrency(r.amount)}</TableCell>
                   <TableCell className="text-xs">{r.date}</TableCell>
-                  <TableCell className="font-mono text-xs text-primary">{r.receiptNo}</TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {r.receiptNo ? (
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="h-auto p-0 font-mono text-xs text-primary hover:underline"
+                        onClick={() => {
+                          const donor = donors.find(d => d.donorId === r.donorId);
+                          try {
+                            downloadReceipt(r, donor || null, r.is80G || false);
+                            toast({ title: "Success", description: "Receipt download initiated" });
+                          } catch (error: any) {
+                            toast({ title: "Error", description: error.message || "Failed to download receipt", variant: "destructive" });
+                          }
+                        }}
+                      >
+                        <FileDown className="h-3 w-3 mr-1" />
+                        {r.receiptNo}
+                      </Button>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -189,7 +213,23 @@ const RecordDonation = () => {
                 <div className="p-4 rounded-lg border bg-muted/30 text-center">
                   <p className="font-mono text-lg font-bold">{selectedRecord.receiptNo}</p>
                   <p className="text-sm text-muted-foreground mt-1">Auto-generated on {selectedRecord.date}</p>
-                  <Button variant="outline" size="sm" className="mt-3">Download Receipt PDF</Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-3"
+                    onClick={() => {
+                      const donor = donors.find(d => d.donorId === selectedRecord.donorId);
+                      try {
+                        downloadReceipt(selectedRecord, donor || null, selectedRecord.is80G || false);
+                        toast({ title: "Success", description: "Receipt download initiated" });
+                      } catch (error: any) {
+                        toast({ title: "Error", description: error.message || "Failed to download receipt", variant: "destructive" });
+                      }
+                    }}
+                  >
+                    <FileDown className="h-4 w-4 mr-2" />
+                    Download Receipt PDF
+                  </Button>
                 </div>
               </TabsContent>
               <TabsContent value="allocation" className="mt-4">
