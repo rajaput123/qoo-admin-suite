@@ -5,7 +5,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { Plus, Edit, Trash2, Clock } from 'lucide-react';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+
 import {
   Dialog,
   DialogContent,
@@ -203,22 +203,21 @@ export default function Shifts() {
           setViewOpen(true);
         }}
         actions={(row) => (
-          <>
-            <DropdownMenuItem onClick={() => {
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => {
+              e.stopPropagation();
               setEditingShift(row);
               setModalOpen(true);
             }}>
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-destructive focus:text-destructive"
-              onClick={() => handleDelete(row.id)}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete
-            </DropdownMenuItem>
-          </>
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(row.id);
+            }}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         )}
       />
 
