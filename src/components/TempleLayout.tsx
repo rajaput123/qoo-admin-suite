@@ -10,6 +10,7 @@ import {
   Settings,
   HelpCircle,
   User,
+  ChevronDown,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,7 @@ interface NavItemType {
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
   description?: string;
+  children?: NavItemType[];
 }
 
 interface TempleLayoutProps {
@@ -45,6 +47,25 @@ const TempleLayout = ({ title, icon: Icon, navItems }: TempleLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
+    // Auto-expand group containing current path
+    const set = new Set<string>();
+    for (const item of navItems) {
+      if (item.children?.some(c => location.pathname === c.path)) {
+        set.add(item.label);
+      }
+    }
+    return set;
+  });
+
+  const toggleGroup = (label: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(label)) next.delete(label);
+      else next.add(label);
+      return next;
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -107,11 +128,88 @@ const TempleLayout = ({ title, icon: Icon, navItems }: TempleLayoutProps) => {
           )}
         </div>
 
-        {/* Navigation */}
         <nav className="flex-1 px-2 py-2 space-y-0.5 overflow-auto">
           {navItems.map((item) => {
-            const active = location.pathname === item.path || 
+            const hasChildren = item.children && item.children.length > 0;
+            const isGroupExpanded = expandedGroups.has(item.label);
+            const active = location.pathname === item.path ||
               (item.path === navItems[0]?.path && location.pathname === navItems[0]?.path.replace(/\/[^/]+$/, ''));
+            const childActive = hasChildren && item.children!.some(c => location.pathname === c.path);
+
+            if (hasChildren) {
+              const groupButton = (
+                <button
+                  key={item.path}
+                  onClick={() => collapsed ? navigate(item.children![0].path) : toggleGroup(item.label)}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200",
+                    childActive
+                      ? "text-primary font-medium bg-primary/5"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  )}
+                >
+                  <item.icon className="h-4 w-4 shrink-0" />
+                  {!collapsed && (
+                    <>
+                      <span className="flex-1 text-left truncate">{item.label}</span>
+                      <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isGroupExpanded && "rotate-180")} />
+                    </>
+                  )}
+                </button>
+              );
+
+              return (
+                <div key={item.path}>
+                  <Tooltip delayDuration={collapsed ? 0 : 500}>
+                    <TooltipTrigger asChild>{groupButton}</TooltipTrigger>
+                    <TooltipContent side="right" className="max-w-[200px]">
+                      <p className="font-medium text-xs">{item.label}</p>
+                      {item.description && <p className="text-xs text-muted-foreground">{item.description}</p>}
+                    </TooltipContent>
+                  </Tooltip>
+                  <AnimatePresence>
+                    {isGroupExpanded && !collapsed && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="ml-4 pl-3 border-l border-border/50 space-y-0.5 py-1">
+                          {item.children!.map(child => {
+                            const childIsActive = location.pathname === child.path;
+                            return (
+                              <Tooltip key={child.path} delayDuration={500}>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    onClick={() => navigate(child.path)}
+                                    className={cn(
+                                      "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[13px] transition-all duration-200",
+                                      childIsActive
+                                        ? "bg-primary text-primary-foreground"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                                    )}
+                                  >
+                                    <child.icon className="h-3.5 w-3.5 shrink-0" />
+                                    <span className="flex-1 text-left truncate">{child.label}</span>
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="right">
+                                  <p className="text-xs">{child.description || child.label}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            );
+                          })}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            }
+
+            // Flat item (no children)
             const button = (
               <button
                 key={item.path}
@@ -130,8 +228,8 @@ const TempleLayout = ({ title, icon: Icon, navItems }: TempleLayoutProps) => {
                     {item.badge && (
                       <span className={cn(
                         "text-[10px] px-1.5 py-0.5 rounded-full font-medium",
-                        active 
-                          ? "bg-primary-foreground/20 text-primary-foreground" 
+                        active
+                          ? "bg-primary-foreground/20 text-primary-foreground"
                           : "bg-muted text-muted-foreground"
                       )}>
                         {item.badge}
@@ -149,9 +247,6 @@ const TempleLayout = ({ title, icon: Icon, navItems }: TempleLayoutProps) => {
                   <p className="font-medium text-xs">{item.label}</p>
                   {item.description && (
                     <p className="text-xs text-muted-foreground">{item.description}</p>
-                  )}
-                  {item.badge && (
-                    <p className="text-xs text-muted-foreground mt-1">{item.badge} items</p>
                   )}
                 </TooltipContent>
               </Tooltip>
