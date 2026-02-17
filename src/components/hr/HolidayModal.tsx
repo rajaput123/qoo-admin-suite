@@ -1,3 +1,3 @@
-export function HolidayModal() {
-  return <div>HolidayModal - Placeholder</div>;
+export function HolidayModal(props: any) {
+  return null;
 }

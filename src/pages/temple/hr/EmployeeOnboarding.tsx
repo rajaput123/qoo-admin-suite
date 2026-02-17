@@ -178,14 +178,14 @@ export default function EmployeeOnboarding() {
 
       const newEmployee: Employee = {
         id: String(Date.now()),
-        employeeCode: formData.employeeCode,
+        employeeId: formData.employeeCode,
         name: `${formData.firstName} ${formData.lastName}`.trim(),
         email: formData.email,
         phone: formData.phone,
         department: deptLabel,
         designation: desgLabel,
         status: 'active',
-        joinDate: formData.joiningDate || new Date().toISOString().split('T')[0],
+        joiningDate: formData.joiningDate || new Date().toISOString().split('T')[0],
       };
 
       // Persist (UI-only): store extra onboarding data on the record
@@ -203,10 +203,13 @@ export default function EmployeeOnboarding() {
     }, 1000);
   };
 
-  const handleDocumentUpload = (document: Omit<EmployeeDocument, 'id' | 'uploadedOn' | 'uploadedBy'>) => {
+  const handleDocumentUpload = (document: any) => {
     const newDocument: EmployeeDocument = {
       ...document,
       id: `doc-${Date.now()}`,
+      employeeId: formData.employeeCode,
+      name: document.name || 'Document',
+      type: document.type || 'other',
       uploadedOn: new Date().toISOString(),
       uploadedBy: user?.id || 'system',
     };

@@ -241,7 +241,7 @@ export default function HallRoomDetail() {
                       {Object.entries(hallRoom.customFields).map(([key, value]) => (
                         <div key={key} className="p-2 border rounded-md">
                           <p className="text-xs text-muted-foreground uppercase">{key}</p>
-                          <p className="font-medium text-sm">{value}</p>
+                          <p className="font-medium text-sm">{String(value)}</p>
                         </div>
                       ))}
                     </div>

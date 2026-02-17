@@ -243,13 +243,14 @@ export default function Employees() {
   const handleBulkImport = (importedEmployees: Partial<Employee>[]) => {
     const newEmployees: Employee[] = importedEmployees.map((emp, index) => ({
       id: String(employees.length + index + 1),
+      employeeId: `EMP-${String(employees.length + index + 1).padStart(4, '0')}`,
       name: emp.name || '',
       email: emp.email || '',
       phone: emp.phone || '',
       department: emp.department || '',
       designation: emp.designation || '',
       status: 'active' as const,
-      joinDate: new Date().toISOString().split('T')[0],
+      joiningDate: new Date().toISOString().split('T')[0],
     }));
     const next = [...employees, ...newEmployees];
     setEmployees(next);

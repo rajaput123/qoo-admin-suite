@@ -10,16 +10,18 @@ interface Column<T> {
   label: string;
   sortable?: boolean;
   render?: (value: unknown, row: T) => React.ReactNode;
+  [key: string]: any;
 }
 
 interface DataTableProps<T> {
   data: T[];
   columns: Column<T>[];
   searchPlaceholder?: string;
-  defaultViewMode?: "grid" | "list";
+  defaultViewMode?: string;
   imageKey?: string;
   onRowClick?: (row: T) => void;
   actions?: (row: T) => React.ReactNode;
+  [key: string]: any;
 }
 
 export function DataTable<T extends Record<string, any>>({
@@ -30,9 +32,10 @@ export function DataTable<T extends Record<string, any>>({
   imageKey,
   onRowClick,
   actions,
+  ...rest
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">(defaultViewMode);
+  const [viewMode, setViewMode] = useState(defaultViewMode);
 
   const filteredData = useMemo(() => {
     if (!search) return data;
@@ -65,7 +68,7 @@ export function DataTable<T extends Record<string, any>>({
               <Grid3x3 className="h-4 w-4" />
             </Button>
             <Button
-              variant={viewMode === "list" ? "default" : "outline"}
+              variant={(viewMode as string) === "list" ? "default" : "outline"}
               size="icon"
               onClick={() => setViewMode("list")}
             >

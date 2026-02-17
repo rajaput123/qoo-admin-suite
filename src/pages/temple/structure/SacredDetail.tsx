@@ -352,7 +352,7 @@ export default function SacredDetail() {
                     {Object.entries(sacred.customFields).map(([key, value]) => (
                       <div key={key} className="space-y-2 pb-4 border-b">
                         <dt className="text-sm text-muted-foreground font-medium uppercase tracking-wide">{key}</dt>
-                        <dd className="text-base font-semibold text-foreground">{value}</dd>
+                        <dd className="text-base font-semibold text-foreground">{String(value)}</dd>
                       </div>
                     ))}
                   </dl>

@@ -1,3 +1,3 @@
-export function GradePayModal() {
-  return <div>GradePayModal - Placeholder</div>;
+export function GradePayModal(props: any) {
+  return null;
 }

@@ -54,6 +54,7 @@ export interface ChildTemple {
   gpsCoordinates?: GPSCoordinates;
   customFields?: Record<string, string>;
   createdAt: string;
+  [key: string]: any;
 }
 
 export type SacredType = 'deity' | 'samadhi' | 'other';
@@ -72,9 +73,10 @@ export interface Sacred {
   description?: string;
   image?: string;
   status: 'active' | 'inactive';
-  festivals?: Array<{ name: string; date: string }>;
+  festivals?: Array<Record<string, any>>;
   abhishekamSchedule?: Array<{ day: string; time: string; type: string }>;
   createdAt: string;
+  [key: string]: any;
 }
 
 export type ZoneType = 'public' | 'restricted' | 'maintenance' | 'other';
@@ -96,6 +98,7 @@ export interface Zone {
   status: 'active' | 'inactive';
   image?: string;
   createdAt: string;
+  [key: string]: any;
 }
 
 export type HallRoomType = 'hall' | 'room';
@@ -113,8 +116,9 @@ export interface HallRoom {
   description?: string;
   status: 'active' | 'inactive';
   image?: string;
-  maintenanceSchedule?: Array<{ day: string; time: string; type: string }>;
+  maintenanceSchedule?: Array<Record<string, any>>;
   createdAt: string;
+  [key: string]: any;
 }
 
 export type CounterType = 'seva' | 'donation' | 'information' | 'ticket' | 'other';
@@ -163,4 +167,5 @@ export interface Counter {
   status: 'active' | 'inactive';
   image?: string;
   createdAt: string;
+  [key: string]: any;
 }

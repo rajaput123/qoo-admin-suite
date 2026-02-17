@@ -201,9 +201,7 @@ export default function AttendanceReports() {
       {/* Reports Table */}
       <DataTable
         data={reports}
-        columns={columns}
-        searchable={false}
-        viewToggle={false}
+        columns={columns as any}
       />
     </div>
   );
