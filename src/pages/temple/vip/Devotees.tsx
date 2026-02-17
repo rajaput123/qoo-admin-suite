@@ -623,7 +623,7 @@ const VipDevotees = () => {
                   </TableCell>
                   <TableCell className="text-center text-xs">
                     <div className="flex flex-col items-center gap-0.5">
-                      <span>{v.validTill}</span>
+                      <span>{v.vip?.validTill || "—"}</span>
                       {v.vip?.status === "Expired" && (
                         <span className="text-[11px] text-warning flex items-center gap-1">
                           <AlertTriangle className="h-3 w-3" />

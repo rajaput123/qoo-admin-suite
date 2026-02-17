@@ -231,9 +231,9 @@ const Items = () => {
                     </TabsContent>
                     <TabsContent value="contact" className="mt-3">
                       <div className="grid grid-cols-2 gap-3">
-                        <div><Label className="text-xs">Phone</Label><p className="text-sm mt-1 text-muted-foreground">{(supplierRefs.find(s=>s.name===form.supplier)?.phone) || "—"}</p></div>
-                        <div><Label className="text-xs">Email</Label><p className="text-sm mt-1 text-muted-foreground">{(supplierRefs.find(s=>s.name===form.supplier)?.email) || "—"}</p></div>
-                        <div className="col-span-2"><Label className="text-xs">Address</Label><p className="text-sm mt-1 text-muted-foreground">{(supplierRefs.find(s=>s.name===form.supplier)?.address) || "—"}</p></div>
+                        <div><Label className="text-xs">Phone</Label><p className="text-sm mt-1 text-muted-foreground">{(supplierRefs.find(s=>s.name===form.supplier)?.contact) || "—"}</p></div>
+                        <div><Label className="text-xs">Email</Label><p className="text-sm mt-1 text-muted-foreground">{"—"}</p></div>
+                        <div className="col-span-2"><Label className="text-xs">Address</Label><p className="text-sm mt-1 text-muted-foreground">{"—"}</p></div>
                       </div>
                     </TabsContent>
                     <TabsContent value="inventory" className="mt-3">
@@ -241,8 +241,8 @@ const Items = () => {
                     </TabsContent>
                     <TabsContent value="financial" className="mt-3">
                       <div className="grid grid-cols-2 gap-3">
-                        <div><Label className="text-xs">Bank</Label><p className="text-sm mt-1 text-muted-foreground">{(supplierRefs.find(s=>s.name===form.supplier)?.bankName) || "—"}</p></div>
-                        <div><Label className="text-xs">Last Order</Label><p className="text-sm mt-1 text-muted-foreground">{(supplierRefs.find(s=>s.name===form.supplier)?.lastOrder) || "—"}</p></div>
+                        <div><Label className="text-xs">Bank</Label><p className="text-sm mt-1 text-muted-foreground">{"—"}</p></div>
+                        <div><Label className="text-xs">Last Order</Label><p className="text-sm mt-1 text-muted-foreground">{"—"}</p></div>
                       </div>
                     </TabsContent>
                   </Tabs>

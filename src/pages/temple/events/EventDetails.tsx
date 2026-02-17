@@ -638,9 +638,9 @@ const EventDetails = () => {
                       <TableCell><Badge className={`text-xs border-0 ${priorityColors[t.priority]}`}>{t.priority}</Badge></TableCell>
                       <TableCell>
                         <Badge className={`text-xs border-0 ${t.status === "Completed" ? "bg-green-100 text-green-700" :
-                            status === "In Progress" ? "bg-blue-100 text-blue-700" :
-                              t.atus === "Overdue" ? "bg-red-100 text-red-700" :
-                                "bg-ted text-muted-foreground"
+                            t.status === "In Progress" ? "bg-blue-100 text-blue-700" :
+                              t.status === "Overdue" ? "bg-red-100 text-red-700" :
+                                "bg-muted text-muted-foreground"
                           }`}>{t.status}</Badge>
                       </TableCell>
                     </TableRow>
