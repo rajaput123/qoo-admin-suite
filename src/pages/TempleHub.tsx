@@ -36,6 +36,8 @@ import {
   IndianRupee,
   Wallet,
 } from "lucide-react";
+import CreditWidget from "@/components/credits/CreditWidget";
+import LowCreditBanner from "@/components/credits/LowCreditBanner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -463,6 +465,9 @@ const TempleHub = () => {
         />
       )}
 
+      {/* Low Credit Banner */}
+      <LowCreditBanner creditsRemaining={68} />
+
       {/* Suspended Overlay */}
       {isSuspended && (
         <div className="bg-red-50 border-b border-red-200 py-8 text-center">
@@ -503,6 +508,11 @@ const TempleHub = () => {
             </Badge>
           </div>
         </motion.div>
+
+        {/* Credit Widget */}
+        <div className="mb-8 max-w-sm">
+          <CreditWidget planName={tenantData.plan} creditsRemaining={68} totalCredits={100} renewalDate="2026-03-15" />
+        </div>
 
         {/* Module Grid - Enabled */}
         {!isSuspended && (
