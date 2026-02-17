@@ -198,18 +198,20 @@ const TempleProfile = () => {
           </div>
         </div>
 
-        {/* Trust & Legal Details — aligned with Registration Step 4 */}
+        {/* Trust & Legal Details */}
         <div className="glass-card rounded-2xl p-6 mb-6">
           <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
             <FileText className="h-4 w-4" /> Trust & Legal Details
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Required</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div className="space-y-2 md:col-span-2">
               <Label>Trust / Entity Name *</Label>
               <Input defaultValue="Sri Venkateswara Temple Trust Board" />
             </div>
             <div className="space-y-2">
-              <Label>Legal Entity Type *</Label>
+              <Label>Legal Type *</Label>
               <Select defaultValue="charitable-trust">
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -226,19 +228,24 @@ const TempleProfile = () => {
               <Input defaultValue="TRN/2020/12345" />
             </div>
             <div className="space-y-2">
+              <Label>PAN *</Label>
+              <Input defaultValue="AACTS1234P" />
+            </div>
+          </div>
+
+          <Separator className="mb-4" />
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Optional</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
               <Label>Registration Date</Label>
               <Input type="date" defaultValue="1985-06-15" />
             </div>
             <div className="space-y-2">
-              <Label>PAN (Optional)</Label>
-              <Input defaultValue="AACTS1234P" />
-            </div>
-            <div className="space-y-2">
-              <Label>12A Registration Number</Label>
+              <Label>12A Number</Label>
               <Input defaultValue="12A/2020/56789" />
             </div>
             <div className="space-y-2">
-              <Label>80G Registration Number</Label>
+              <Label>80G Number</Label>
               <Input defaultValue="80G/2020/98765" />
             </div>
           </div>
