@@ -72,13 +72,13 @@ import DevoteesLayout from "./pages/temple/DevoteesLayout";
 import DevoteeDashboard from "./pages/temple/devotees/Dashboard";
 import DevoteesList from "./pages/temple/devotees/DevoteesList";
 import DevoteeGroups from "./pages/temple/devotees/Groups";
-import MainTemple from "./pages/temple/structure/MainTemple";
-import Shrines from "./pages/temple/structure/Shrines";
+import Temples from "./pages/temple/structure/Temples";
+import ChildTemples from "./pages/temple/structure/ChildTemples";
 import Sacred from "./pages/temple/structure/Sacred";
-import Halls from "./pages/temple/structure/Halls";
+import HallsRooms from "./pages/temple/structure/HallsRooms";
 import Counters from "./pages/temple/structure/Counters";
-import HierarchyView from "./pages/temple/structure/HierarchyView";
-import VirtualTour from "./pages/temple/structure/VirtualTour";
+import StructureHierarchy from "./pages/temple/structure/StructureHierarchy";
+import Zones from "./pages/temple/structure/Zones";
 // Event Management Module
 import EventsLayout from "./pages/temple/EventsLayout";
 import AllEvents from "./pages/temple/events/AllEvents";
@@ -104,6 +104,16 @@ import BranchDashboard from "./pages/temple/branches/Dashboard";
 import AllBranches from "./pages/temple/branches/AllBranches";
 import BranchDetails from "./pages/temple/branches/BranchDetails";
 import BranchReports from "./pages/temple/branches/BranchReports";
+// People & HR Module
+import PeopleLayout from "./pages/temple/PeopleLayout";
+import Employees from "./pages/temple/hr/Employees";
+import HRAttendance from "./pages/temple/hr/Attendance";
+import Shifts from "./pages/temple/hr/Shifts";
+import Leave from "./pages/temple/hr/Leave";
+import Organization from "./pages/temple/hr/Organization";
+import OrgTree from "./pages/temple/hr/OrgTree";
+import Expenses from "./pages/temple/hr/Expenses";
+import EmployeeOnboarding from "./pages/temple/hr/EmployeeOnboarding";
 // Institution Management Module
 import InstitutionLayout from "./pages/temple/InstitutionLayout";
 import InstitutionDashboard from "./pages/temple/institutions/Dashboard";
@@ -208,13 +218,13 @@ const App = () => {
 
             {/* Temple Structure Module */}
             <Route path="/temple/structure" element={<TempleStructureLayout />}>
-              <Route index element={<MainTemple />} />
-              <Route path="shrines" element={<Shrines />} />
+              <Route index element={<Temples />} />
+              <Route path="child-temples" element={<ChildTemples />} />
               <Route path="sacred" element={<Sacred />} />
-              <Route path="halls" element={<Halls />} />
+              <Route path="halls" element={<HallsRooms />} />
               <Route path="counters" element={<Counters />} />
-              <Route path="hierarchy" element={<HierarchyView />} />
-              <Route path="virtual-tour" element={<VirtualTour />} />
+              <Route path="hierarchy" element={<StructureHierarchy />} />
+              <Route path="zones" element={<Zones />} />
             </Route>
 
             {/* Supplier Management Module */}
@@ -363,7 +373,17 @@ const App = () => {
               path="/temple/crowd/*"
               element={<UpcomingModule moduleTitle="Crowd & Capacity Management" />}
             />
-            <Route path="/temple/people" element={<TempleHub />} />
+            {/* People & HR Module */}
+            <Route path="/temple/people" element={<PeopleLayout />}>
+              <Route index element={<Employees />} />
+              <Route path="attendance" element={<HRAttendance />} />
+              <Route path="shifts" element={<Shifts />} />
+              <Route path="leave" element={<Leave />} />
+              <Route path="organization" element={<Organization />} />
+              <Route path="org-tree" element={<OrgTree />} />
+              <Route path="expenses" element={<Expenses />} />
+              <Route path="onboarding" element={<EmployeeOnboarding />} />
+            </Route>
             <Route
               path="/temple/assets"
               element={<UpcomingModule moduleTitle="Asset Management" />}

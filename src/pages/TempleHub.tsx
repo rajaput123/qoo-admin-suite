@@ -74,6 +74,15 @@ const tenantData = {
 // All Temple Management Modules matching reference image
 const allModules = [
   {
+    id: "people-hr",
+    title: "People & HR",
+    icon: Users,
+    enabled: true,
+    path: "/temple/people",
+    description: "Employee management, attendance, payroll, and HR operations",
+    category: "core",
+  },
+  {
     id: "temple-structure",
     title: "Temple Structure",
     icon: Landmark,
