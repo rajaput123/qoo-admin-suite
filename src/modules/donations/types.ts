@@ -23,9 +23,13 @@ export type DonationPurpose =
   | "Event-linked"
   | "Corpus Fund";
 
+export type DonationSourceModule = "Manual" | "Booking" | "Event" | "Online Portal" | "Campaign" | "Seva" | "Counter";
+
 export interface Donation {
   donationId: string; // e.g. DON-2025-0891
   receiptNo: string; // e.g. REC-2025-0891
+  templeId: string; // organization owning the donation
+  branchId?: string; // optional branch/location ID
   donorId: string; // links to Donor
   donorName: string; // snapshot for receipts/audit
   amount: number;
@@ -34,6 +38,9 @@ export interface Donation {
   mode: string; // e.g. NEFT, Cash, GPay
   referenceNo?: string;
   remarks?: string;
+  sourceModule: DonationSourceModule; // origin of the donation
+  sourceRecordId?: string; // e.g. BKG-001, EVT-005
+  counterId?: string; // counter where recorded (if applicable)
   date: string; // ISO date (yyyy-mm-dd)
   time: string; // display time
   status: "Recorded";
@@ -80,4 +87,3 @@ export interface DonationsState {
   certificates80G: Certificate80G[];
   audit: DonationAuditEntry[];
 }
-

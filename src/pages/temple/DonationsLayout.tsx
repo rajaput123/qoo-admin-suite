@@ -1,8 +1,9 @@
-import { Heart, LayoutDashboard, Users, PlusCircle, Receipt, Wallet, FileBarChart } from "lucide-react";
+import { Heart, LayoutDashboard, Users, PlusCircle, Receipt, Wallet, FileBarChart, List } from "lucide-react";
 import TempleLayout from "@/components/TempleLayout";
 
 const navItems = [
   { label: "Dashboard", path: "/temple/donations", icon: LayoutDashboard, description: "Donation overview & KPIs" },
+  { label: "All Donations", path: "/temple/donations/list", icon: List, description: "Filterable donation register" },
   { label: "Donor Registry", path: "/temple/donations/donors", icon: Users, description: "All donors & profiles" },
   { label: "Record Donation", path: "/temple/donations/record", icon: PlusCircle, description: "Receive & record donations" },
   { label: "Receipts & 80G", path: "/temple/donations/receipts", icon: Receipt, description: "Receipt & tax certificate management" },

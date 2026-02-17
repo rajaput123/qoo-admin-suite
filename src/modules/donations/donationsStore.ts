@@ -1,4 +1,4 @@
-import { DonationsState, Donor, Donation, Allocation, Certificate80G, DonationAuditEntry, DonationChannel } from "./types";
+import { DonationsState, Donor, Donation, Allocation, Certificate80G, DonationAuditEntry, DonationChannel, DonationSourceModule } from "./types";
 
 const LS_KEY = "qoo.donations.v1";
 
@@ -89,11 +89,14 @@ function seedState(): DonationsState {
   ];
 
   const donations: Donation[] = [
-    { donationId: "DON-2025-0891", receiptNo: "REC-2025-0891", donorId: "DNR-001", donorName: "Sri Ramesh Agarwal", amount: 500000, purpose: "Project-linked", channel: "Bank Transfer", mode: "NEFT", date: "2025-02-10", time: "10:30 AM", status: "Recorded", createdAt },
-    { donationId: "DON-2025-0890", receiptNo: "REC-2025-0890", donorId: "DNR-006", donorName: "Anonymous Devotee", amount: 25000, purpose: "General / Hundi", channel: "Cash", mode: "Cash", date: "2025-02-10", time: "09:15 AM", status: "Recorded", createdAt },
-    { donationId: "DON-2025-0889", receiptNo: "REC-2025-0889", donorId: "DNR-004", donorName: "Karthik Reddy", amount: 100000, purpose: "Annadanam Sponsorship", channel: "UPI", mode: "GPay", date: "2025-02-09", time: "04:45 PM", status: "Recorded", createdAt },
-    { donationId: "DON-2025-0888", receiptNo: "REC-2025-0888", donorId: "DNR-003", donorName: "Sri Venkatesh Trust", amount: 1000000, purpose: "Project-linked", channel: "Bank Transfer", mode: "RTGS", date: "2025-02-09", time: "11:00 AM", status: "Recorded", createdAt },
-    { donationId: "DON-2025-0887", receiptNo: "REC-2025-0887", donorId: "DNR-004", donorName: "Karthik Reddy", amount: 15000, purpose: "Prasadam Sponsorship", channel: "Online", mode: "Razorpay", date: "2025-02-08", time: "06:20 PM", status: "Recorded", createdAt },
+    { donationId: "DON-2025-0891", receiptNo: "REC-2025-0891", templeId: "TMPL-001", branchId: "BR-MAIN", donorId: "DNR-001", donorName: "Sri Ramesh Agarwal", amount: 500000, purpose: "Project-linked", channel: "Bank Transfer", mode: "NEFT", sourceModule: "Manual", date: "2025-02-10", time: "10:30 AM", status: "Recorded", createdAt },
+    { donationId: "DON-2025-0890", receiptNo: "REC-2025-0890", templeId: "TMPL-001", branchId: "BR-MAIN", donorId: "DNR-006", donorName: "Anonymous Devotee", amount: 25000, purpose: "General / Hundi", channel: "Cash", mode: "Cash", sourceModule: "Counter", counterId: "CTR-001", date: "2025-02-10", time: "09:15 AM", status: "Recorded", createdAt },
+    { donationId: "DON-2025-0889", receiptNo: "REC-2025-0889", templeId: "TMPL-001", branchId: "BR-MAIN", donorId: "DNR-004", donorName: "Karthik Reddy", amount: 100000, purpose: "Annadanam Sponsorship", channel: "UPI", mode: "GPay", sourceModule: "Online Portal", date: "2025-02-09", time: "04:45 PM", status: "Recorded", createdAt },
+    { donationId: "DON-2025-0888", receiptNo: "REC-2025-0888", templeId: "TMPL-001", branchId: "BR-TIRUCHANUR", donorId: "DNR-003", donorName: "Sri Venkatesh Trust", amount: 1000000, purpose: "Project-linked", channel: "Bank Transfer", mode: "RTGS", sourceModule: "Manual", date: "2025-02-09", time: "11:00 AM", status: "Recorded", createdAt },
+    { donationId: "DON-2025-0887", receiptNo: "REC-2025-0887", templeId: "TMPL-001", donorId: "DNR-004", donorName: "Karthik Reddy", amount: 15000, purpose: "Prasadam Sponsorship", channel: "Online", mode: "Razorpay", sourceModule: "Online Portal", date: "2025-02-08", time: "06:20 PM", status: "Recorded", createdAt },
+    { donationId: "DON-2025-0886", receiptNo: "REC-2025-0886", templeId: "TMPL-001", branchId: "BR-MAIN", donorId: "DNR-002", donorName: "Smt. Padma Foundation", amount: 2500000, purpose: "Event-linked", channel: "Bank Transfer", mode: "NEFT", sourceModule: "Event", sourceRecordId: "EVT-2025-003", date: "2025-02-07", time: "02:00 PM", status: "Recorded", createdAt },
+    { donationId: "DON-2025-0885", receiptNo: "REC-2025-0885", templeId: "TMPL-001", branchId: "BR-MAIN", donorId: "DNR-007", donorName: "Lakshmi Narasimha Bhakta Mandali", amount: 50000, purpose: "Seva Sponsorship", channel: "Cash", mode: "Cash", sourceModule: "Booking", sourceRecordId: "BKG-2025-0142", counterId: "CTR-002", date: "2025-02-06", time: "08:30 AM", status: "Recorded", createdAt },
+    { donationId: "DON-2025-0884", receiptNo: "REC-2025-0884", templeId: "TMPL-001", branchId: "BR-TIRUCHANUR", donorId: "DNR-005", donorName: "Village Dev Committee", amount: 75000, purpose: "Corpus Fund", channel: "Cheque", mode: "Cheque", sourceModule: "Campaign", sourceRecordId: "CMP-2025-001", date: "2025-02-05", time: "11:45 AM", status: "Recorded", createdAt },
   ];
 
   const allocations: Allocation[] = [
@@ -260,6 +263,11 @@ export function recordDonation(input: {
   mode: string;
   referenceNo?: string;
   remarks?: string;
+  sourceModule?: DonationSourceModule;
+  sourceRecordId?: string;
+  counterId?: string;
+  templeId?: string;
+  branchId?: string;
   date?: string;
   time?: string;
   createdBy?: string;
@@ -281,6 +289,8 @@ export function recordDonation(input: {
   const donation: Donation = {
     donationId: ids.donationId,
     receiptNo: ids.receiptNo,
+    templeId: input.templeId ?? "TMPL-001",
+    branchId: input.branchId,
     donorId: donor.donorId,
     donorName: donor.name,
     amount: input.amount,
@@ -289,6 +299,9 @@ export function recordDonation(input: {
     mode: input.mode,
     referenceNo: input.referenceNo,
     remarks: input.remarks,
+    sourceModule: input.sourceModule ?? "Manual",
+    sourceRecordId: input.sourceRecordId,
+    counterId: input.counterId,
     date,
     time,
     status: "Recorded",
