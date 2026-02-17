@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { UploadCloud } from "lucide-react";
 
+type EntityType = "temple" | "trust" | "institution" | "";
 type LegalType = "charitable-trust" | "society" | "religious-institution" | "govt-board" | "other";
 type AccountType = "current" | "savings";
 
@@ -37,9 +38,8 @@ interface LocationSection {
   state: string;
   country: string;
   pincode: string;
-  latitude: string;
-  longitude: string;
-  hasMapPin: boolean;
+  taluk: string;
+  
 }
 
 interface LegalSection {
@@ -74,7 +74,6 @@ interface AdminSection {
   idProofType: string;
   idProofNumber: string;
   idProofFile: File | null;
-  preferredChannel: "sms" | "whatsapp" | "email" | "";
 }
 
 interface BankSection {
@@ -96,7 +95,7 @@ interface ConfirmationsSection {
 }
 
 interface RegistrationFormState {
-  role: "temple" | "";
+  entityType: EntityType;
   temple: TempleSection;
   location: LocationSection;
   legal: LegalSection;
@@ -106,7 +105,7 @@ interface RegistrationFormState {
 }
 
 const initialForm: RegistrationFormState = {
-  role: "temple",
+  entityType: "",
   temple: {
     templeName: "",
     templeAlternateName: "",
@@ -128,9 +127,7 @@ const initialForm: RegistrationFormState = {
     state: "",
     country: "",
     pincode: "",
-    latitude: "",
-    longitude: "",
-    hasMapPin: false,
+    taluk: "",
   },
   legal: {
     registeredName: "",
@@ -163,7 +160,6 @@ const initialForm: RegistrationFormState = {
     idProofType: "",
     idProofNumber: "",
     idProofFile: null,
-    preferredChannel: "",
   },
   bank: {
     accountHolderName: "",
@@ -184,7 +180,7 @@ const initialForm: RegistrationFormState = {
 };
 
 const steps = [
-  { id: 1, title: "Role Selection", icon: User },
+  { id: 1, title: "Entity Type", icon: User },
   { id: 2, title: "Temple Details", icon: Building2 },
   { id: 3, title: "Location", icon: MapPin },
   { id: 4, title: "Trust & Legal", icon: FileText },
@@ -463,26 +459,29 @@ const StepRoleSelection = ({ form, updateForm }: StepProps) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-foreground mb-1">Role Selection</h2>
+        <h2 className="text-lg font-semibold text-foreground mb-1">Entity Type</h2>
         <p className="text-sm text-muted-foreground">Choose what you are registering as</p>
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        <button
-          type="button"
-          className={`border rounded-lg p-4 text-left space-y-1 transition ${
-            form.role === "temple"
-              ? "border-primary bg-primary/5"
-              : "border-muted-foreground/20 hover:border-primary/40"
-          }`}
-          onClick={() =>
-            updateForm("role", "temple" as RegistrationFormState["role"])
-          }
-        >
-          <div className="text-sm font-semibold">Temple / Trust (Institution)</div>
-          <p className="text-xs text-muted-foreground">
-            For Mandirs, Devasthanams, Trust-managed temples and religious institutions.
-          </p>
-        </button>
+      <div className="grid gap-4 md:grid-cols-3">
+        {[
+          { value: "temple" as EntityType, title: "Temple", desc: "For Mandirs, Devasthanams, and standalone temples." },
+          { value: "trust" as EntityType, title: "Trust", desc: "For Charitable Trusts, Private Trusts, and Trust-managed institutions." },
+          { value: "institution" as EntityType, title: "Institution", desc: "For Societies, Endowment Boards, and religious institutions." },
+        ].map(opt => (
+          <button
+            key={opt.value}
+            type="button"
+            className={`border rounded-lg p-4 text-left space-y-1 transition ${
+              form.entityType === opt.value
+                ? "border-primary bg-primary/5"
+                : "border-muted-foreground/20 hover:border-primary/40"
+            }`}
+            onClick={() => updateForm("entityType", opt.value)}
+          >
+            <div className="text-sm font-semibold">{opt.title}</div>
+            <p className="text-xs text-muted-foreground">{opt.desc}</p>
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -622,90 +621,91 @@ const StepLocationDetails = ({ form, updateForm }: StepProps) => {
       </div>
       <div className="grid md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Address Line 1 *</Label>
-          <Input
-            value={loc.addressLine1}
-            onChange={e => update({ addressLine1: e.target.value })}
-          />
+          <Label>Country *</Label>
+          <Select value={loc.country} onValueChange={v => update({ country: v })}>
+            <SelectTrigger><SelectValue placeholder="Select Country" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="india">India</SelectItem>
+              <SelectItem value="usa">United States</SelectItem>
+              <SelectItem value="uk">United Kingdom</SelectItem>
+              <SelectItem value="canada">Canada</SelectItem>
+              <SelectItem value="australia">Australia</SelectItem>
+              <SelectItem value="singapore">Singapore</SelectItem>
+              <SelectItem value="malaysia">Malaysia</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-2">
-          <Label>Address Line 2</Label>
-          <Input
-            value={loc.addressLine2}
-            onChange={e => update({ addressLine2: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Landmark</Label>
-          <Input
-            value={loc.landmark}
-            onChange={e => update({ landmark: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>City *</Label>
-          <Input
-            value={loc.city}
-            onChange={e => update({ city: e.target.value })}
-          />
+          <Label>State / Province *</Label>
+          <Select value={loc.state} onValueChange={v => update({ state: v })}>
+            <SelectTrigger><SelectValue placeholder="Select State" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="andhra-pradesh">Andhra Pradesh</SelectItem>
+              <SelectItem value="karnataka">Karnataka</SelectItem>
+              <SelectItem value="kerala">Kerala</SelectItem>
+              <SelectItem value="maharashtra">Maharashtra</SelectItem>
+              <SelectItem value="tamil-nadu">Tamil Nadu</SelectItem>
+              <SelectItem value="telangana">Telangana</SelectItem>
+              <SelectItem value="uttar-pradesh">Uttar Pradesh</SelectItem>
+              <SelectItem value="west-bengal">West Bengal</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-2">
           <Label>District *</Label>
-          <Input
-            value={loc.district}
-            onChange={e => update({ district: e.target.value })}
-          />
+          <Select value={loc.district} onValueChange={v => update({ district: v })}>
+            <SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="bangalore-urban">Bangalore Urban</SelectItem>
+              <SelectItem value="bangalore-rural">Bangalore Rural</SelectItem>
+              <SelectItem value="chennai">Chennai</SelectItem>
+              <SelectItem value="hyderabad">Hyderabad</SelectItem>
+              <SelectItem value="mumbai">Mumbai</SelectItem>
+              <SelectItem value="pune">Pune</SelectItem>
+              <SelectItem value="tirupati">Tirupati</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-2">
-          <Label>State *</Label>
-          <Input
-            value={loc.state}
-            onChange={e => update({ state: e.target.value })}
-          />
+          <Label>Taluk / Mandal</Label>
+          <Select value={loc.taluk} onValueChange={v => update({ taluk: v })}>
+            <SelectTrigger><SelectValue placeholder="Select Taluk" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="taluk-1">Taluk 1</SelectItem>
+              <SelectItem value="taluk-2">Taluk 2</SelectItem>
+              <SelectItem value="taluk-3">Taluk 3</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-2">
-          <Label>Country *</Label>
-          <Input
-            value={loc.country}
-            onChange={e => update({ country: e.target.value })}
-          />
+          <Label>City / Town *</Label>
+          <Select value={loc.city} onValueChange={v => update({ city: v })}>
+            <SelectTrigger><SelectValue placeholder="Select City" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="bangalore">Bangalore</SelectItem>
+              <SelectItem value="chennai">Chennai</SelectItem>
+              <SelectItem value="hyderabad">Hyderabad</SelectItem>
+              <SelectItem value="mumbai">Mumbai</SelectItem>
+              <SelectItem value="tirupati">Tirupati</SelectItem>
+              <SelectItem value="pune">Pune</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-2">
           <Label>Pincode *</Label>
-          <Input
-            value={loc.pincode}
-            onChange={e => update({ pincode: e.target.value })}
-          />
+          <Input value={loc.pincode} onChange={e => update({ pincode: e.target.value })} placeholder="e.g., 517501" />
         </div>
-      </div>
-      <Separator />
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label>GPS Latitude</Label>
-          <Input
-            value={loc.latitude}
-            onChange={e => update({ latitude: e.target.value })}
-          />
+        <div className="space-y-2 md:col-span-2">
+          <Label>Address Line 1 *</Label>
+          <Input value={loc.addressLine1} onChange={e => update({ addressLine1: e.target.value })} placeholder="Street address, building name" />
         </div>
         <div className="space-y-2">
-          <Label>GPS Longitude</Label>
-          <Input
-            value={loc.longitude}
-            onChange={e => update({ longitude: e.target.value })}
-          />
+          <Label>Address Line 2</Label>
+          <Input value={loc.addressLine2} onChange={e => update({ addressLine2: e.target.value })} placeholder="Area, locality" />
         </div>
         <div className="space-y-2">
-          <Label>Map Pin Selection *</Label>
-          <button
-            type="button"
-            className="border rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-muted/60"
-            onClick={() => update({ hasMapPin: !loc.hasMapPin })}
-          >
-            {loc.hasMapPin ? "Map pin set (placeholder)" : "Open map & drop pin (placeholder)"}
-          </button>
-          <p className="text-[11px] text-muted-foreground">
-            Integrate with your real map widget later.
-          </p>
+          <Label>Landmark</Label>
+          <Input value={loc.landmark} onChange={e => update({ landmark: e.target.value })} placeholder="Near..." />
         </div>
       </div>
     </div>
@@ -1013,34 +1013,6 @@ const StepAdminDetails = ({ form, updateForm }: StepProps) => {
         </div>
       </div>
       <Separator />
-      <div className="space-y-2">
-        <Label>Preferred Communication Channel *</Label>
-        <div className="grid md:grid-cols-3 gap-2 text-sm">
-          {[
-            { value: "sms", label: "SMS" },
-            { value: "whatsapp", label: "WhatsApp" },
-            { value: "email", label: "Email" },
-          ].map(opt => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() =>
-                update({
-                  preferredChannel: opt.value as AdminSection["preferredChannel"],
-                })
-              }
-              className={`border rounded-lg px-3 py-2 text-left ${
-                admin.preferredChannel === opt.value
-                  ? "border-primary bg-primary/5"
-                  : "border-muted-foreground/20 hover:border-primary/40"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
-      <Separator />
       {/* OTP Verification */}
       <div className="space-y-3">
         <h3 className="text-sm font-semibold text-foreground">Mobile OTP Verification</h3>
@@ -1053,22 +1025,6 @@ const StepAdminDetails = ({ form, updateForm }: StepProps) => {
           <Button type="button" variant="outline" size="sm">Verify</Button>
         </div>
         <p className="text-xs text-muted-foreground">A one-time password will be sent to your registered mobile number</p>
-      </div>
-      <Separator />
-      {/* Password Setup */}
-      <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-foreground">Create Login Password</h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Password *</Label>
-            <Input type="password" placeholder="Min 8 characters" />
-          </div>
-          <div className="space-y-2">
-            <Label>Confirm Password *</Label>
-            <Input type="password" placeholder="Re-enter password" />
-          </div>
-        </div>
-        <p className="text-xs text-muted-foreground">Use a mix of letters, numbers, and symbols for a strong password</p>
       </div>
       <Separator />
       {/* MPIN Setup */}
@@ -1142,8 +1098,8 @@ const StepReviewSubmit = ({ form, updateForm }: StepProps) => {
       </div>
 
       <div className="space-y-4">
-        <SectionReview title="Temple & Role">
-          <ReviewField label="Registering As" value="Temple / Trust (Institution)" />
+        <SectionReview title="Entity Type & Temple">
+          <ReviewField label="Entity Type" value={form.entityType || "-"} />
           <ReviewField label="Temple Name" value={form.temple.templeName} />
           <ReviewField label="Primary Deity" value={form.temple.primaryDeity} />
           <ReviewField label="Temple Type" value={form.temple.templeType || "-"} />
