@@ -1,179 +1,156 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { CreditCard, Download, ArrowUp, ArrowDown, Calendar, CheckCircle2, FileText } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { CreditCard, Download, Calendar, CheckCircle2, Zap, TrendingDown, ArrowUp, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 
-interface BillingHistory {
-  id: string;
-  date: string;
-  plan: string;
-  amount: number;
-  status: "paid" | "pending" | "failed";
-  invoice: string;
-}
-
 const SubscriptionBilling = () => {
-  const [currentPlan, setCurrentPlan] = useState({
-    name: "Professional",
-    price: 9999,
+  const navigate = useNavigate();
+
+  const currentPlan = {
+    name: "Starter",
+    price: 0,
     billingCycle: "monthly",
-    features: ["Unlimited Users", "All Modules", "Priority Support", "Advanced Reports"],
-    nextBillingDate: "2024-02-15",
-  });
+    creditsTotal: 100,
+    creditsUsed: 32,
+    nextBillingDate: "2026-03-15",
+  };
 
-  const billingHistory: BillingHistory[] = [
-    { id: "INV-001", date: "2024-01-15", plan: "Professional", amount: 9999, status: "paid", invoice: "INV-2024-001.pdf" },
-    { id: "INV-002", date: "2023-12-15", plan: "Professional", amount: 9999, status: "paid", invoice: "INV-2023-012.pdf" },
-    { id: "INV-003", date: "2023-11-15", plan: "Standard", amount: 4999, status: "paid", invoice: "INV-2023-011.pdf" },
-    { id: "INV-004", date: "2023-10-15", plan: "Standard", amount: 4999, status: "paid", invoice: "INV-2023-010.pdf" },
+  const creditsRemaining = currentPlan.creditsTotal - currentPlan.creditsUsed;
+  const usagePercent = Math.round((creditsRemaining / currentPlan.creditsTotal) * 100);
+
+  const usageBreakdown = [
+    { module: "Offerings & Sevas", credits: 12, percentage: 37 },
+    { module: "Donation Receipts", credits: 8, percentage: 25 },
+    { module: "Booking Management", credits: 5, percentage: 16 },
+    { module: "Reports Generated", credits: 4, percentage: 12 },
+    { module: "Communication", credits: 3, percentage: 10 },
   ];
 
-  const availablePlans = [
-    { name: "Basic", price: 2999, features: ["Up to 5 Users", "Core Modules", "Email Support"] },
-    { name: "Standard", price: 4999, features: ["Up to 15 Users", "All Modules", "Priority Support"] },
-    { name: "Professional", price: 9999, features: ["Unlimited Users", "All Modules", "Priority Support", "Advanced Reports"] },
-    { name: "Enterprise", price: 19999, features: ["Unlimited Users", "All Modules", "24/7 Support", "Custom Integrations", "Dedicated Manager"] },
+  const billingHistory = [
+    { id: "INV-001", date: "2026-02-15", plan: "Starter", amount: 0, credits: 100, status: "active" as const },
+    { id: "INV-002", date: "2026-01-15", plan: "Starter", amount: 0, credits: 100, status: "expired" as const },
+    { id: "CRD-001", date: "2026-01-20", plan: "Credit Pack", amount: 499, credits: 50, status: "applied" as const },
   ];
-
-  const handleUpgrade = (planName: string) => {
-    toast.success(`Upgrading to ${planName} plan...`);
-  };
-
-  const handleDowngrade = (planName: string) => {
-    if (confirm(`Are you sure you want to downgrade to ${planName}? This will take effect at the end of your billing cycle.`)) {
-      toast.success(`Downgrade to ${planName} scheduled`);
-    }
-  };
-
-  const handleDownloadInvoice = (invoiceId: string) => {
-    toast.success(`Downloading invoice ${invoiceId}...`);
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "paid":
-        return <Badge variant="default" className="gap-1"><CheckCircle2 className="h-3 w-3" /> Paid</Badge>;
-      case "pending":
-        return <Badge variant="secondary">Pending</Badge>;
-      case "failed":
-        return <Badge variant="destructive">Failed</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Subscription & Billing</h1>
-        <p className="text-sm text-muted-foreground mt-1">Manage your platform subscription and billing</p>
+        <h1 className="text-2xl font-bold text-foreground">Billing & Credits</h1>
+        <p className="text-sm text-muted-foreground mt-1">Manage your subscription, credits, and payment history</p>
       </div>
 
-      {/* Current Plan */}
+      {/* Credit Balance + Current Plan */}
+      <div className="grid md:grid-cols-2 gap-4">
+        {/* Credit Balance Meter */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Zap className="h-4 w-4 text-primary" /> Credit Balance
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center mb-4">
+              <div className="relative inline-flex items-center justify-center w-32 h-32">
+                <svg className="w-32 h-32 -rotate-90" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="hsl(var(--muted))" strokeWidth="10" />
+                  <circle
+                    cx="60" cy="60" r="50" fill="none"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth="10"
+                    strokeDasharray={`${usagePercent * 3.14} 314`}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-2xl font-bold text-foreground">{creditsRemaining}</span>
+                  <span className="text-[10px] text-muted-foreground">of {currentPlan.creditsTotal}</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-between text-sm mb-1">
+              <span className="text-muted-foreground">Used</span>
+              <span className="font-medium">{currentPlan.creditsUsed} credits</span>
+            </div>
+            <div className="flex justify-between text-sm mb-3">
+              <span className="text-muted-foreground">Remaining</span>
+              <span className="font-medium">{creditsRemaining} credits</span>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">Renews on {currentPlan.nextBillingDate}</p>
+            <Button size="sm" className="w-full gap-1" onClick={() => navigate("/temple/settings/upgrade")}>
+              <Zap className="h-3.5 w-3.5" /> Buy More Credits
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Current Plan */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <CreditCard className="h-4 w-4" /> Current Plan
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="p-4 rounded-lg border bg-muted/30 mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="text-lg font-bold">{currentPlan.name}</h3>
+                <Badge variant="default">Active</Badge>
+              </div>
+              <p className="text-2xl font-bold">
+                {currentPlan.price === 0 ? "Free" : `₹${currentPlan.price.toLocaleString()}`}
+              </p>
+              <p className="text-xs text-muted-foreground">per {currentPlan.billingCycle}</p>
+            </div>
+            <div className="space-y-2 mb-4">
+              {["100 Credits/month", "Basic Temple Structure", "Up to 5 Sevas", "Email Support"].map((f, i) => (
+                <div key={i} className="flex items-center gap-2 text-sm">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                  <span className="text-muted-foreground">{f}</span>
+                </div>
+              ))}
+            </div>
+            <Button variant="outline" size="sm" className="w-full gap-1" onClick={() => navigate("/temple/settings/upgrade")}>
+              <ArrowUp className="h-3.5 w-3.5" /> Upgrade Plan
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Usage Breakdown */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <CreditCard className="h-4 w-4" /> Current Plan
+            <BarChart3 className="h-4 w-4" /> Usage Breakdown
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <h3 className="text-lg font-bold">{currentPlan.name}</h3>
-                  <Badge variant="default">Active</Badge>
+          <div className="space-y-3">
+            {usageBreakdown.map((item) => (
+              <div key={item.module}>
+                <div className="flex items-center justify-between text-sm mb-1">
+                  <span className="text-foreground">{item.module}</span>
+                  <span className="text-muted-foreground">{item.credits} credits ({item.percentage}%)</span>
                 </div>
-                <p className="text-2xl font-bold">₹{currentPlan.price.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">per {currentPlan.billingCycle}</p>
+                <Progress value={item.percentage} className="h-1.5" />
               </div>
-              <div className="text-right">
-                <p className="text-sm text-muted-foreground">Next billing date</p>
-                <p className="text-sm font-medium">{currentPlan.nextBillingDate}</p>
-              </div>
-            </div>
-            <div>
-              <p className="text-sm font-medium mb-2">Plan Features:</p>
-              <ul className="space-y-1">
-                {currentPlan.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="h-4 w-4 text-green-600" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            ))}
+          </div>
+          <div className="mt-4 pt-4 border-t flex justify-between text-sm">
+            <span className="font-medium text-foreground">Total Used This Period</span>
+            <span className="font-semibold">{currentPlan.creditsUsed} credits</span>
           </div>
         </CardContent>
       </Card>
 
-      {/* Available Plans */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Available Plans</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-4 gap-4">
-            {availablePlans.map(plan => {
-              const isCurrent = plan.name === currentPlan.name;
-              const isUpgrade = plan.price > currentPlan.price;
-              const isDowngrade = plan.price < currentPlan.price;
-              
-              return (
-                <div
-                  key={plan.name}
-                  className={`p-4 rounded-lg border ${
-                    isCurrent ? "border-primary bg-primary/5" : "bg-muted/30"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold">{plan.name}</h3>
-                    {isCurrent && <Badge variant="default">Current</Badge>}
-                  </div>
-                  <p className="text-2xl font-bold mb-2">₹{plan.price.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground mb-3">per month</p>
-                  <ul className="space-y-1 mb-4 text-xs">
-                    {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-center gap-1">
-                        <CheckCircle2 className="h-3 w-3 text-green-600" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  {!isCurrent && (
-                    <Button
-                      variant={isUpgrade ? "default" : "outline"}
-                      className="w-full"
-                      size="sm"
-                      onClick={() => isUpgrade ? handleUpgrade(plan.name) : handleDowngrade(plan.name)}
-                    >
-                      {isUpgrade ? (
-                        <>
-                          <ArrowUp className="h-4 w-4 mr-2" /> Upgrade
-                        </>
-                      ) : (
-                        <>
-                          <ArrowDown className="h-4 w-4 mr-2" /> Downgrade
-                        </>
-                      )}
-                    </Button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Billing History */}
+      {/* Payment History */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Calendar className="h-4 w-4" /> Billing History
+            <Calendar className="h-4 w-4" /> Payment & Credit History
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -181,28 +158,25 @@ const SubscriptionBilling = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Date</TableHead>
-                <TableHead>Plan</TableHead>
+                <TableHead>Description</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
+                <TableHead className="text-right">Credits</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Invoice</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {billingHistory.map(invoice => (
-                <TableRow key={invoice.id}>
-                  <TableCell>{invoice.date}</TableCell>
-                  <TableCell>{invoice.plan}</TableCell>
-                  <TableCell className="text-right font-medium">₹{invoice.amount.toLocaleString()}</TableCell>
-                  <TableCell>{getStatusBadge(invoice.status)}</TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDownloadInvoice(invoice.id)}
-                      className="gap-2"
-                    >
-                      <Download className="h-4 w-4" /> Download
-                    </Button>
+              {billingHistory.map((entry) => (
+                <TableRow key={entry.id}>
+                  <TableCell className="text-sm">{entry.date}</TableCell>
+                  <TableCell className="text-sm">{entry.plan}</TableCell>
+                  <TableCell className="text-right text-sm font-medium">
+                    {entry.amount === 0 ? "Free" : `₹${entry.amount.toLocaleString()}`}
+                  </TableCell>
+                  <TableCell className="text-right text-sm">{entry.credits}</TableCell>
+                  <TableCell>
+                    <Badge variant={entry.status === "active" ? "default" : "secondary"} className="text-xs">
+                      {entry.status}
+                    </Badge>
                   </TableCell>
                 </TableRow>
               ))}
@@ -223,11 +197,11 @@ const SubscriptionBilling = () => {
             <div className="flex items-center gap-3">
               <CreditCard className="h-8 w-8 text-muted-foreground" />
               <div>
-                <p className="font-medium">Card ending in 1234</p>
-                <p className="text-xs text-muted-foreground">Expires 12/2025</p>
+                <p className="font-medium text-sm">No payment method on file</p>
+                <p className="text-xs text-muted-foreground">Add a payment method to upgrade or buy credits</p>
               </div>
             </div>
-            <Button variant="outline" size="sm">Update Payment Method</Button>
+            <Button variant="outline" size="sm">Add Payment Method</Button>
           </div>
         </CardContent>
       </Card>

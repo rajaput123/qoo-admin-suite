@@ -188,9 +188,9 @@ const steps = [
   { id: 2, title: "Temple Details", icon: Building2 },
   { id: 3, title: "Location", icon: MapPin },
   { id: 4, title: "Trust & Legal", icon: FileText },
-  { id: 5, title: "Admin Details", icon: User },
-  { id: 6, title: "Bank Details", icon: CreditCard },
-  { id: 7, title: "Review & Submit", icon: Shield },
+  { id: 5, title: "Admin + OTP", icon: User },
+  { id: 6, title: "Documents", icon: FileText },
+  { id: 7, title: "Confirmation", icon: Shield },
 ];
 
 const TempleRegister = () => {
@@ -398,7 +398,7 @@ const TempleRegister = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
               >
-                <StepBankDetails form={form} updateForm={updateForm} />
+                <StepDocumentUpload form={form} updateForm={updateForm} />
               </motion.div>
             )}
 
@@ -1040,110 +1040,88 @@ const StepAdminDetails = ({ form, updateForm }: StepProps) => {
           ))}
         </div>
       </div>
+      <Separator />
+      {/* OTP Verification */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold text-foreground">Mobile OTP Verification</h3>
+        <div className="flex items-center gap-3">
+          <Input value={admin.mobile} disabled className="max-w-[200px] text-sm" />
+          <Button type="button" variant="outline" size="sm">Send OTP</Button>
+        </div>
+        <div className="flex items-center gap-2">
+          <Input placeholder="Enter 6-digit OTP" className="max-w-[200px] text-sm" maxLength={6} />
+          <Button type="button" variant="outline" size="sm">Verify</Button>
+        </div>
+        <p className="text-xs text-muted-foreground">A one-time password will be sent to your registered mobile number</p>
+      </div>
+      <Separator />
+      {/* Password Setup */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold text-foreground">Create Login Password</h3>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>Password *</Label>
+            <Input type="password" placeholder="Min 8 characters" />
+          </div>
+          <div className="space-y-2">
+            <Label>Confirm Password *</Label>
+            <Input type="password" placeholder="Re-enter password" />
+          </div>
+        </div>
+        <p className="text-xs text-muted-foreground">Use a mix of letters, numbers, and symbols for a strong password</p>
+      </div>
+      <Separator />
+      {/* MPIN Setup */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold text-foreground">Set 4-Digit MPIN</h3>
+        <p className="text-xs text-muted-foreground mb-2">Quick login PIN for mobile access</p>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>MPIN *</Label>
+            <Input type="password" placeholder="4-digit PIN" maxLength={4} className="max-w-[150px]" />
+          </div>
+          <div className="space-y-2">
+            <Label>Confirm MPIN *</Label>
+            <Input type="password" placeholder="Re-enter PIN" maxLength={4} className="max-w-[150px]" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
-const StepBankDetails = ({ form, updateForm }: StepProps) => {
-  const bank = form.bank;
-  const update = (patch: Partial<BankSection>) =>
-    updateForm("bank", { ...bank, ...patch });
+const StepDocumentUpload = ({ form, updateForm }: StepProps) => {
+  const documents = [
+    { id: "trust-deed", label: "Trust Deed / Registration Certificate *", accept: "PDF, JPG, PNG" },
+    { id: "pan-card", label: "PAN Card of Institution *", accept: "PDF, JPG, PNG" },
+    { id: "12a-cert", label: "12A Certificate (Optional)", accept: "PDF, JPG, PNG" },
+    { id: "80g-cert", label: "80G Certificate (Optional)", accept: "PDF, JPG, PNG" },
+    { id: "id-proof", label: "Admin ID Proof *", accept: "PDF, JPG, PNG" },
+    { id: "temple-photos", label: "Temple Photos (min 3) *", accept: "JPG, PNG" },
+  ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-foreground mb-1">Bank Details</h2>
-        <p className="text-sm text-muted-foreground">Temple / Trust bank account information</p>
+        <h2 className="text-lg font-semibold text-foreground mb-1">Document Upload</h2>
+        <p className="text-sm text-muted-foreground">Upload required documents for verification</p>
       </div>
       <div className="grid md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Account Holder Name *</Label>
-          <Input
-            value={bank.accountHolderName}
-            onChange={e => update({ accountHolderName: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Bank Name *</Label>
-          <Input
-            value={bank.bankName}
-            onChange={e => update({ bankName: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Branch Name *</Label>
-          <Input
-            value={bank.branchName}
-            onChange={e => update({ branchName: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Account Type *</Label>
-          <Select
-            value={bank.accountType}
-            onValueChange={v =>
-              update({
-                accountType: v as BankSection["accountType"],
-              })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select account type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="current">Current</SelectItem>
-              <SelectItem value="savings">Savings</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>Account Number *</Label>
-          <Input
-            value={bank.accountNumber}
-            onChange={e => update({ accountNumber: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Confirm Account Number *</Label>
-          <Input
-            value={bank.confirmAccountNumber}
-            onChange={e => update({ confirmAccountNumber: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>IFSC Code *</Label>
-          <Input
-            value={bank.ifsc}
-            onChange={e => update({ ifsc: e.target.value.toUpperCase() })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Branch Address (Optional)</Label>
-          <Input
-            value={bank.branchAddress}
-            onChange={e => update({ branchAddress: e.target.value })}
-          />
-        </div>
+        {documents.map((doc) => (
+          <div key={doc.id} className="space-y-2">
+            <Label>{doc.label}</Label>
+            <div className="border-2 border-dashed border-border rounded-lg p-4 text-center hover:border-primary/50 transition-colors cursor-pointer">
+              <UploadCloud className="h-6 w-6 text-muted-foreground mx-auto mb-1" />
+              <p className="text-xs text-muted-foreground">Click to upload</p>
+              <p className="text-[10px] text-muted-foreground">{doc.accept} (max 5MB)</p>
+            </div>
+          </div>
+        ))}
       </div>
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>UPI ID for Donations (Optional)</Label>
-          <Input
-            value={bank.upiId}
-            onChange={e => update({ upiId: e.target.value })}
-            placeholder="e.g. temple@bank"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Cancelled Cheque / Passbook Scan *</Label>
-          <button
-            type="button"
-            className="flex items-center gap-2 border rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-muted/60"
-          >
-            <UploadCloud className="h-3.5 w-3.5" />
-            Upload file
-          </button>
-        </div>
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+        <p className="text-sm text-amber-800">
+          <strong>Note:</strong> Bank details will be collected during the verification process after your registration is approved.
+        </p>
       </div>
     </div>
   );
@@ -1200,10 +1178,8 @@ const StepReviewSubmit = ({ form, updateForm }: StepProps) => {
           <ReviewField label="Email" value={form.admin.email} />
         </SectionReview>
 
-        <SectionReview title="Bank">
-          <ReviewField label="Account Holder" value={form.bank.accountHolderName} />
-          <ReviewField label="Bank" value={form.bank.bankName} />
-          <ReviewField label="IFSC" value={form.bank.ifsc} />
+        <SectionReview title="Documents">
+          <ReviewField label="Documents" value="Uploaded (placeholder)" />
         </SectionReview>
       </div>
 

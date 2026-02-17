@@ -8,6 +8,9 @@ import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import TempleRegister from "./pages/TempleRegister";
 import TempleHub from "./pages/TempleHub";
+import ApplicationStatus from "./pages/ApplicationStatus";
+import FirstLoginSetup from "./pages/FirstLoginSetup";
+import OutOfCreditScreen from "./pages/OutOfCreditScreen";
 import UpcomingModule from "./pages/temple/UpcomingModule";
 import Profile from "./pages/Profile";
 // Temple Admin Module Layouts
@@ -32,6 +35,7 @@ import SettingsLayout from "./pages/temple/SettingsLayout";
 import ProfileSettings from "./pages/temple/settings/ProfileSettings";
 import FinanceSettings from "./pages/temple/settings/FinanceSettings";
 import SubscriptionBilling from "./pages/temple/settings/SubscriptionBilling";
+import SubscriptionUpgrade from "./pages/temple/settings/SubscriptionUpgrade";
 import InvoiceManagement from "./pages/temple/settings/InvoiceManagement";
 import UserManagement from "./pages/temple/settings/UserManagement";
 import RolesPermissions from "./pages/temple/settings/RolesPermissions";
@@ -186,6 +190,9 @@ const App = () => {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/temple-register" element={<TempleRegister />} />
+            <Route path="/application-status" element={<ApplicationStatus />} />
+            <Route path="/temple-welcome" element={<FirstLoginSetup />} />
+            <Route path="/out-of-credits" element={<OutOfCreditScreen />} />
 
             {/* Temple Admin Routes */}
             <Route path="/temple-hub" element={<TempleHub />} />
@@ -264,6 +271,7 @@ const App = () => {
               <Route index element={<ProfileSettings />} />
               <Route path="finance" element={<FinanceSettings />} />
               <Route path="subscription" element={<SubscriptionBilling />} />
+              <Route path="upgrade" element={<SubscriptionUpgrade />} />
               <Route path="invoice" element={<InvoiceManagement />} />
               <Route path="users" element={<UserManagement />} />
               <Route path="roles" element={<RolesPermissions />} />
