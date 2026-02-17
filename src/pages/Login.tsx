@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Phone, Mail, ArrowLeft } from "lucide-react";
+import { Eye, EyeOff, Phone, Mail, ArrowLeft, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -127,8 +127,8 @@ const Login = () => {
                     onClick={() => { setAuthMethod("password"); setOtpSent(false); }}
                     className="flex-1 gap-2"
                   >
-                    <Mail className="h-4 w-4" />
-                    Password
+                    <Lock className="h-4 w-4" />
+                    MPIN
                   </Button>
                   <Button
                     type="button"
@@ -150,13 +150,14 @@ const Login = () => {
 
                   {authMethod === "password" ? (
                     <div className="space-y-2">
-                      <Label htmlFor="temple-password">Password</Label>
+                      <Label htmlFor="temple-mpin">MPIN</Label>
                       <div className="relative">
                         <Input
-                          id="temple-password"
+                          id="temple-mpin"
                           type={showPassword ? "text" : "password"}
-                          placeholder="••••••••"
-                          className="h-10 pr-10"
+                          placeholder="••••"
+                          className="h-10 pr-10 tracking-widest text-center"
+                          maxLength={4}
                         />
                         <button
                           type="button"
@@ -198,21 +199,27 @@ const Login = () => {
                 </div>
               </>
             ) : (
-              <>
+            <>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="admin@example.com" className="h-10" />
+                    <Label htmlFor="sa-mobile">Mobile Number</Label>
+                    <div className="flex">
+                      <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-muted-foreground text-sm">
+                        +91
+                      </span>
+                      <Input id="sa-mobile" type="tel" placeholder="98765 43210" className="h-10 rounded-l-none" />
+                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="sa-mpin">MPIN</Label>
                     <div className="relative">
                       <Input
-                        id="password"
+                        id="sa-mpin"
                         type={showPassword ? "text" : "password"}
-                        placeholder="••••••••"
-                        className="h-10 pr-10"
+                        placeholder="••••"
+                        className="h-10 pr-10 tracking-widest text-center"
+                        maxLength={4}
                       />
                       <button
                         type="button"
@@ -229,7 +236,7 @@ const Login = () => {
                       <Checkbox id="remember" />
                       <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">Remember me</Label>
                     </div>
-                    <button type="button" className="text-sm text-primary hover:text-accent transition-colors">Forgot password?</button>
+                    <button type="button" className="text-sm text-primary hover:text-accent transition-colors">Forgot MPIN?</button>
                   </div>
 
                   <Button type="submit" className="w-full h-10 font-medium">Sign In</Button>
