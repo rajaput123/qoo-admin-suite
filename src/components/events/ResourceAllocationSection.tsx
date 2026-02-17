@@ -4,13 +4,13 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertCircle, CheckCircle, Plus, Trash2, Package, Building2, AlertTriangle } from "lucide-react";
-import { templeStructures, freelancerRefs } from "@/data/templeData";
+import { AlertCircle, CheckCircle, Trash2, Package, Building2, AlertTriangle } from "lucide-react";
+import { templeStructures } from "@/data/templeData";
 import { stockItems } from "@/data/inventoryData";
 import { dummyHallRooms } from "@/data/temple-structure-data";
 
 // Resource types that map to real data sources
-type ResourceCategory = "venue" | "material" | "freelancer";
+type ResourceCategory = "venue" | "material";
 
 interface ResourceItem {
   id: string;
@@ -34,7 +34,6 @@ interface ResourceAllocationSectionProps {
 const CATEGORY_META: Record<ResourceCategory, { label: string; color: string; icon: typeof Building2 }> = {
   venue: { label: "Venue / Hall", color: "bg-indigo-100 text-indigo-700 border-indigo-300", icon: Building2 },
   material: { label: "Material / Item", color: "bg-amber-100 text-amber-700 border-amber-300", icon: Package },
-  freelancer: { label: "Freelancer", color: "bg-cyan-100 text-cyan-700 border-cyan-300", icon: Building2 },
 };
 
 const ResourceAllocationSection = ({ onResourcesChange }: ResourceAllocationSectionProps) => {
@@ -60,16 +59,6 @@ const ResourceAllocationSection = ({ onResourcesChange }: ResourceAllocationSect
     })),
   []);
 
-  const freelancerOptions = useMemo(() =>
-    freelancerRefs
-      .filter(f => f.status === "Active")
-      .map(f => ({
-        id: f.id,
-        name: f.businessName,
-        categories: f.serviceCategories.join(", "),
-        rating: f.rating,
-      })),
-  []);
 
   const update = (list: ResourceItem[]) => {
     setResources(list);
@@ -115,10 +104,6 @@ const ResourceAllocationSection = ({ onResourcesChange }: ResourceAllocationSect
           hasConflict: m ? (r.quantity > m.currentStock) : false,
         };
       }
-      if (category === "freelancer") {
-        const f = freelancerOptions.find(o => o.id === refId);
-        return { ...r, refId, name: f?.name || "", quantity: 1 };
-      }
       return r;
     }));
   };
@@ -133,7 +118,6 @@ const ResourceAllocationSection = ({ onResourcesChange }: ResourceAllocationSect
 
   const venueCount = resources.filter(r => r.category === "venue").length;
   const materialCount = resources.filter(r => r.category === "material").length;
-  const freelancerCount = resources.filter(r => r.category === "freelancer").length;
   const shortages = resources.filter(r => r.hasConflict).length;
 
   return (
@@ -144,13 +128,13 @@ const ResourceAllocationSection = ({ onResourcesChange }: ResourceAllocationSect
           <div>
             <p className="text-sm font-medium">Resource Allocation</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Select venues from Structure, materials from Inventory, and freelancers
+              Select venues from Structure and materials from Inventory
             </p>
           </div>
           <div className="flex gap-2 flex-wrap items-center">
             {venueCount > 0 && <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-300">{venueCount} venues</Badge>}
             {materialCount > 0 && <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-300">{materialCount} materials</Badge>}
-            {freelancerCount > 0 && <Badge variant="outline" className="bg-cyan-50 text-cyan-700 border-cyan-300">{freelancerCount} freelancers</Badge>}
+            
             {shortages > 0 && <Badge variant="destructive" className="gap-1"><AlertTriangle className="h-3 w-3" />{shortages} shortage</Badge>}
           </div>
         </div>
@@ -162,9 +146,6 @@ const ResourceAllocationSection = ({ onResourcesChange }: ResourceAllocationSect
           </Button>
           <Button size="sm" variant="outline" onClick={() => addResource("material")} className="gap-1.5">
             <Package className="h-3.5 w-3.5" /> Add Material
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => addResource("freelancer")} className="gap-1.5">
-            <Plus className="h-3.5 w-3.5" /> Add Freelancer
           </Button>
         </div>
 
@@ -271,30 +252,6 @@ const ResourceAllocationSection = ({ onResourcesChange }: ResourceAllocationSect
                     </div>
                   )}
 
-                  {res.category === "freelancer" && (
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="col-span-1">
-                        <Label className="text-xs">Select Freelancer</Label>
-                        <Select value={res.refId} onValueChange={(v) => selectRef(res.id, "freelancer", v)}>
-                          <SelectTrigger className="h-8 text-xs mt-1 bg-background"><SelectValue placeholder="Choose..." /></SelectTrigger>
-                          <SelectContent className="bg-popover">
-                            {freelancerOptions.map(f => (
-                              <SelectItem key={f.id} value={f.id} className="text-xs">
-                                {f.name} <span className="text-muted-foreground">★{f.rating}</span>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      {res.refId && (
-                        <div className="col-span-2 flex items-end pb-0.5">
-                          <p className="text-xs text-muted-foreground">
-                            {freelancerOptions.find(f => f.id === res.refId)?.categories}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               );
             })}
