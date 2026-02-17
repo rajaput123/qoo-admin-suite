@@ -14,7 +14,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { DropdownMenuItem } from '@/components/ui/dropdown-menu';
+
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import { DepartmentModal } from '@/components/hr/DepartmentModal';
@@ -367,22 +367,21 @@ export default function Organization() {
               setViewDeptOpen(true);
             }}
             actions={(row) => (
-              <>
-                <DropdownMenuItem onClick={() => {
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => {
+                  e.stopPropagation();
                   setEditingDept(row);
                   setDeptModalOpen(true);
                 }}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onClick={() => handleDeleteDepartment(row.id)}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </>
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteDepartment(row.id);
+                }}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             )}
           />
         </TabsContent>
@@ -399,22 +398,21 @@ export default function Organization() {
               setViewDesgOpen(true);
             }}
             actions={(row) => (
-              <>
-                <DropdownMenuItem onClick={() => {
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => {
+                  e.stopPropagation();
                   setEditingDesg(row);
                   setDesgModalOpen(true);
                 }}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onClick={() => handleDeleteDesignation(row.id)}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </>
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteDesignation(row.id);
+                }}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             )}
           />
         </TabsContent>
@@ -431,22 +429,21 @@ export default function Organization() {
               setViewGradeOpen(true);
             }}
             actions={(row) => (
-              <>
-                <DropdownMenuItem onClick={() => {
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => {
+                  e.stopPropagation();
                   setEditingGrade(row);
                   setGradeModalOpen(true);
                 }}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onClick={() => handleDeleteGradePay(row.id)}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </>
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteGradePay(row.id);
+                }}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             )}
           />
         </TabsContent>

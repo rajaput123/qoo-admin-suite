@@ -1,34 +1,133 @@
 // HR Dummy Data
 import type { Employee, Attendance, Department, Designation, Shift, LeaveType, Holiday, LeaveApplication, LeavePolicy, Expense, ExpensePolicy, GradePay } from '@/types/hr';
 
-export const employees: Employee[] = [];
+export const employees: Employee[] = [
+  {
+    id: 'emp-1',
+    employeeId: 'EMP-0001',
+    name: 'Ramesh Kumar',
+    email: 'ramesh@temple.org',
+    phone: '+91 98765 43210',
+    department: 'Rituals',
+    designation: 'Head Priest',
+    status: 'active',
+    joiningDate: '2020-01-15',
+    shiftId: 'shift-1',
+  },
+  {
+    id: 'emp-2',
+    employeeId: 'EMP-0002',
+    name: 'Lakshmi Devi',
+    email: 'lakshmi@temple.org',
+    phone: '+91 98765 43211',
+    department: 'Admin',
+    designation: 'HR Manager',
+    status: 'active',
+    joiningDate: '2019-06-01',
+    shiftId: 'shift-1',
+  },
+  {
+    id: 'emp-3',
+    employeeId: 'EMP-0003',
+    name: 'Suresh Sharma',
+    email: 'suresh@temple.org',
+    phone: '+91 98765 43212',
+    department: 'Rituals',
+    designation: 'Assistant Priest',
+    status: 'active',
+    joiningDate: '2021-03-10',
+    shiftId: 'shift-1',
+  },
+  {
+    id: 'emp-4',
+    employeeId: 'EMP-0004',
+    name: 'Priya Patel',
+    email: 'priya@temple.org',
+    phone: '+91 98765 43213',
+    department: 'Finance',
+    designation: 'Accountant',
+    status: 'on_leave',
+    joiningDate: '2020-08-20',
+    shiftId: 'shift-1',
+  },
+  {
+    id: 'emp-5',
+    employeeId: 'EMP-0005',
+    name: 'Venkat Rao',
+    email: 'venkat@temple.org',
+    phone: '+91 98765 43214',
+    department: 'Security',
+    designation: 'Security Head',
+    status: 'active',
+    joiningDate: '2018-12-01',
+    shiftId: 'shift-2',
+  },
+  {
+    id: 'emp-6',
+    employeeId: 'EMP-0006',
+    name: 'Meena Singh',
+    email: 'meena@temple.org',
+    phone: '+91 98765 43215',
+    department: 'Kitchen',
+    designation: 'Kitchen Manager',
+    status: 'active',
+    joiningDate: '2019-04-15',
+    shiftId: 'shift-1',
+  },
+  {
+    id: 'emp-7',
+    employeeId: 'EMP-0007',
+    name: 'Gopal Reddy',
+    email: 'gopal@temple.org',
+    phone: '+91 98765 43216',
+    department: 'Maintenance',
+    designation: 'Maintenance Lead',
+    status: 'inactive',
+    joiningDate: '2017-09-01',
+    shiftId: 'shift-2',
+  },
+  {
+    id: 'emp-8',
+    employeeId: 'EMP-0008',
+    name: 'Anitha Kumari',
+    email: 'anitha@temple.org',
+    phone: '+91 98765 43217',
+    department: 'Operations',
+    designation: 'Seva Counter Staff',
+    status: 'active',
+    joiningDate: '2022-01-10',
+    shiftId: 'shift-1',
+  },
+];
+
 export const attendanceRecords: Attendance[] = [];
+
 export const departments: Department[] = [
-  { id: 'dept-1', name: 'Rituals' },
-  { id: 'dept-2', name: 'Kitchen' },
-  { id: 'dept-3', name: 'Inventory' },
-  { id: 'dept-4', name: 'Operations' },
-  { id: 'dept-5', name: 'Admin' },
-  { id: 'dept-6', name: 'Maintenance' },
-  { id: 'dept-7', name: 'Security' },
-  { id: 'dept-8', name: 'IT' },
+  { id: 'dept-1', name: 'Admin', code: 'ADMIN', headEmployee: 'Lakshmi Devi', status: 'active' },
+  { id: 'dept-2', name: 'Rituals', code: 'RTL', headEmployee: 'Ramesh Kumar', status: 'active' },
+  { id: 'dept-3', name: 'Finance', code: 'FIN', headEmployee: 'Priya Patel', status: 'active' },
+  { id: 'dept-4', name: 'Kitchen', code: 'KIT', headEmployee: 'Meena Singh', status: 'active' },
+  { id: 'dept-5', name: 'Security', code: 'SEC', headEmployee: 'Venkat Rao', status: 'active' },
+  { id: 'dept-6', name: 'Maintenance', code: 'MNT', headEmployee: 'Gopal Reddy', status: 'active' },
+  { id: 'dept-7', name: 'Operations', code: 'OPS', headEmployee: 'Anitha Kumari', status: 'active' },
+  { id: 'dept-8', name: 'Guest Services', code: 'GS', status: 'inactive' },
 ];
 
 export const designations: Designation[] = [
-  { id: 'des-1', name: 'Priest' },
-  { id: 'des-2', name: 'Head Cook' },
-  { id: 'des-3', name: 'Store Manager' },
-  { id: 'des-4', name: 'Temple Attendant' },
-  { id: 'des-5', name: 'Temple Admin' },
-  { id: 'des-6', name: 'Security Officer' },
-  { id: 'des-7', name: 'IT Admin' },
-  { id: 'des-8', name: 'Counter Staff' },
+  { id: 'des-1', name: 'Head Priest', department: 'Rituals', status: 'active' },
+  { id: 'des-2', name: 'Assistant Priest', department: 'Rituals', status: 'active' },
+  { id: 'des-3', name: 'HR Manager', department: 'Admin', status: 'active' },
+  { id: 'des-4', name: 'Accountant', department: 'Admin', status: 'active' },
+  { id: 'des-5', name: 'Kitchen Manager', department: 'Kitchen', status: 'active' },
+  { id: 'des-6', name: 'Security Head', department: 'Security', status: 'active' },
+  { id: 'des-7', name: 'Maintenance Lead', department: 'Maintenance', status: 'active' },
+  { id: 'des-8', name: 'Seva Counter Staff', department: 'Operations', status: 'active' },
 ];
 
 export const shifts: Shift[] = [
-  { id: 'shift-1', name: 'Morning Shift', startTime: '06:00', endTime: '14:00' },
-  { id: 'shift-2', name: 'Afternoon Shift', startTime: '14:00', endTime: '22:00' },
-  { id: 'shift-3', name: 'Night Shift', startTime: '22:00', endTime: '06:00' },
+  { id: 'shift-1', name: 'Morning Shift', code: 'MS', startTime: '06:00', endTime: '14:00', workingHours: 8, breakDuration: 30, applicableDepartments: ['Rituals', 'Admin', 'Kitchen', 'Operations'], status: 'active' },
+  { id: 'shift-2', name: 'Afternoon Shift', code: 'AS', startTime: '14:00', endTime: '22:00', workingHours: 8, breakDuration: 30, applicableDepartments: ['Security', 'Maintenance', 'Operations'], status: 'active' },
+  { id: 'shift-3', name: 'Night Shift', code: 'NS', startTime: '22:00', endTime: '06:00', workingHours: 8, breakDuration: 30, applicableDepartments: ['Security'], status: 'active' },
 ];
 
 export const leaveTypes: LeaveType[] = [
@@ -39,17 +138,10 @@ export const leaveTypes: LeaveType[] = [
 ];
 
 export const holidays: Holiday[] = [];
-
 export const leaveApplications: LeaveApplication[] = [];
-
 export const leavePolicies: LeavePolicy[] = [];
-
 export const expenses: Expense[] = [];
-
 export const expensePolicies: ExpensePolicy[] = [];
-
 export const gradePays: GradePay[] = [];
-
 export const attendancePolicies: any[] = [];
-
 export const orgTree: any = null;
