@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Check, Building2, MapPin, FileText, User, Shield, CreditCard, CheckCircle2, Phone } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ArrowLeft, ArrowRight, Check, Phone, Building2, MapPin, FileText,
+  User, Shield, Camera, Globe, UploadCloud, CheckCircle2, Save,
+  Image, X, ExternalLink
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,1116 +13,752 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
-import { UploadCloud } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
-type EntityType = "temple" | "trust" | "institution" | "";
-type LegalType = "charitable-trust" | "society" | "religious-institution" | "govt-board" | "other";
-type AccountType = "current" | "savings";
+/* ─── Types ─── */
+type RegistrationLevel = "level1" | "level2";
 
-interface TempleSection {
+interface Level1Data {
+  mobile: string;
+  otpSent: boolean;
+  otpVerified: boolean;
   templeName: string;
-  templeAlternateName: string;
-  templeType: "public" | "private" | "trust-managed" | "govt-managed" | "";
+  city: string;
+  state: string;
+  adminName: string;
+  email: string;
+  proofType: "photo" | "certificate" | "maps" | "website" | "";
+  proofValue: string;
+  proofFile: string | null;
+}
+
+interface Level2Data {
+  templeType: string;
   establishedYear: string;
   primaryDeity: string;
-  secondaryDeities: string;
-  templeCategory: string;
   shortDescription: string;
-  templePhotos: File[];
-  templeLogo: File | null;
-}
-
-interface LocationSection {
   addressLine1: string;
   addressLine2: string;
-  landmark: string;
-  city: string;
-  district: string;
-  state: string;
-  country: string;
   pincode: string;
-  taluk: string;
-  
-}
-
-interface LegalSection {
-  registeredName: string;
-  legalType: LegalType | "";
-  registrationDate: string;
+  district: string;
+  country: string;
+  exteriorPhoto: string | null;
+  sanctumPhoto: string | null;
+  additionalPhotos: string[];
+  trustName: string;
   registrationNumber: string;
-  registeredUnderAct: string;
   pan: string;
+  legalType: string;
+  registrationDate: string;
   twelveA: string;
   eightyG: string;
-  sameAsTempleAddress: boolean;
-  regAddressLine1: string;
-  regAddressLine2: string;
-  regCity: string;
-  regDistrict: string;
-  regState: string;
-  regCountry: string;
-  regPincode: string;
-  trustDeedFile: File | null;
-  panFile: File | null;
-  certificateFile: File | null;
-}
-
-interface AdminSection {
-  fullName: string;
-  designation: string;
-  mobile: string;
-  email: string;
-  altPhone: string;
-  templeEmail: string;
-  idProofType: string;
-  idProofNumber: string;
-  idProofFile: File | null;
-}
-
-interface BankSection {
-  accountHolderName: string;
-  bankName: string;
-  branchName: string;
-  accountType: AccountType | "";
-  accountNumber: string;
-  confirmAccountNumber: string;
-  ifsc: string;
-  branchAddress: string;
-  upiId: string;
-  chequeFile: File | null;
-}
-
-interface ConfirmationsSection {
+  trustDeed: string | null;
+  certificate: string | null;
+  adminIdProof: string | null;
   infoTrue: boolean;
   termsAccepted: boolean;
 }
 
-interface RegistrationFormState {
-  entityType: EntityType;
-  temple: TempleSection;
-  location: LocationSection;
-  legal: LegalSection;
-  admin: AdminSection;
-  bank: BankSection;
-  confirmations: ConfirmationsSection;
-}
-
-const initialForm: RegistrationFormState = {
-  entityType: "",
-  temple: {
-    templeName: "",
-    templeAlternateName: "",
-    templeType: "",
-    establishedYear: "",
-    primaryDeity: "",
-    secondaryDeities: "",
-    templeCategory: "",
-    shortDescription: "",
-    templePhotos: [],
-    templeLogo: null,
-  },
-  location: {
-    addressLine1: "",
-    addressLine2: "",
-    landmark: "",
-    city: "",
-    district: "",
-    state: "",
-    country: "",
-    pincode: "",
-    taluk: "",
-  },
-  legal: {
-    registeredName: "",
-    legalType: "",
-    registrationDate: "",
-    registrationNumber: "",
-    registeredUnderAct: "",
-    pan: "",
-    twelveA: "",
-    eightyG: "",
-    sameAsTempleAddress: true,
-    regAddressLine1: "",
-    regAddressLine2: "",
-    regCity: "",
-    regDistrict: "",
-    regState: "",
-    regCountry: "",
-    regPincode: "",
-    trustDeedFile: null,
-    panFile: null,
-    certificateFile: null,
-  },
-  admin: {
-    fullName: "",
-    designation: "",
-    mobile: "",
-    email: "",
-    altPhone: "",
-    templeEmail: "",
-    idProofType: "",
-    idProofNumber: "",
-    idProofFile: null,
-  },
-  bank: {
-    accountHolderName: "",
-    bankName: "",
-    branchName: "",
-    accountType: "",
-    accountNumber: "",
-    confirmAccountNumber: "",
-    ifsc: "",
-    branchAddress: "",
-    upiId: "",
-    chequeFile: null,
-  },
-  confirmations: {
-    infoTrue: false,
-    termsAccepted: false,
-  },
+const initialLevel1: Level1Data = {
+  mobile: "", otpSent: false, otpVerified: false,
+  templeName: "", city: "", state: "",
+  adminName: "", email: "",
+  proofType: "", proofValue: "", proofFile: null,
 };
 
-const steps = [
+const initialLevel2: Level2Data = {
+  templeType: "", establishedYear: "", primaryDeity: "", shortDescription: "",
+  addressLine1: "", addressLine2: "", pincode: "", district: "", country: "india",
+  exteriorPhoto: null, sanctumPhoto: null, additionalPhotos: [],
+  trustName: "", registrationNumber: "", pan: "", legalType: "", registrationDate: "", twelveA: "", eightyG: "",
+  trustDeed: null, certificate: null, adminIdProof: null,
+  infoTrue: false, termsAccepted: false,
+};
+
+const level1Steps = [
   { id: 1, title: "Mobile Verify", icon: Phone },
-  { id: 2, title: "Entity Type", icon: User },
-  { id: 3, title: "Temple Details", icon: Building2 },
-  { id: 4, title: "Location", icon: MapPin },
-  { id: 5, title: "Trust & Legal", icon: FileText },
-  { id: 6, title: "Admin Details", icon: User },
-  { id: 7, title: "Documents", icon: FileText },
-  { id: 8, title: "Confirmation", icon: Shield },
+  { id: 2, title: "Basic Info", icon: Building2 },
+  { id: 3, title: "Admin Info", icon: User },
+  { id: 4, title: "Proof of Existence", icon: Shield },
 ];
 
+const level2Steps = [
+  { id: 1, title: "Temple Details", icon: Building2 },
+  { id: 2, title: "Full Address", icon: MapPin },
+  { id: 3, title: "Temple Photos", icon: Camera },
+  { id: 4, title: "Trust & Legal", icon: FileText },
+  { id: 5, title: "Documents", icon: UploadCloud },
+  { id: 6, title: "Review & Submit", icon: CheckCircle2 },
+];
+
+const stateOptions = [
+  "Andhra Pradesh", "Karnataka", "Kerala", "Maharashtra", "Tamil Nadu",
+  "Telangana", "Uttar Pradesh", "West Bengal", "Rajasthan", "Gujarat",
+  "Madhya Pradesh", "Bihar", "Odisha", "Punjab", "Haryana",
+];
+
+/* ─── Main Component ─── */
 const TempleRegister = () => {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState(1);
-  const [form, setForm] = useState<RegistrationFormState>(initialForm);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [level, setLevel] = useState<RegistrationLevel>("level1");
+  const [l1Step, setL1Step] = useState(1);
+  const [l2Step, setL2Step] = useState(1);
+  const [l1, setL1] = useState<Level1Data>(initialLevel1);
+  const [l2, setL2] = useState<Level2Data>(initialLevel2);
+  const [l1Submitted, setL1Submitted] = useState(false);
+  const [l2Submitted, setL2Submitted] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const goNext = () => {
-    if (currentStep < 8) setCurrentStep(currentStep + 1);
+  const updateL1 = (patch: Partial<Level1Data>) => setL1(prev => ({ ...prev, ...patch }));
+  const updateL2 = (patch: Partial<Level2Data>) => setL2(prev => ({ ...prev, ...patch }));
+
+  const handleSaveStep = () => {
+    setSaving(true);
+    setTimeout(() => {
+      setSaving(false);
+      toast.success("Progress saved successfully");
+    }, 500);
   };
 
-  const goPrev = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
+  const handleL1Submit = () => {
+    setSaving(true);
+    setTimeout(() => {
+      setSaving(false);
+      setL1Submitted(true);
+      toast.success("Basic registration submitted!");
+    }, 800);
   };
 
-  const updateForm = <K extends keyof RegistrationFormState>(
-    section: K,
-    value: RegistrationFormState[K]
-  ) => {
-    setForm(prev => ({ ...prev, [section]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      await new Promise(res => setTimeout(res, 800));
-      setSubmitted(true);
-    } finally {
-      setSubmitting(false);
-    }
+  const handleL2Submit = () => {
+    setSaving(true);
+    setTimeout(() => {
+      setSaving(false);
+      setL2Submitted(true);
+      toast.success("Detailed registration submitted for admin review!");
+    }, 800);
   };
 
   const referenceNumber = `REG-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 999999)).padStart(6, '0')}`;
 
-  if (submitted) {
+  /* ─── Final confirmation after L2 ─── */
+  if (l2Submitted) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="max-w-md w-full text-center"
-        >
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 flex items-center justify-center p-6">
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="max-w-md w-full text-center">
           <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="h-10 w-10 text-green-600" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">Registration Submitted!</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Registration Complete!</h1>
           <p className="text-muted-foreground mb-6">
-            Your temple registration is under review. We'll notify you via SMS and email once your account is approved.
+            Your temple registration has been submitted for admin review. We'll notify you via SMS and email once approved.
           </p>
-          <div className="glass-card rounded-2xl p-6 mb-6 text-left">
+          <div className="border rounded-2xl p-6 mb-6 text-left bg-card">
             <div className="space-y-3">
               <div>
                 <p className="text-xs text-muted-foreground">Application Reference</p>
                 <p className="text-lg font-mono font-semibold text-foreground">{referenceNumber}</p>
               </div>
-              <div className="border-t border-border pt-3">
-                <p className="text-xs text-muted-foreground">Temple Name</p>
-                <p className="text-sm font-medium text-foreground">{form.temple.templeName || "N/A"}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Mobile Number</p>
-                <p className="text-sm font-medium text-foreground">+91 {form.admin.mobile || "N/A"}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Status</p>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                  Submitted for Review
-                </span>
+              <Separator />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Temple</p>
+                  <p className="text-sm font-medium">{l1.templeName || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Admin</p>
+                  <p className="text-sm font-medium">{l1.adminName || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Mobile</p>
+                  <p className="text-sm font-medium">+91 {l1.mobile}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Status</p>
+                  <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 text-xs">Under Admin Review</Badge>
+                </div>
               </div>
             </div>
           </div>
           <div className="bg-muted/50 rounded-lg p-4 mb-6 text-left">
-            <h3 className="font-medium text-foreground mb-2">What happens next?</h3>
+            <h3 className="font-medium text-foreground mb-2 text-sm">What happens next?</h3>
             <ul className="text-sm text-muted-foreground space-y-1.5">
-              <li className="flex items-start gap-2">
-                <span className="text-primary">1.</span>
-                Our team will review your registration
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary">2.</span>
-                We may contact you for additional verification
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary">3.</span>
-                Upon approval, you'll receive login credentials
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary">4.</span>
-                Average review time: 2-3 business days
-              </li>
+              <li className="flex items-start gap-2"><span className="text-primary font-bold">1.</span> Our team reviews your documents</li>
+              <li className="flex items-start gap-2"><span className="text-primary font-bold">2.</span> We may request additional verification</li>
+              <li className="flex items-start gap-2"><span className="text-primary font-bold">3.</span> Upon approval, you'll receive login credentials</li>
+              <li className="flex items-start gap-2"><span className="text-primary font-bold">4.</span> Average review time: 2–3 business days</li>
             </ul>
           </div>
-          <Button onClick={() => navigate("/")} variant="outline" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Login
-          </Button>
+          <div className="flex gap-3">
+            <Button variant="outline" className="flex-1 gap-2" onClick={() => navigate("/application-status")}>
+              Track Status
+            </Button>
+            <Button className="flex-1 gap-2" onClick={() => navigate("/")}>
+              <ArrowLeft className="h-4 w-4" /> Back to Home
+            </Button>
+          </div>
         </motion.div>
       </div>
     );
   }
 
+  /* ─── L1 submitted → transition screen ─── */
+  if (l1Submitted && level === "level1") {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 flex items-center justify-center p-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-md w-full text-center">
+          <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
+            <Check className="h-10 w-10 text-primary" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Basic Info Submitted ✓</h1>
+          <p className="text-muted-foreground mb-6">
+            Your basic temple information has been saved. Complete the detailed registration to submit for admin approval.
+          </p>
+          <div className="border rounded-2xl p-5 mb-6 text-left bg-card space-y-3">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Temple</span>
+              <span className="font-medium">{l1.templeName}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Location</span>
+              <span className="font-medium">{l1.city}, {l1.state}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Admin</span>
+              <span className="font-medium">{l1.adminName}</span>
+            </div>
+            <Separator />
+            <div className="flex items-center gap-2">
+              <div className="h-2 flex-1 rounded-full bg-muted overflow-hidden">
+                <div className="h-full w-1/3 bg-primary rounded-full" />
+              </div>
+              <span className="text-xs text-muted-foreground whitespace-nowrap">Level 1 of 2</span>
+            </div>
+          </div>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 text-left">
+            <p className="text-sm text-amber-800">
+              <strong>Next:</strong> Complete detailed registration (temple details, photos, legal info, documents) for admin verification.
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <Button variant="outline" className="flex-1" onClick={() => navigate("/")}>
+              Complete Later
+            </Button>
+            <Button className="flex-1 gap-2" onClick={() => setLevel("level2")}>
+              Continue to Level 2 <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  const currentSteps = level === "level1" ? level1Steps : level2Steps;
+  const currentStep = level === "level1" ? l1Step : l2Step;
+  const totalSteps = currentSteps.length;
+
+  const goNext = () => {
+    if (level === "level1" && l1Step < 4) setL1Step(l1Step + 1);
+    if (level === "level2" && l2Step < 6) setL2Step(l2Step + 1);
+  };
+  const goPrev = () => {
+    if (level === "level1" && l1Step > 1) setL1Step(l1Step - 1);
+    if (level === "level2" && l2Step > 1) setL2Step(l2Step - 1);
+  };
+
+  const isLastStep = (level === "level1" && l1Step === 4) || (level === "level2" && l2Step === 6);
+
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
-          <button onClick={() => navigate("/")} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Login
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+      {/* Header */}
+      <header className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
+        <div className="max-w-3xl mx-auto px-6 h-14 flex items-center justify-between">
+          <button onClick={() => navigate("/")} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm">
+            <ArrowLeft className="h-4 w-4" /> Back
           </button>
-          <h1 className="text-xl font-bold text-primary">Temple Admin</h1>
+          <div className="text-center">
+            <h1 className="text-sm font-bold text-primary">Temple Registration</h1>
+            <p className="text-[10px] text-muted-foreground">
+              {level === "level1" ? "Level 1 — Basic Registration" : "Level 2 — Detailed Registration"}
+            </p>
+          </div>
+          <div className="w-16" />
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <h1 className="text-2xl font-bold text-foreground mb-2">Temple Admin Registration</h1>
-          <p className="text-muted-foreground">Complete this institutional onboarding to activate your Temple / Trust on the platform.</p>
-        </motion.div>
+      <main className="max-w-3xl mx-auto px-6 py-8">
+        {/* Level indicator */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${level === "level1" ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary"}`}>
+            <Check className="h-3 w-3" /> Level 1
+          </div>
+          <div className="w-8 h-px bg-border" />
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${level === "level2" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+            {level === "level2" ? <Building2 className="h-3 w-3" /> : <span className="w-3 h-3 rounded-full border border-muted-foreground/40 inline-block" />} Level 2
+          </div>
+        </div>
 
-        {/* Progress Steps */}
-        <div className="mb-10 overflow-x-auto pb-2">
-          <div className="flex items-center justify-between min-w-[800px]">
-            {steps.map((step, index) => (
+        {/* Step progress */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            {currentSteps.map((step, index) => (
               <div key={step.id} className="flex items-center">
                 <div className="flex flex-col items-center">
-                  <div className={`
-                    w-10 h-10 rounded-full flex items-center justify-center font-medium text-sm transition-colors
-                    ${currentStep > step.id
-                      ? "bg-primary text-primary-foreground"
-                      : currentStep === step.id
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground"
-                    }
-                  `}>
-                    {currentStep > step.id ? <Check className="h-5 w-5" /> : <step.icon className="h-5 w-5" />}
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm transition-all ${
+                    currentStep > step.id ? "bg-primary text-primary-foreground" :
+                    currentStep === step.id ? "bg-primary text-primary-foreground shadow-md shadow-primary/25" :
+                    "bg-muted text-muted-foreground"
+                  }`}>
+                    {currentStep > step.id ? <Check className="h-4 w-4" /> : <step.icon className="h-4 w-4" />}
                   </div>
-                  <span className={`text-xs mt-2 whitespace-nowrap text-center max-w-[100px] ${currentStep >= step.id ? "text-foreground font-medium" : "text-muted-foreground"}`}>
+                  <span className={`text-[10px] mt-1.5 whitespace-nowrap text-center max-w-[80px] leading-tight ${currentStep >= step.id ? "text-foreground font-medium" : "text-muted-foreground"}`}>
                     {step.title}
                   </span>
                 </div>
-                {index < steps.length - 1 && (
-                  <div className={`w-12 sm:w-16 h-0.5 mx-2 transition-colors ${currentStep > step.id ? "bg-primary" : "bg-border"}`} />
+                {index < currentSteps.length - 1 && (
+                  <div className={`w-8 sm:w-14 h-0.5 mx-1.5 transition-colors rounded-full ${currentStep > step.id ? "bg-primary" : "bg-border"}`} />
                 )}
               </div>
             ))}
           </div>
+          <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-primary rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${(currentStep / totalSteps) * 100}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground mt-1.5 text-right">Step {currentStep} of {totalSteps}</p>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="glass-card rounded-2xl p-8">
-            {currentStep === 1 && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                <StepMobileVerification form={form} updateForm={updateForm} />
-              </motion.div>
-            )}
+        {/* Step Content */}
+        <div className="bg-card border rounded-2xl p-6 sm:p-8 shadow-sm">
+          <AnimatePresence mode="wait">
+            <motion.div key={`${level}-${currentStep}`} initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }} transition={{ duration: 0.2 }}>
+              {level === "level1" && l1Step === 1 && <L1MobileVerify data={l1} update={updateL1} />}
+              {level === "level1" && l1Step === 2 && <L1BasicInfo data={l1} update={updateL1} />}
+              {level === "level1" && l1Step === 3 && <L1AdminInfo data={l1} update={updateL1} />}
+              {level === "level1" && l1Step === 4 && <L1ProofOfExistence data={l1} update={updateL1} />}
+              {level === "level2" && l2Step === 1 && <L2TempleDetails data={l2} update={updateL2} />}
+              {level === "level2" && l2Step === 2 && <L2FullAddress data={l2} update={updateL2} l1={l1} />}
+              {level === "level2" && l2Step === 3 && <L2TemplePhotos data={l2} update={updateL2} />}
+              {level === "level2" && l2Step === 4 && <L2TrustLegal data={l2} update={updateL2} />}
+              {level === "level2" && l2Step === 5 && <L2Documents data={l2} update={updateL2} />}
+              {level === "level2" && l2Step === 6 && <L2ReviewSubmit l1={l1} l2={l2} update={updateL2} />}
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
-            {currentStep === 2 && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                <StepRoleSelection form={form} updateForm={updateForm} />
-              </motion.div>
-            )}
-
-            {currentStep === 3 && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                <StepTempleDetails form={form} updateForm={updateForm} />
-              </motion.div>
-            )}
-
-            {currentStep === 4 && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                <StepLocationDetails form={form} updateForm={updateForm} />
-              </motion.div>
-            )}
-
-            {currentStep === 5 && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                <StepLegalDetails form={form} updateForm={updateForm} />
-              </motion.div>
-            )}
-
-            {currentStep === 6 && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                <StepAdminDetails form={form} updateForm={updateForm} />
-              </motion.div>
-            )}
-
-            {currentStep === 7 && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                <StepDocumentUpload form={form} updateForm={updateForm} />
-              </motion.div>
-            )}
-
-            {currentStep === 8 && (
-              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-                <StepReviewSubmit form={form} updateForm={updateForm} />
-              </motion.div>
-            )}
-          </div>
-
-          {/* Navigation Buttons */}
-          <div className="flex justify-between mt-6">
+        {/* Navigation */}
+        <div className="flex items-center justify-between mt-6">
+          <Button type="button" variant="outline" onClick={goPrev} disabled={currentStep === 1} className="gap-2">
+            <ArrowLeft className="h-4 w-4" /> Previous
+          </Button>
+          <Button type="button" variant="ghost" size="sm" onClick={handleSaveStep} disabled={saving} className="gap-1.5 text-xs text-muted-foreground">
+            <Save className="h-3.5 w-3.5" /> {saving ? "Saving..." : "Save Progress"}
+          </Button>
+          {isLastStep ? (
             <Button
-              type="button"
-              variant="outline"
-              onClick={goPrev}
-              disabled={currentStep === 1}
+              onClick={level === "level1" ? handleL1Submit : handleL2Submit}
+              disabled={saving || (level === "level2" && (!l2.infoTrue || !l2.termsAccepted))}
               className="gap-2"
             >
-              <ArrowLeft className="h-4 w-4" />
-              Previous
+              {saving ? "Submitting..." : level === "level1" ? "Save & Continue" : "Submit for Review"}
+              <Check className="h-4 w-4" />
             </Button>
-
-            {currentStep < 8 ? (
-              <Button type="button" onClick={goNext} className="gap-2">
-                Next
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            ) : (
-              <Button
-                type="submit"
-                className="gap-2"
-                disabled={submitting || !form.confirmations.infoTrue || !form.confirmations.termsAccepted}
-              >
-                {submitting ? "Submitting..." : "Submit for Verification"}
-                <Check className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        </form>
-
-        <p className="text-center text-sm text-muted-foreground mt-6">
-          Step {currentStep} of {steps.length}
-        </p>
+          ) : (
+            <Button onClick={goNext} className="gap-2">
+              Next <ArrowRight className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
       </main>
     </div>
   );
 };
 
-interface StepProps {
-  form: RegistrationFormState;
-  updateForm: <K extends keyof RegistrationFormState>(
-    section: K,
-    value: RegistrationFormState[K]
-  ) => void;
-}
+/* ─────────────────────────── LEVEL 1 STEPS ─────────────────────────── */
 
-const StepMobileVerification = ({ form, updateForm }: StepProps) => {
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false);
+const L1MobileVerify = ({ data, update }: { data: Level1Data; update: (p: Partial<Level1Data>) => void }) => {
   const [otp, setOtp] = useState("");
-
-  const handleSendOtp = () => setOtpSent(true);
-  const handleVerify = () => {
-    if (otp.length === 6) setOtpVerified(true);
-  };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-foreground mb-1">Mobile Verification</h2>
-        <p className="text-sm text-muted-foreground">Verify your mobile number to begin registration</p>
-      </div>
-
-      <div className="max-w-md space-y-4">
+      <StepHeader title="Mobile Verification" subtitle="Verify your mobile number to begin registration" />
+      <div className="max-w-sm space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="reg-mobile">
-            <div className="flex items-center gap-2">
-              <Phone className="h-4 w-4" />
-              Mobile Number *
-            </div>
-          </Label>
+          <Label>Mobile Number *</Label>
           <div className="flex gap-2">
-            <div className="flex">
-              <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-muted-foreground text-sm">
-                +91
-              </span>
-              <Input
-                id="reg-mobile"
-                placeholder="98765 43210"
-                className="rounded-l-none w-44"
-                value={form.admin.mobile}
-                onChange={(e) => updateForm("admin", { ...form.admin, mobile: e.target.value })}
-                disabled={otpVerified}
-              />
-            </div>
-            {!otpVerified && (
-              <Button
-                type="button"
-                variant={otpSent ? "outline" : "default"}
-                onClick={handleSendOtp}
-                disabled={!form.admin.mobile || form.admin.mobile.length < 10}
-              >
-                {otpSent ? "Resend OTP" : "Send OTP"}
-              </Button>
-            )}
-            {otpVerified && (
-              <div className="flex items-center gap-2 px-3 bg-green-50 border border-green-200 rounded-lg">
-                <Check className="h-4 w-4 text-green-600" />
-                <span className="text-sm text-green-700 font-medium">Verified</span>
-              </div>
-            )}
+            <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-input bg-muted text-muted-foreground text-sm">+91</span>
+            <Input
+              placeholder="98765 43210"
+              className="rounded-l-none"
+              value={data.mobile}
+              onChange={e => update({ mobile: e.target.value })}
+              disabled={data.otpVerified}
+            />
           </div>
         </div>
-
-        {otpSent && !otpVerified && (
+        {!data.otpVerified && !data.otpSent && (
+          <Button type="button" onClick={() => update({ otpSent: true })} disabled={data.mobile.length < 10} className="w-full">
+            Send OTP
+          </Button>
+        )}
+        {data.otpSent && !data.otpVerified && (
           <div className="space-y-3">
-            <Label>Enter 6-digit OTP sent to your mobile</Label>
-            <div className="flex items-center gap-3">
-              <Input
-                placeholder="Enter OTP"
-                className="max-w-[200px] text-center tracking-widest"
-                maxLength={6}
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-              />
-              <Button type="button" onClick={handleVerify} disabled={otp.length < 6}>
-                Verify
-              </Button>
+            <Label>Enter 6-digit OTP</Label>
+            <div className="flex gap-2">
+              <Input placeholder="••••••" className="text-center tracking-widest" maxLength={6} value={otp} onChange={e => setOtp(e.target.value)} />
+              <Button onClick={() => { if (otp.length === 6) update({ otpVerified: true }); }} disabled={otp.length < 6}>Verify</Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Didn't receive?{" "}
-              <button type="button" className="text-primary underline" onClick={handleSendOtp}>
-                Resend OTP
-              </button>
+              Didn't receive? <button type="button" className="text-primary underline" onClick={() => update({ otpSent: true })}>Resend</button>
             </p>
           </div>
         )}
-      </div>
-
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md">
-        <p className="text-sm text-blue-800">
-          <strong>Important:</strong> This mobile number will be your primary login ID. It cannot be changed after registration.
-        </p>
-      </div>
-    </div>
-  );
-};
-
-const StepRoleSelection = ({ form, updateForm }: StepProps) => {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-foreground mb-1">Entity Type</h2>
-        <p className="text-sm text-muted-foreground">Choose what you are registering as</p>
-      </div>
-      <div className="grid gap-4 md:grid-cols-3">
-        {[
-          { value: "temple" as EntityType, title: "Temple", desc: "For Mandirs, Devasthanams, and standalone temples." },
-          { value: "trust" as EntityType, title: "Trust", desc: "For Charitable Trusts, Private Trusts, and Trust-managed institutions." },
-          { value: "institution" as EntityType, title: "Institution", desc: "For Societies, Endowment Boards, and religious institutions." },
-        ].map(opt => (
-          <button
-            key={opt.value}
-            type="button"
-            className={`border rounded-lg p-4 text-left space-y-1 transition ${
-              form.entityType === opt.value
-                ? "border-primary bg-primary/5"
-                : "border-muted-foreground/20 hover:border-primary/40"
-            }`}
-            onClick={() => updateForm("entityType", opt.value)}
-          >
-            <div className="text-sm font-semibold">{opt.title}</div>
-            <p className="text-xs text-muted-foreground">{opt.desc}</p>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const StepTempleDetails = ({ form, updateForm }: StepProps) => {
-  const temple = form.temple;
-  const update = (patch: Partial<TempleSection>) =>
-    updateForm("temple", { ...temple, ...patch });
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-foreground mb-1">Temple Basic Details</h2>
-        <p className="text-sm text-muted-foreground">Basic information about your temple</p>
-      </div>
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Temple Name *</Label>
-          <Input
-            value={temple.templeName}
-            onChange={e => update({ templeName: e.target.value })}
-            placeholder="Sri XYZ Temple"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Temple Alternate Name</Label>
-          <Input
-            value={temple.templeAlternateName}
-            onChange={e => update({ templeAlternateName: e.target.value })}
-            placeholder="Local / historical name"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Temple Type *</Label>
-          <Select
-            value={temple.templeType}
-            onValueChange={v =>
-              update({
-                templeType: v as TempleSection["templeType"],
-              })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="public">Public</SelectItem>
-              <SelectItem value="private">Private</SelectItem>
-              <SelectItem value="trust-managed">Trust Managed</SelectItem>
-              <SelectItem value="govt-managed">Government Managed</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>Established Year</Label>
-          <Input
-            value={temple.establishedYear}
-            onChange={e => update({ establishedYear: e.target.value })}
-            placeholder="e.g. 1985"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Primary Deity *</Label>
-          <Input
-            value={temple.primaryDeity}
-            onChange={e => update({ primaryDeity: e.target.value })}
-            placeholder="e.g. Sri Venkateswara Swamy"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Secondary Deities</Label>
-          <Input
-            value={temple.secondaryDeities}
-            onChange={e => update({ secondaryDeities: e.target.value })}
-            placeholder="Comma-separated names"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Temple Category</Label>
-          <Input
-            value={temple.templeCategory}
-            onChange={e => update({ templeCategory: e.target.value })}
-            placeholder="e.g. Heritage, City Temple, Pilgrimage Center"
-          />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label>Short Description *</Label>
-        <Textarea
-          rows={4}
-          value={temple.shortDescription}
-          onChange={e => update({ shortDescription: e.target.value })}
-          placeholder="Describe the temple, key traditions, uniqueness, etc."
-        />
-      </div>
-      <Separator />
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Temple Photos Upload * (min 3)</Label>
-          <button
-            type="button"
-            className="flex items-center gap-2 border rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted/60"
-          >
-            <UploadCloud className="h-4 w-4" />
-            Upload Photos
-          </button>
-          <p className="text-[11px] text-muted-foreground">
-            Placeholder upload control – wire to your uploader.
-          </p>
-        </div>
-        <div className="space-y-2">
-          <Label>Temple Logo (Optional)</Label>
-          <button
-            type="button"
-            className="flex items-center gap-2 border rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted/60"
-          >
-            <UploadCloud className="h-4 w-4" />
-            Upload Logo
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const StepLocationDetails = ({ form, updateForm }: StepProps) => {
-  const loc = form.location;
-  const update = (patch: Partial<LocationSection>) =>
-    updateForm("location", { ...loc, ...patch });
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-foreground mb-1">Temple Location Details</h2>
-        <p className="text-sm text-muted-foreground">Address and geographical information</p>
-      </div>
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Country *</Label>
-          <Select value={loc.country} onValueChange={v => update({ country: v })}>
-            <SelectTrigger><SelectValue placeholder="Select Country" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="india">India</SelectItem>
-              <SelectItem value="usa">United States</SelectItem>
-              <SelectItem value="uk">United Kingdom</SelectItem>
-              <SelectItem value="canada">Canada</SelectItem>
-              <SelectItem value="australia">Australia</SelectItem>
-              <SelectItem value="singapore">Singapore</SelectItem>
-              <SelectItem value="malaysia">Malaysia</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>State / Province *</Label>
-          <Select value={loc.state} onValueChange={v => update({ state: v })}>
-            <SelectTrigger><SelectValue placeholder="Select State" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="andhra-pradesh">Andhra Pradesh</SelectItem>
-              <SelectItem value="karnataka">Karnataka</SelectItem>
-              <SelectItem value="kerala">Kerala</SelectItem>
-              <SelectItem value="maharashtra">Maharashtra</SelectItem>
-              <SelectItem value="tamil-nadu">Tamil Nadu</SelectItem>
-              <SelectItem value="telangana">Telangana</SelectItem>
-              <SelectItem value="uttar-pradesh">Uttar Pradesh</SelectItem>
-              <SelectItem value="west-bengal">West Bengal</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>District *</Label>
-          <Select value={loc.district} onValueChange={v => update({ district: v })}>
-            <SelectTrigger><SelectValue placeholder="Select District" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="bangalore-urban">Bangalore Urban</SelectItem>
-              <SelectItem value="bangalore-rural">Bangalore Rural</SelectItem>
-              <SelectItem value="chennai">Chennai</SelectItem>
-              <SelectItem value="hyderabad">Hyderabad</SelectItem>
-              <SelectItem value="mumbai">Mumbai</SelectItem>
-              <SelectItem value="pune">Pune</SelectItem>
-              <SelectItem value="tirupati">Tirupati</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>Taluk / Mandal</Label>
-          <Select value={loc.taluk} onValueChange={v => update({ taluk: v })}>
-            <SelectTrigger><SelectValue placeholder="Select Taluk" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="taluk-1">Taluk 1</SelectItem>
-              <SelectItem value="taluk-2">Taluk 2</SelectItem>
-              <SelectItem value="taluk-3">Taluk 3</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>City / Town *</Label>
-          <Select value={loc.city} onValueChange={v => update({ city: v })}>
-            <SelectTrigger><SelectValue placeholder="Select City" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="bangalore">Bangalore</SelectItem>
-              <SelectItem value="chennai">Chennai</SelectItem>
-              <SelectItem value="hyderabad">Hyderabad</SelectItem>
-              <SelectItem value="mumbai">Mumbai</SelectItem>
-              <SelectItem value="tirupati">Tirupati</SelectItem>
-              <SelectItem value="pune">Pune</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>Pincode *</Label>
-          <Input value={loc.pincode} onChange={e => update({ pincode: e.target.value })} placeholder="e.g., 517501" />
-        </div>
-        <div className="space-y-2 md:col-span-2">
-          <Label>Address Line 1 *</Label>
-          <Input value={loc.addressLine1} onChange={e => update({ addressLine1: e.target.value })} placeholder="Street address, building name" />
-        </div>
-        <div className="space-y-2">
-          <Label>Address Line 2</Label>
-          <Input value={loc.addressLine2} onChange={e => update({ addressLine2: e.target.value })} placeholder="Area, locality" />
-        </div>
-        <div className="space-y-2">
-          <Label>Landmark</Label>
-          <Input value={loc.landmark} onChange={e => update({ landmark: e.target.value })} placeholder="Near..." />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const StepLegalDetails = ({ form, updateForm }: StepProps) => {
-  const legal = form.legal;
-  const update = (patch: Partial<LegalSection>) =>
-    updateForm("legal", { ...legal, ...patch });
-
-  const copyTempleAddress = () => {
-    const t = form.location;
-    update({
-      regAddressLine1: t.addressLine1,
-      regAddressLine2: t.addressLine2,
-      regCity: t.city,
-      regDistrict: t.district,
-      regState: t.state,
-      regCountry: t.country,
-      regPincode: t.pincode,
-    });
-  };
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-foreground mb-1">Trust / Legal Details</h2>
-        <p className="text-sm text-muted-foreground">Legal and registration information</p>
-      </div>
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Registered Name of Trust / Institution *</Label>
-          <Input
-            value={legal.registeredName}
-            onChange={e => update({ registeredName: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Legal Type *</Label>
-          <Select
-            value={legal.legalType}
-            onValueChange={v =>
-              update({
-                legalType: v as LegalSection["legalType"],
-              })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select legal type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="charitable-trust">Charitable Trust</SelectItem>
-              <SelectItem value="society">Society</SelectItem>
-              <SelectItem value="religious-institution">Religious Institution</SelectItem>
-              <SelectItem value="govt-board">Govt. Board / Endowment</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>Date of Registration *</Label>
-          <Input
-            type="date"
-            value={legal.registrationDate}
-            onChange={e => update({ registrationDate: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Registration / Trust Deed Number *</Label>
-          <Input
-            value={legal.registrationNumber}
-            onChange={e => update({ registrationNumber: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Registered Under Act</Label>
-          <Input
-            value={legal.registeredUnderAct}
-            onChange={e => update({ registeredUnderAct: e.target.value })}
-            placeholder="e.g. Indian Trusts Act 1882"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>PAN of Trust / Institution *</Label>
-          <Input
-            value={legal.pan}
-            onChange={e => update({ pan: e.target.value.toUpperCase() })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>12A Registration Number (Optional)</Label>
-          <Input
-            value={legal.twelveA}
-            onChange={e => update({ twelveA: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>80G Registration Number (Optional)</Label>
-          <Input
-            value={legal.eightyG}
-            onChange={e => update({ eightyG: e.target.value })}
-          />
-        </div>
-      </div>
-      <Separator />
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Checkbox
-            checked={legal.sameAsTempleAddress}
-            onCheckedChange={checked => {
-              const val = Boolean(checked);
-              update({ sameAsTempleAddress: val });
-              if (val) copyTempleAddress();
-            }}
-          />
-          <Label className="text-sm">Registered address same as temple address</Label>
-        </div>
-        {!legal.sameAsTempleAddress && (
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Registered Address Line 1 *</Label>
-              <Input
-                value={legal.regAddressLine1}
-                onChange={e => update({ regAddressLine1: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Registered Address Line 2</Label>
-              <Input
-                value={legal.regAddressLine2}
-                onChange={e => update({ regAddressLine2: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>City *</Label>
-              <Input
-                value={legal.regCity}
-                onChange={e => update({ regCity: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>District *</Label>
-              <Input
-                value={legal.regDistrict}
-                onChange={e => update({ regDistrict: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>State *</Label>
-              <Input
-                value={legal.regState}
-                onChange={e => update({ regState: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Country *</Label>
-              <Input
-                value={legal.regCountry}
-                onChange={e => update({ regCountry: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Pincode *</Label>
-              <Input
-                value={legal.regPincode}
-                onChange={e => update({ regPincode: e.target.value })}
-              />
-            </div>
+        {data.otpVerified && (
+          <div className="flex items-center gap-2 px-4 py-2.5 bg-green-50 border border-green-200 rounded-lg">
+            <CheckCircle2 className="h-4 w-4 text-green-600" />
+            <span className="text-sm text-green-700 font-medium">Mobile verified successfully</span>
           </div>
         )}
       </div>
-      <Separator />
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label>Trust Deed / Registration Certificate *</Label>
-          <button
-            type="button"
-            className="flex items-center gap-2 border rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-muted/60"
-          >
-            <UploadCloud className="h-3.5 w-3.5" />
-            Upload file
-          </button>
-        </div>
-        <div className="space-y-2">
-          <Label>PAN Card of Institution *</Label>
-          <button
-            type="button"
-            className="flex items-center gap-2 border rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-muted/60"
-          >
-            <UploadCloud className="h-3.5 w-3.5" />
-            Upload file
-          </button>
-        </div>
-        <div className="space-y-2">
-          <Label>12A / 80G Certificate (Optional)</Label>
-          <button
-            type="button"
-            className="flex items-center gap-2 border rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-muted/60"
-          >
-            <UploadCloud className="h-3.5 w-3.5" />
-            Upload file
-          </button>
-        </div>
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-sm">
+        <p className="text-sm text-blue-800"><strong>Important:</strong> This mobile number will be your primary login ID.</p>
       </div>
     </div>
   );
 };
 
-const StepAdminDetails = ({ form, updateForm }: StepProps) => {
-  const admin = form.admin;
-  const update = (patch: Partial<AdminSection>) =>
-    updateForm("admin", { ...admin, ...patch });
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-foreground mb-1">Authorized Admin Details</h2>
-        <p className="text-sm text-muted-foreground">Primary administrator information</p>
+const L1BasicInfo = ({ data, update }: { data: Level1Data; update: (p: Partial<Level1Data>) => void }) => (
+  <div className="space-y-6">
+    <StepHeader title="Temple Basic Info" subtitle="Tell us about your temple" />
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <Label>Temple Name *</Label>
+        <Input value={data.templeName} onChange={e => update({ templeName: e.target.value })} placeholder="e.g., Sri Venkateswara Temple" />
       </div>
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Full Name *</Label>
-          <Input
-            value={admin.fullName}
-            onChange={e => update({ fullName: e.target.value })}
-          />
+          <Label>City / Town *</Label>
+          <Input value={data.city} onChange={e => update({ city: e.target.value })} placeholder="e.g., Tirupati" />
         </div>
         <div className="space-y-2">
-          <Label>Designation / Role *</Label>
-          <Input
-            value={admin.designation}
-            onChange={e => update({ designation: e.target.value })}
-            placeholder="e.g. Chairman, Trustee, Temple Manager"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Mobile Number (Verified)</Label>
-          <Input
-            value={admin.mobile}
-            disabled
-            className="bg-muted"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Email Address *</Label>
-          <Input
-            type="email"
-            value={admin.email}
-            onChange={e => update({ email: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Alternate Phone</Label>
-          <Input
-            value={admin.altPhone}
-            onChange={e => update({ altPhone: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Official Temple Email (Optional)</Label>
-          <Input
-            type="email"
-            value={admin.templeEmail}
-            onChange={e => update({ templeEmail: e.target.value })}
-          />
-        </div>
-      </div>
-      <Separator />
-      <div className="grid md:grid-cols-3 gap-4">
-        <div className="space-y-2">
-          <Label>ID Proof Type *</Label>
-          <Select
-            value={admin.idProofType}
-            onValueChange={v => update({ idProofType: v })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select ID type" />
-            </SelectTrigger>
+          <Label>State *</Label>
+          <Select value={data.state} onValueChange={v => update({ state: v })}>
+            <SelectTrigger><SelectValue placeholder="Select State" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="aadhaar">Aadhaar</SelectItem>
-              <SelectItem value="pan">PAN</SelectItem>
-              <SelectItem value="passport">Passport</SelectItem>
-              <SelectItem value="driving-license">Driving License</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
+              {stateOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2">
-          <Label>ID Proof Number *</Label>
-          <Input
-            value={admin.idProofNumber}
-            onChange={e => update({ idProofNumber: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Upload ID Proof *</Label>
-          <button
-            type="button"
-            className="flex items-center gap-2 border rounded-lg px-3 py-2 text-xs text-muted-foreground hover:bg-muted/60"
-          >
-            <UploadCloud className="h-3.5 w-3.5" />
-            Upload file
-          </button>
-        </div>
       </div>
     </div>
-  );
-};
+  </div>
+);
 
-const StepDocumentUpload = ({ form, updateForm }: StepProps) => {
-  const documents = [
-    { id: "trust-deed", label: "Trust Deed / Registration Certificate *", accept: "PDF, JPG, PNG" },
-    { id: "pan-card", label: "PAN Card of Institution *", accept: "PDF, JPG, PNG" },
-    { id: "12a-cert", label: "12A Certificate (Optional)", accept: "PDF, JPG, PNG" },
-    { id: "80g-cert", label: "80G Certificate (Optional)", accept: "PDF, JPG, PNG" },
-    { id: "id-proof", label: "Admin ID Proof *", accept: "PDF, JPG, PNG" },
-    { id: "temple-photos", label: "Temple Photos (min 3) *", accept: "JPG, PNG" },
+const L1AdminInfo = ({ data, update }: { data: Level1Data; update: (p: Partial<Level1Data>) => void }) => (
+  <div className="space-y-6">
+    <StepHeader title="Admin Details" subtitle="Primary contact person for this registration" />
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="space-y-2">
+        <Label>Admin Name *</Label>
+        <Input value={data.adminName} onChange={e => update({ adminName: e.target.value })} placeholder="Full name" />
+      </div>
+      <div className="space-y-2">
+        <Label>Email Address *</Label>
+        <Input type="email" value={data.email} onChange={e => update({ email: e.target.value })} placeholder="admin@temple.org" />
+      </div>
+      <div className="space-y-2 sm:col-span-2">
+        <Label>Mobile Number (Verified)</Label>
+        <Input value={`+91 ${data.mobile}`} disabled className="bg-muted" />
+      </div>
+    </div>
+  </div>
+);
+
+const L1ProofOfExistence = ({ data, update }: { data: Level1Data; update: (p: Partial<Level1Data>) => void }) => {
+  const proofOptions = [
+    { value: "photo" as const, label: "Temple Photo", icon: Camera, desc: "Upload a clear photo of the temple" },
+    { value: "certificate" as const, label: "Registration Certificate", icon: FileText, desc: "Trust or society registration document" },
+    { value: "maps" as const, label: "Google Maps Link", icon: Globe, desc: "Paste a Google Maps URL of the temple" },
+    { value: "website" as const, label: "Temple Website", icon: ExternalLink, desc: "Official website URL" },
   ];
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-foreground mb-1">Document Upload</h2>
-        <p className="text-sm text-muted-foreground">Upload required documents for verification</p>
+      <StepHeader title="Proof of Temple Existence" subtitle="Provide at least one proof to verify your temple exists" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {proofOptions.map(opt => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => update({ proofType: opt.value, proofValue: "", proofFile: null })}
+            className={`border rounded-xl p-4 text-left transition-all ${
+              data.proofType === opt.value ? "border-primary bg-primary/5 shadow-sm" : "border-border hover:border-primary/30"
+            }`}
+          >
+            <opt.icon className={`h-5 w-5 mb-2 ${data.proofType === opt.value ? "text-primary" : "text-muted-foreground"}`} />
+            <p className="text-sm font-medium text-foreground">{opt.label}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{opt.desc}</p>
+          </button>
+        ))}
       </div>
-      <div className="grid md:grid-cols-2 gap-4">
-        {documents.map((doc) => (
-          <div key={doc.id} className="space-y-2">
-            <Label>{doc.label}</Label>
-            <div className="border-2 border-dashed border-border rounded-lg p-4 text-center hover:border-primary/50 transition-colors cursor-pointer">
-              <UploadCloud className="h-6 w-6 text-muted-foreground mx-auto mb-1" />
-              <p className="text-xs text-muted-foreground">Click to upload</p>
-              <p className="text-[10px] text-muted-foreground">{doc.accept} (max 5MB)</p>
+
+      {data.proofType && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 pt-2">
+          {(data.proofType === "photo" || data.proofType === "certificate") && (
+            <div className="space-y-2">
+              <Label>{data.proofType === "photo" ? "Upload Temple Photo" : "Upload Certificate"}</Label>
+              {!data.proofFile ? (
+                <div
+                  onClick={() => update({ proofFile: data.proofType === "photo" ? "temple_photo.jpg" : "certificate.pdf" })}
+                  className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                >
+                  <UploadCloud className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">Click to upload</p>
+                  <p className="text-xs text-muted-foreground mt-1">JPG, PNG, or PDF (max 5MB)</p>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
+                  <FileText className="h-6 w-6 text-primary" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{data.proofFile}</p>
+                    <p className="text-xs text-muted-foreground">Uploaded</p>
+                  </div>
+                  <button type="button" onClick={() => update({ proofFile: null })} className="p-1 hover:bg-muted rounded-full">
+                    <X className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                </div>
+              )}
             </div>
+          )}
+          {(data.proofType === "maps" || data.proofType === "website") && (
+            <div className="space-y-2">
+              <Label>{data.proofType === "maps" ? "Google Maps URL" : "Website URL"}</Label>
+              <Input
+                value={data.proofValue}
+                onChange={e => update({ proofValue: e.target.value })}
+                placeholder={data.proofType === "maps" ? "https://maps.google.com/..." : "https://www.temple.org"}
+              />
+            </div>
+          )}
+        </motion.div>
+      )}
+    </div>
+  );
+};
+
+/* ─────────────────────────── LEVEL 2 STEPS ─────────────────────────── */
+
+const L2TempleDetails = ({ data, update }: { data: Level2Data; update: (p: Partial<Level2Data>) => void }) => (
+  <div className="space-y-6">
+    <StepHeader title="Temple Details" subtitle="Additional information about your temple" />
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="space-y-2">
+        <Label>Temple Type</Label>
+        <Select value={data.templeType} onValueChange={v => update({ templeType: v })}>
+          <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="public">Public</SelectItem>
+            <SelectItem value="private">Private</SelectItem>
+            <SelectItem value="trust-managed">Trust Managed</SelectItem>
+            <SelectItem value="govt-managed">Government Managed</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-2">
+        <Label>Year Established</Label>
+        <Input value={data.establishedYear} onChange={e => update({ establishedYear: e.target.value })} placeholder="e.g., 1509" />
+      </div>
+      <div className="space-y-2 sm:col-span-2">
+        <Label>Primary Deity</Label>
+        <Input value={data.primaryDeity} onChange={e => update({ primaryDeity: e.target.value })} placeholder="e.g., Lord Venkateswara" />
+      </div>
+      <div className="space-y-2 sm:col-span-2">
+        <Label>Short Description</Label>
+        <Textarea rows={3} value={data.shortDescription} onChange={e => update({ shortDescription: e.target.value })} placeholder="Brief description of the temple's history and significance..." />
+      </div>
+    </div>
+  </div>
+);
+
+const L2FullAddress = ({ data, update, l1 }: { data: Level2Data; update: (p: Partial<Level2Data>) => void; l1: Level1Data }) => (
+  <div className="space-y-6">
+    <StepHeader title="Full Address" subtitle="Complete address details for your temple" />
+    <div className="bg-muted/50 rounded-lg p-3 flex items-center gap-2 text-sm">
+      <MapPin className="h-4 w-4 text-primary shrink-0" />
+      <span className="text-muted-foreground">City: <strong className="text-foreground">{l1.city}</strong>, State: <strong className="text-foreground">{l1.state}</strong> (from Level 1)</span>
+    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="space-y-2 sm:col-span-2">
+        <Label>Address Line 1 *</Label>
+        <Input value={data.addressLine1} onChange={e => update({ addressLine1: e.target.value })} placeholder="Street, building name" />
+      </div>
+      <div className="space-y-2 sm:col-span-2">
+        <Label>Address Line 2</Label>
+        <Input value={data.addressLine2} onChange={e => update({ addressLine2: e.target.value })} placeholder="Area, locality, landmark" />
+      </div>
+      <div className="space-y-2">
+        <Label>District</Label>
+        <Input value={data.district} onChange={e => update({ district: e.target.value })} placeholder="District" />
+      </div>
+      <div className="space-y-2">
+        <Label>Pincode *</Label>
+        <Input value={data.pincode} onChange={e => update({ pincode: e.target.value })} placeholder="e.g., 517501" />
+      </div>
+      <div className="space-y-2">
+        <Label>Country</Label>
+        <Select value={data.country} onValueChange={v => update({ country: v })}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="india">India</SelectItem>
+            <SelectItem value="usa">United States</SelectItem>
+            <SelectItem value="uk">United Kingdom</SelectItem>
+            <SelectItem value="canada">Canada</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  </div>
+);
+
+const L2TemplePhotos = ({ data, update }: { data: Level2Data; update: (p: Partial<Level2Data>) => void }) => {
+  const mockUpload = (field: "exteriorPhoto" | "sanctumPhoto") => {
+    update({ [field]: field === "exteriorPhoto" ? "temple_exterior.jpg" : "sanctum.jpg" });
+  };
+
+  return (
+    <div className="space-y-6">
+      <StepHeader title="Temple Photos" subtitle="Upload photos for verification and display" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <PhotoUpload label="Exterior / Main Entrance *" file={data.exteriorPhoto} onUpload={() => mockUpload("exteriorPhoto")} onRemove={() => update({ exteriorPhoto: null })} />
+        <PhotoUpload label="Sanctum / Inner View *" file={data.sanctumPhoto} onUpload={() => mockUpload("sanctumPhoto")} onRemove={() => update({ sanctumPhoto: null })} />
+      </div>
+      <div className="space-y-2">
+        <Label>Additional Photos (Optional)</Label>
+        <div
+          onClick={() => update({ additionalPhotos: [...data.additionalPhotos, `photo_${data.additionalPhotos.length + 1}.jpg`] })}
+          className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+        >
+          <Image className="h-6 w-6 text-muted-foreground mx-auto mb-1" />
+          <p className="text-sm text-muted-foreground">Click to add more photos</p>
+        </div>
+        {data.additionalPhotos.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-2">
+            {data.additionalPhotos.map((p, i) => (
+              <div key={i} className="flex items-center gap-1.5 px-2.5 py-1 bg-muted rounded-full text-xs">
+                <Image className="h-3 w-3" /> {p}
+                <button onClick={() => update({ additionalPhotos: data.additionalPhotos.filter((_, j) => j !== i) })} className="hover:text-destructive">
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const PhotoUpload = ({ label, file, onUpload, onRemove }: { label: string; file: string | null; onUpload: () => void; onRemove: () => void }) => (
+  <div className="space-y-2">
+    <Label>{label}</Label>
+    {!file ? (
+      <div onClick={onUpload} className="border-2 border-dashed border-border rounded-xl p-8 text-center hover:border-primary/50 transition-colors cursor-pointer">
+        <Camera className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+        <p className="text-sm text-muted-foreground">Click to upload</p>
+        <p className="text-xs text-muted-foreground mt-1">JPG or PNG (max 5MB)</p>
+      </div>
+    ) : (
+      <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
+        <Camera className="h-5 w-5 text-primary" />
+        <div className="flex-1"><p className="text-sm font-medium">{file}</p></div>
+        <button onClick={onRemove} className="p-1 hover:bg-muted rounded-full"><X className="h-4 w-4 text-muted-foreground" /></button>
+      </div>
+    )}
+  </div>
+);
+
+const L2TrustLegal = ({ data, update }: { data: Level2Data; update: (p: Partial<Level2Data>) => void }) => (
+  <div className="space-y-6">
+    <StepHeader title="Trust & Legal Information" subtitle="Legal entity details for verification" />
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="space-y-2 sm:col-span-2">
+        <Label>Trust / Organization Name *</Label>
+        <Input value={data.trustName} onChange={e => update({ trustName: e.target.value })} placeholder="e.g., Sri Venkateswara Temple Trust" />
+      </div>
+      <div className="space-y-2">
+        <Label>Registration Number *</Label>
+        <Input value={data.registrationNumber} onChange={e => update({ registrationNumber: e.target.value })} placeholder="e.g., TRN/2020/12345" />
+      </div>
+      <div className="space-y-2">
+        <Label>PAN *</Label>
+        <Input value={data.pan} onChange={e => update({ pan: e.target.value.toUpperCase() })} placeholder="AAAAA0000A" />
+      </div>
+      <div className="space-y-2">
+        <Label>Legal Entity Type</Label>
+        <Select value={data.legalType} onValueChange={v => update({ legalType: v })}>
+          <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="charitable-trust">Charitable Trust</SelectItem>
+            <SelectItem value="society">Society</SelectItem>
+            <SelectItem value="religious-institution">Religious Institution</SelectItem>
+            <SelectItem value="govt-board">Govt. Board / Endowment</SelectItem>
+            <SelectItem value="other">Other</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-2">
+        <Label>Registration Date</Label>
+        <Input type="date" value={data.registrationDate} onChange={e => update({ registrationDate: e.target.value })} />
+      </div>
+    </div>
+    <Separator />
+    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Optional</p>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="space-y-2">
+        <Label>12A Registration Number</Label>
+        <Input value={data.twelveA} onChange={e => update({ twelveA: e.target.value })} />
+      </div>
+      <div className="space-y-2">
+        <Label>80G Registration Number</Label>
+        <Input value={data.eightyG} onChange={e => update({ eightyG: e.target.value })} />
+      </div>
+    </div>
+  </div>
+);
+
+const L2Documents = ({ data, update }: { data: Level2Data; update: (p: Partial<Level2Data>) => void }) => {
+  const docs = [
+    { key: "trustDeed" as const, label: "Trust Deed / Registration Certificate *", file: data.trustDeed, mockName: "trust_deed.pdf" },
+    { key: "certificate" as const, label: "12A / 80G Certificate (Optional)", file: data.certificate, mockName: "certificate.pdf" },
+    { key: "adminIdProof" as const, label: "Admin ID Proof *", file: data.adminIdProof, mockName: "admin_id.pdf" },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <StepHeader title="Document Upload" subtitle="Upload documents for verification" />
+      <div className="space-y-4">
+        {docs.map(doc => (
+          <div key={doc.key} className="space-y-2">
+            <Label>{doc.label}</Label>
+            {!doc.file ? (
+              <div
+                onClick={() => update({ [doc.key]: doc.mockName })}
+                className="border-2 border-dashed border-border rounded-xl p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+              >
+                <UploadCloud className="h-6 w-6 text-muted-foreground mx-auto mb-1" />
+                <p className="text-xs text-muted-foreground">Click to upload • PDF, JPG, PNG (max 5MB)</p>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg border">
+                <FileText className="h-5 w-5 text-primary" />
+                <div className="flex-1"><p className="text-sm font-medium">{doc.file}</p><p className="text-xs text-muted-foreground">Uploaded</p></div>
+                <button onClick={() => update({ [doc.key]: null })} className="p-1 hover:bg-muted rounded-full"><X className="h-4 w-4 text-muted-foreground" /></button>
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -1131,116 +771,80 @@ const StepDocumentUpload = ({ form, updateForm }: StepProps) => {
   );
 };
 
-const StepReviewSubmit = ({ form, updateForm }: StepProps) => {
-  const confirm = form.confirmations;
-  const updateConfirm = (patch: Partial<ConfirmationsSection>) =>
-    updateForm("confirmations", { ...confirm, ...patch });
+const L2ReviewSubmit = ({ l1, l2, update }: { l1: Level1Data; l2: Level2Data; update: (p: Partial<Level2Data>) => void }) => (
+  <div className="space-y-6">
+    <StepHeader title="Review & Submit" subtitle="Review your details before submitting for admin approval" />
 
-  return (
-    <div className="space-y-6 text-sm">
-      <div>
-        <h2 className="text-lg font-semibold text-foreground mb-1">Review & Submit</h2>
-        <p className="text-muted-foreground">
-          Review details before submission. Use Previous to edit any section.
+    <div className="space-y-3">
+      <ReviewSection title="Basic Info (Level 1)">
+        <ReviewRow label="Temple" value={l1.templeName} />
+        <ReviewRow label="Location" value={`${l1.city}, ${l1.state}`} />
+        <ReviewRow label="Admin" value={l1.adminName} />
+        <ReviewRow label="Email" value={l1.email} />
+        <ReviewRow label="Mobile" value={`+91 ${l1.mobile}`} />
+      </ReviewSection>
+
+      <ReviewSection title="Temple Details">
+        <ReviewRow label="Type" value={l2.templeType || "—"} />
+        <ReviewRow label="Established" value={l2.establishedYear || "—"} />
+        <ReviewRow label="Deity" value={l2.primaryDeity || "—"} />
+      </ReviewSection>
+
+      <ReviewSection title="Address">
+        <ReviewRow label="Address" value={[l2.addressLine1, l2.addressLine2, l2.district].filter(Boolean).join(", ") || "—"} />
+        <ReviewRow label="Pincode" value={l2.pincode || "—"} />
+      </ReviewSection>
+
+      <ReviewSection title="Trust & Legal">
+        <ReviewRow label="Trust Name" value={l2.trustName || "—"} />
+        <ReviewRow label="Reg. Number" value={l2.registrationNumber || "—"} />
+        <ReviewRow label="PAN" value={l2.pan || "—"} />
+      </ReviewSection>
+
+      <ReviewSection title="Documents & Photos">
+        <ReviewRow label="Exterior Photo" value={l2.exteriorPhoto ? "✓ Uploaded" : "Not uploaded"} />
+        <ReviewRow label="Sanctum Photo" value={l2.sanctumPhoto ? "✓ Uploaded" : "Not uploaded"} />
+        <ReviewRow label="Trust Deed" value={l2.trustDeed ? "✓ Uploaded" : "Not uploaded"} />
+        <ReviewRow label="Admin ID" value={l2.adminIdProof ? "✓ Uploaded" : "Not uploaded"} />
+      </ReviewSection>
+    </div>
+
+    <Separator />
+
+    <div className="space-y-3">
+      <div className="flex items-start gap-2">
+        <Checkbox checked={l2.infoTrue} onCheckedChange={c => update({ infoTrue: Boolean(c) })} />
+        <p className="text-sm">I confirm that all information is true and accurate and that I am authorized to register this temple.</p>
+      </div>
+      <div className="flex items-start gap-2">
+        <Checkbox checked={l2.termsAccepted} onCheckedChange={c => update({ termsAccepted: Boolean(c) })} />
+        <p className="text-sm">
+          I agree to the <span className="underline cursor-pointer text-primary">Terms of Service</span> and <span className="underline cursor-pointer text-primary">Privacy Policy</span>.
         </p>
       </div>
-
-      <div className="space-y-4">
-        <SectionReview title="Entity Type & Temple">
-          <ReviewField label="Entity Type" value={form.entityType || "-"} />
-          <ReviewField label="Temple Name" value={form.temple.templeName} />
-          <ReviewField label="Primary Deity" value={form.temple.primaryDeity} />
-          <ReviewField label="Temple Type" value={form.temple.templeType || "-"} />
-        </SectionReview>
-
-        <SectionReview title="Location">
-          <ReviewField
-            label="Address"
-            value={
-              form.location.addressLine1 ||
-              form.location.addressLine2 ||
-              form.location.city
-                ? `${form.location.addressLine1}, ${form.location.addressLine2}, ${form.location.city}, ${form.location.state} - ${form.location.pincode}`
-                : "-"
-            }
-          />
-          <ReviewField label="Country" value={form.location.country || "-"} />
-        </SectionReview>
-
-        <SectionReview title="Trust / Legal">
-          <ReviewField label="Registered Name" value={form.legal.registeredName} />
-          <ReviewField label="Legal Type" value={form.legal.legalType || "-"} />
-          <ReviewField label="PAN" value={form.legal.pan || "-"} />
-          <ReviewField label="12A" value={form.legal.twelveA || "-"} />
-          <ReviewField label="80G" value={form.legal.eightyG || "-"} />
-        </SectionReview>
-
-        <SectionReview title="Authorized Admin">
-          <ReviewField label="Name" value={form.admin.fullName} />
-          <ReviewField label="Designation" value={form.admin.designation} />
-          <ReviewField label="Mobile" value={form.admin.mobile} />
-          <ReviewField label="Email" value={form.admin.email} />
-        </SectionReview>
-
-        <SectionReview title="Documents">
-          <ReviewField label="Documents" value="Uploaded (placeholder)" />
-        </SectionReview>
-      </div>
-
-      <Separator />
-
-      <div className="space-y-2">
-        <div className="flex items-start gap-2">
-          <Checkbox
-            checked={confirm.infoTrue}
-            onCheckedChange={checked =>
-              updateConfirm({ infoTrue: Boolean(checked) })
-            }
-          />
-          <p>
-            I confirm that the above information is true and accurate and that I am
-            authorized to register this Temple / Trust on this platform.
-          </p>
-        </div>
-        <div className="flex items-start gap-2">
-          <Checkbox
-            checked={confirm.termsAccepted}
-            onCheckedChange={checked =>
-              updateConfirm({ termsAccepted: Boolean(checked) })
-            }
-          />
-          <p>
-            I agree to the{" "}
-            <span className="underline cursor-pointer">Terms of Service</span> and{" "}
-            <span className="underline cursor-pointer">Privacy Policy</span>.
-          </p>
-        </div>
-      </div>
     </div>
-  );
-};
-
-const SectionReview = ({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) => (
-  <div className="border rounded-lg p-3 space-y-2">
-    <div className="text-xs font-semibold uppercase text-muted-foreground tracking-wide">
-      {title}
-    </div>
-    <div className="grid md:grid-cols-2 gap-x-6 gap-y-1.5">{children}</div>
   </div>
 );
 
-const ReviewField = ({ label, value }: { label: string; value: string }) => (
-  <div className="flex flex-col">
-    <span className="text-[11px] uppercase text-muted-foreground tracking-wide">
-      {label}
-    </span>
-    <span className="text-sm">{value || "-"}</span>
+/* ─── Helpers ─── */
+const StepHeader = ({ title, subtitle }: { title: string; subtitle: string }) => (
+  <div>
+    <h2 className="text-lg font-semibold text-foreground mb-1">{title}</h2>
+    <p className="text-sm text-muted-foreground">{subtitle}</p>
+  </div>
+);
+
+const ReviewSection = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <div className="border rounded-xl p-4 space-y-2">
+    <p className="text-xs font-semibold uppercase text-muted-foreground tracking-wide">{title}</p>
+    <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">{children}</div>
+  </div>
+);
+
+const ReviewRow = ({ label, value }: { label: string; value: string }) => (
+  <div>
+    <span className="text-[11px] uppercase text-muted-foreground tracking-wide">{label}</span>
+    <p className="text-sm text-foreground">{value || "—"}</p>
   </div>
 );
 
